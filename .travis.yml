@@ -9,3 +9,4 @@ services:
     - redis-server
 script:
     - pytest
+    - flake8
