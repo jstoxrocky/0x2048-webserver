@@ -11,7 +11,4 @@ script:
     - pytest
     - flake8
 notifications:
-  webhooks:
-    on_success: change
-    on_failure: never
-    on_cancel: never
+    email: false
