@@ -5,7 +5,6 @@ cffi==1.11.4
 chardet==3.0.4
 click==6.7
 cytoolz==0.9.0
-endpoints==0.1
 eth-abi==0.5.0
 eth-keyfile==0.4.1
 eth-keys==0.1.0b4
@@ -16,7 +15,7 @@ flake8==3.5.0
 Flask==0.12.2
 Flask-Cors==3.0.3
 Flask-Session==0.3.1
-game==0.1
+git+git://github.com/jstoxrocky/0x2048-game.git
 idna==2.6
 itsdangerous==0.24
 Jinja2==2.10
