@@ -1,4 +1,4 @@
-# 0x2048-frontend
+# 0x2048-webserver
 
 The 0x2048 project is a decentralized game of 2048 played over a state channel between a server and users. 0x2048-webserver is the backend code hosting the server side endpoint logic for the the 0x2048 project. 
 
