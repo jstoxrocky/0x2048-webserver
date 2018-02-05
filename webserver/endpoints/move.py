@@ -14,7 +14,7 @@ from webserver import (
     state_channel,
 )
 from webserver.gameplay import (
-    load_and_play,
+    load,
     new,
 )
 from webserver.config import (
@@ -48,7 +48,7 @@ def move():
         raise MissingUser
     # Load game
     state = session.get('state', INITIAL_STATE)
-    state = new() if state['gameover'] else load_and_play(state, direction)
+    state = new() if state['gameover'] else load(state, direction)
     session['state'] = state
     # Create state-channel signature
     signature = state_channel.sign(PRIV, ADDR, user, session['state']['score'])
