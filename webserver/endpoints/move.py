@@ -51,5 +51,5 @@ def move():
     state = new() if state['gameover'] else load_and_play(state, direction)
     session['state'] = state
     # Create state-channel signature
-    signature = state_channel.sign(PRIV, ADDR, user, session['score'])
+    signature = state_channel.sign(PRIV, ADDR, user, session['state']['score'])
     return jsonify(merge(state, {'signature': signature}))
