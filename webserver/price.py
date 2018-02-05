@@ -7,7 +7,7 @@ from eth_utils import (
 ETH_PRICE_URL = 'https://api.coinbase.com/v2/prices/ETH-USD/spot'
 
 
-def get_price_of_eth_in_dollars():
+def get_price():
     params = {'currency': 'USD'}
     res = requests.get(ETH_PRICE_URL, params=params)
     eth_price_data = res.json()
@@ -15,8 +15,11 @@ def get_price_of_eth_in_dollars():
     return float(price)
 
 
-def get_current_dollar_price_in_wei():
-    dollars_per_eth = get_price_of_eth_in_dollars()
-    eth_per_dollars = 1 / dollars_per_eth
+def flip_xe(rate):
+    return 1 / rate
+
+
+def to_wei_per_dollar(dollars_per_eth):
+    eth_per_dollars = flip_xe(dollars_per_eth)
     price = to_wei(eth_per_dollars, 'ether')
     return price

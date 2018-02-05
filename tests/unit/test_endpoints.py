@@ -1,4 +1,5 @@
 import json
+import io
 from webserver.exceptions import (
     UnknownMove,
     MissingUser,
@@ -9,6 +10,12 @@ from eth_utils import (
 from web3 import (
     Account,
 )
+from unittest.mock import (
+    patch,
+)
+from requests import (
+    Response,
+)
 
 
 def recover(message, signature):
@@ -18,7 +25,14 @@ def recover(message, signature):
     )
 
 
-def test_price(app, owner, user):
+@patch('webserver.price.requests.get')
+def test_price(mocked, app, owner, user):
+    # Mock
+    response = Response()
+    data = {'data': {'amount': 1700}}
+    response.raw = io.BytesIO(json.dumps(data).encode())
+    mocked.return_value = response
+
     # Expected values
     expected_status_code = 200
     expected_outer_subset = {
@@ -46,7 +60,14 @@ def test_price(app, owner, user):
     assert expected_signer == output_signer
 
 
-def test_price_no_address(app):
+@patch('webserver.price.requests.get')
+def test_price_no_address(mocked, app):
+    # Mock
+    response = Response()
+    data = {'data': {'amount': 1700}}
+    response.raw = io.BytesIO(json.dumps(data).encode())
+    mocked.return_value = response
+
     # Expected values
     expected_status_code = MissingUser.status_code
     expected_message = MissingUser.message

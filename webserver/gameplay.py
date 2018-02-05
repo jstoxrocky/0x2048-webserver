@@ -18,15 +18,15 @@ def new():
     return gamestate
 
 
-def load_and_play(state, direction):
+def load(state, direction):
     if direction not in {UP, DOWN, LEFT, RIGHT}:
         raise UnknownMove
     board, score = state['board'], state['score']
     game = TwentyFortyEight.load(board, score)
     try:
         board, score = game.move(direction)
+        gameover = False
     except GameOver:
         gameover = True
-    gameover = gameover or state['gameover']
     state = {'board': game.board, 'score': game.score, 'gameover': gameover}
     return state

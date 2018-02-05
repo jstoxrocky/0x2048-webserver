@@ -13,7 +13,8 @@ from webserver import (
     state_channel,
 )
 from webserver.price import (
-    get_current_dollar_price_in_wei,
+    get_price,
+    to_wei_per_dollar,
 )
 from webserver.config import (
     ORIGINS,
@@ -40,7 +41,8 @@ def price():
     if not is_checksum_address(user):
         raise MissingUser
     # Get price
-    price = get_current_dollar_price_in_wei()
+    price_in_dollars = get_price()
+    price = to_wei_per_dollar(price_in_dollars)
     # Create state-channel specific signature
     signature = state_channel.sign(PRIV, ADDR, user, price)
     return jsonify(merge({'signature': signature}, {'price': price}))
