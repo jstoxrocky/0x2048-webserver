@@ -12,4 +12,6 @@ def sign(private_key, contract, user, *values):
     msg = Web3.soliditySha3(abi_types, [contract, user] + list(values))
     signed = Account.sign(msg, private_key)
     signed = valmap(lambda x: x.hex() if isinstance(x, bytes) else x, signed)
+    signed['r'] = Web3.toHex(signed['r'])
+    signed['s'] = Web3.toHex(signed['s'])
     return signed
