@@ -19,6 +19,7 @@ from webserver.gameplay import (
 )
 from webserver.config import (
     ORIGINS,
+    INITIAL_STATE,
 )
 from eth_utils import (
     is_checksum_address,
@@ -32,7 +33,6 @@ from webserver.config import (
 )
 
 
-INITIAL_STATE = {'board': [], 'score': 0, 'gameover': True}
 blueprint = Blueprint('move', __name__)
 
 
@@ -49,7 +49,7 @@ def move():
     # Load game
     state = session.get('state', INITIAL_STATE)
     state = new() if state['gameover'] else load(state, direction)
-    session['state'] = state
     # Create state-channel signature
-    signature = state_channel.sign(PRIV, ADDR, user, session['state']['score'])
-    return jsonify(merge(state, {'signature': signature}))
+    signature = state_channel.sign(PRIV, ADDR, user, state['score'])
+    session['state'] = merge(state, {'signature': signature})
+    return jsonify(session['state'])
