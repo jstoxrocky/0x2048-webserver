@@ -11,11 +11,11 @@ INITIAL_STATE = {
     'score': 0,
     'gameover': True,
     'signature': {
-        'message': '',
-        'messageHash': '',
+        'message': '0x0',
+        'messageHash': '0x0',
         'v': 0,
-        'r': 0,
-        's': 0,
-        'signature': '',
+        'r': '0x0',
+        's': '0x0',
+        'signature': '0x0',
     },
 }
