@@ -14,6 +14,7 @@ from webserver.redis_session import (
 from webserver.endpoints import (
     price,
     move,
+    gamestate,
 )
 
 
@@ -24,6 +25,7 @@ application.config.from_object(__name__)
 Session(application)
 application.register_blueprint(price.blueprint)
 application.register_blueprint(move.blueprint)
+application.register_blueprint(gamestate.blueprint)
 
 
 @application.errorhandler(InvalidUsage)
