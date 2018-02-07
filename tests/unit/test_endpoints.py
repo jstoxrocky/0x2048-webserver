@@ -10,9 +10,6 @@ from eth_utils import (
 from web3 import (
     Account,
 )
-from unittest.mock import (
-    patch,
-)
 from requests import (
     Response,
 )
@@ -25,13 +22,13 @@ def recover(message, signature):
     )
 
 
-@patch('webserver.endpoints.price.PRIV', b'\x11' * 32)
-@patch('webserver.price.requests.get')
-def test_price(mocked, app, owner, user):
+def test_price(mocker, app, owner, user):
+    mocker.patch('webserver.endpoints.price.PRIV', owner.privateKey)
+    get = mocker.patch('webserver.price.requests.get')
     response = Response()
     data = {'data': {'amount': 1700}}
     response.raw = io.BytesIO(json.dumps(data).encode())
-    mocked.return_value = response
+    get.return_value = response
 
     # Expected values
     expected_status_code = 200
@@ -41,10 +38,10 @@ def test_price(mocked, app, owner, user):
     expected_signature_subset = {
         'message', 'messageHash', 'v', 'r', 's', 'signature',
     }
-    expected_signer = owner
+    expected_signer = owner.address
 
     # Generate Ouput
-    query_string = dict(user=user)
+    query_string = dict(user=user.address)
     output = app.get('/price', query_string=query_string)
     output_status_code = output.status_code
 
@@ -60,13 +57,12 @@ def test_price(mocked, app, owner, user):
     assert expected_signer == output_signer
 
 
-@patch('webserver.price.requests.get')
-def test_price_no_address(mocked, app):
+def test_price_no_address(mocker, app):
     # Mock
     response = Response()
     data = {'data': {'amount': 1700}}
     response.raw = io.BytesIO(json.dumps(data).encode())
-    mocked.return_value = response
+    mocker.patch('webserver.price.requests.get')
 
     # Expected values
     expected_status_code = MissingUser.status_code
@@ -106,8 +102,8 @@ def test_gamestate(app):
     assert expected_signature_subset <= output_signature_set
 
 
-@patch('webserver.endpoints.move.PRIV', b'\x11' * 32)
-def test_move(app, owner, user, new_game):
+def test_move(mocker, app, owner, user, new_game):
+    mocker.patch('webserver.endpoints.move.PRIV', owner.privateKey)
     # Expected values
     expected_status_code = 200
     expected_outer_subset = {
@@ -116,10 +112,10 @@ def test_move(app, owner, user, new_game):
     expected_signature_subset = {
         'message', 'messageHash', 'v', 'r', 's', 'signature',
     }
-    expected_signer = owner
+    expected_signer = owner.address
 
     # Generate Ouput
-    data = json.dumps(dict(direction=1, user=user))
+    data = json.dumps(dict(direction=1, user=user.address))
     output = app.post('/move', data=data, content_type='application/json')
     output_status_code = output.status_code
 
@@ -158,7 +154,7 @@ def test_move_no_move(app, user, new_game):
     expected_message = UnknownMove.message
 
     # Generate output
-    data = json.dumps(dict(user=user))
+    data = json.dumps(dict(user=user.address))
     output = app.post('/move', data=data, content_type='application/json')
     output_status_code = output.status_code
 

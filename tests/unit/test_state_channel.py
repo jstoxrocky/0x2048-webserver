@@ -9,7 +9,7 @@ from webserver.config import (
 
 
 def test_sign(user):
-    output = sign(PRIV, ADDR, user, 1, 2, 3)
+    output = sign(PRIV, ADDR, user.address, 1, 2, 3)
     assert isinstance(output['r'], str)
     assert isinstance(output['s'], str)
 
