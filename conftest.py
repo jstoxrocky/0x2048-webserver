@@ -1,28 +1,32 @@
 import pytest
+from web3 import Account
 from eth_utils import (
-    to_checksum_address,
-    keccak,
-)
-from ethereum.keys import (
-    privtoaddr,
+    pad_left,
+    int_to_big_endian,
 )
 
 
-@pytest.fixture(scope="module")
-def owner_priv():
-    return b'\x11' * 32
-
-
-@pytest.fixture(scope="module")
-def _owner_priv():
-    return keccak('3')
+num_accounts = 3
+accounts = []
+for i in range(1, num_accounts + 1):
+    pk_bytes = pad_left(int_to_big_endian(i), 32, b'\x00')
+    account = Account.privateKeyToAccount(pk_bytes)
+    accounts.append(account)
 
 
 @pytest.fixture(scope="module")
 def owner():
-    return to_checksum_address(privtoaddr(b'\x11' * 32))
+    account = accounts[0]
+    return account
+
+
+@pytest.fixture(scope="module")
+def _owner():
+    account = accounts[1]
+    return account
 
 
 @pytest.fixture(scope="module")
 def user():
-    return to_checksum_address(privtoaddr(keccak('2')))
+    account = accounts[2]
+    return account
