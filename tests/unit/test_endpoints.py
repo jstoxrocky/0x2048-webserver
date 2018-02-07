@@ -25,9 +25,9 @@ def recover(message, signature):
     )
 
 
+@patch('webserver.endpoints.price.PRIV', b'\x11' * 32)
 @patch('webserver.price.requests.get')
 def test_price(mocked, app, owner, user):
-    # Mock
     response = Response()
     data = {'data': {'amount': 1700}}
     response.raw = io.BytesIO(json.dumps(data).encode())
@@ -106,6 +106,7 @@ def test_gamestate(app):
     assert expected_signature_subset <= output_signature_set
 
 
+@patch('webserver.endpoints.move.PRIV', b'\x11' * 32)
 def test_move(app, owner, user, new_game):
     # Expected values
     expected_status_code = 200
