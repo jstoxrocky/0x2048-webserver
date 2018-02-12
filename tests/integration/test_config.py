@@ -7,5 +7,5 @@ from webserver.config import (
 
 
 def test_owner():
-    owner_addr = '0x768Cd761C8809E2112F67767D76De3a4E6e5133D'
+    owner_addr = '0x60Bb3F9D894Bd74e72c3F90FA1A50Ea915a60260'
     assert owner_addr == Account.privateKeyToAccount(PRIV).address
