@@ -37,4 +37,4 @@ def handle_invalid_usage(error):
 
 
 if __name__ == '__main__':
-    application.run(debug=True, threaded=True)
+    application.run(threaded=True)
