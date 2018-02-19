@@ -15,6 +15,9 @@ from requests import (
 )
 
 
+API_PREFIX = '/api/v1'
+
+
 def recover(message, signature):
     return Account.recoverMessage(
         data=decode_hex(message),
@@ -42,7 +45,8 @@ def test_price(mocker, app, owner, user):
 
     # Generate Ouput
     query_string = dict(user=user.address)
-    output = app.get('/price', query_string=query_string)
+    endpoint = API_PREFIX + '/price'
+    output = app.get(endpoint, query_string=query_string)
     output_status_code = output.status_code
 
     # Test
@@ -70,7 +74,8 @@ def test_price_no_address(mocker, app):
 
     # Generate output
     query_string = dict()
-    output = app.get('/price', query_string=query_string)
+    endpoint = API_PREFIX + '/price'
+    output = app.get(endpoint, query_string=query_string)
     output_status_code = output.status_code
 
     assert output_status_code == expected_status_code
@@ -90,7 +95,8 @@ def test_gamestate(app):
     }
 
     # Generate Ouput
-    output = app.get('/gamestate')
+    endpoint = API_PREFIX + '/gamestate'
+    output = app.get(endpoint)
     output_status_code = output.status_code
 
     # Test
@@ -116,7 +122,8 @@ def test_move(mocker, app, owner, user, new_game):
 
     # Generate Ouput
     data = json.dumps(dict(direction=1, user=user.address))
-    output = app.post('/move', data=data, content_type='application/json')
+    endpoint = API_PREFIX + '/move'
+    output = app.post(endpoint, data=data, content_type='application/json')
     output_status_code = output.status_code
 
     # Test
@@ -138,7 +145,8 @@ def test_move_no_address(app):
 
     # Generate output
     data = json.dumps(dict(direction=1))
-    output = app.post('/move', data=data, content_type='application/json')
+    endpoint = API_PREFIX + '/move'
+    output = app.post(endpoint, data=data, content_type='application/json')
     output_status_code = output.status_code
 
     # Test
@@ -155,7 +163,8 @@ def test_move_no_move(app, user, new_game):
 
     # Generate output
     data = json.dumps(dict(user=user.address))
-    output = app.post('/move', data=data, content_type='application/json')
+    endpoint = API_PREFIX + '/move'
+    output = app.post(endpoint, data=data, content_type='application/json')
     output_status_code = output.status_code
 
     # Test
