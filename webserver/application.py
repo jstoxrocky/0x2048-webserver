@@ -23,9 +23,10 @@ SESSION_TYPE = 'redis'
 SESSION_REDIS = get_session()
 application.config.from_object(__name__)
 Session(application)
-application.register_blueprint(price.blueprint)
-application.register_blueprint(move.blueprint)
-application.register_blueprint(gamestate.blueprint)
+API_PREFIX = '/api/v1'
+application.register_blueprint(price.blueprint, url_prefix=API_PREFIX)
+application.register_blueprint(move.blueprint, url_prefix=API_PREFIX)
+application.register_blueprint(gamestate.blueprint, url_prefix=API_PREFIX)
 
 
 @application.errorhandler(InvalidUsage)
