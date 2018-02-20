@@ -27,7 +27,7 @@ from toolz.dicttoolz import (
 )
 from webserver.config import (
     PRIV,
-    ADDR,
+    ARCADE_ADDR,
 )
 
 blueprint = Blueprint('price', __name__)
@@ -44,5 +44,6 @@ def price():
     price_in_dollars = get_price()
     price = to_wei_per_dollar(price_in_dollars)
     # Create state-channel specific signature
-    signature = state_channel.sign(PRIV, ADDR, user, price)
+    msg = state_channel.solidityKeccak(ARCADE_ADDR, user, price)
+    signature = state_channel.sign(msg, PRIV)
     return jsonify(merge({'signature': signature}, {'price': price}))

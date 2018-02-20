@@ -26,3 +26,8 @@ def new_game(request, app):
         with app.session_transaction() as sess:
             sess['gameover'] = True
     request.addfinalizer(resource_a_teardown)
+
+
+@pytest.fixture(scope="module")
+def api_prefix():
+    return '/api/v1'
