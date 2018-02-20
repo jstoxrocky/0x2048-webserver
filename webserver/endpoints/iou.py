@@ -15,6 +15,7 @@ from webserver.exceptions import (
     MissingUser,
     UnexpectedPreimage,
     UnexpectedSigner,
+    IOUPaymentTooLow,
 )
 from eth_utils import (
     is_checksum_address,
@@ -38,6 +39,14 @@ REQUIRED_DATA = {
     'user': str,
     'value': int,
 }
+
+
+class mock_db_connection:
+    value = 7
+
+    @classmethod
+    def execute(cls, query):
+        return cls.value
 
 
 @blueprint.route('/iou', methods=['POST'])
@@ -66,5 +75,7 @@ def iou():
     if state_channel.recover(payload) != payload['user']:
         raise UnexpectedSigner
     # Is the preimage value strictly greater than the db value
-    # TODO
+    db_value = mock_db_connection.execute("""SELECT * FROM tbl;""")
+    if payload['value'] <= db_value:
+        raise IOUPaymentTooLow
     return jsonify(payload)
