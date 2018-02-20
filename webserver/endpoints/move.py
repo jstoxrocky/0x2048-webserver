@@ -29,7 +29,7 @@ from toolz.dicttoolz import (
 )
 from webserver.config import (
     PRIV,
-    ADDR,
+    ARCADE_ADDR,
 )
 
 
@@ -50,6 +50,7 @@ def move():
     state = session.get('state', INITIAL_STATE)
     state = new() if state['gameover'] else load(state, direction)
     # Create state-channel signature
-    signature = state_channel.sign(PRIV, ADDR, user, state['score'])
+    msg = state_channel.solidityKeccak(ARCADE_ADDR, user, state['score'])
+    signature = state_channel.sign(msg, PRIV)
     session['state'] = merge(state, {'signature': signature})
     return jsonify(session['state'])

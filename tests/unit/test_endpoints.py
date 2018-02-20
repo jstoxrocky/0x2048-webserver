@@ -15,9 +15,6 @@ from requests import (
 )
 
 
-API_PREFIX = '/api/v1'
-
-
 def recover(message, signature):
     return Account.recoverMessage(
         data=decode_hex(message),
@@ -25,7 +22,7 @@ def recover(message, signature):
     )
 
 
-def test_price(mocker, app, owner, user):
+def test_price(mocker, app, api_prefix, owner, user):
     mocker.patch('webserver.endpoints.price.PRIV', owner.privateKey)
     get = mocker.patch('webserver.price.requests.get')
     response = Response()
@@ -45,7 +42,7 @@ def test_price(mocker, app, owner, user):
 
     # Generate Ouput
     query_string = dict(user=user.address)
-    endpoint = API_PREFIX + '/price'
+    endpoint = api_prefix + '/price'
     output = app.get(endpoint, query_string=query_string)
     output_status_code = output.status_code
 
@@ -61,7 +58,7 @@ def test_price(mocker, app, owner, user):
     assert expected_signer == output_signer
 
 
-def test_price_no_address(mocker, app):
+def test_price_no_address(mocker, app, api_prefix):
     # Mock
     response = Response()
     data = {'data': {'amount': 1700}}
@@ -74,7 +71,7 @@ def test_price_no_address(mocker, app):
 
     # Generate output
     query_string = dict()
-    endpoint = API_PREFIX + '/price'
+    endpoint = api_prefix + '/price'
     output = app.get(endpoint, query_string=query_string)
     output_status_code = output.status_code
 
@@ -84,7 +81,7 @@ def test_price_no_address(mocker, app):
     assert expected_message == output_message
 
 
-def test_gamestate(app):
+def test_gamestate(app, api_prefix):
     # Expected values
     expected_status_code = 200
     expected_outer_subset = {
@@ -95,7 +92,7 @@ def test_gamestate(app):
     }
 
     # Generate Ouput
-    endpoint = API_PREFIX + '/gamestate'
+    endpoint = api_prefix + '/gamestate'
     output = app.get(endpoint)
     output_status_code = output.status_code
 
@@ -108,7 +105,7 @@ def test_gamestate(app):
     assert expected_signature_subset <= output_signature_set
 
 
-def test_move(mocker, app, owner, user, new_game):
+def test_move(mocker, app, api_prefix, owner, user, new_game):
     mocker.patch('webserver.endpoints.move.PRIV', owner.privateKey)
     # Expected values
     expected_status_code = 200
@@ -122,7 +119,7 @@ def test_move(mocker, app, owner, user, new_game):
 
     # Generate Ouput
     data = json.dumps(dict(direction=1, user=user.address))
-    endpoint = API_PREFIX + '/move'
+    endpoint = api_prefix + '/move'
     output = app.post(endpoint, data=data, content_type='application/json')
     output_status_code = output.status_code
 
@@ -138,14 +135,14 @@ def test_move(mocker, app, owner, user, new_game):
     assert expected_signer == output_signer
 
 
-def test_move_no_address(app):
+def test_move_no_address(app, api_prefix):
     # Expected values
     expected_status_code = MissingUser.status_code
     expected_message = MissingUser.message
 
     # Generate output
     data = json.dumps(dict(direction=1))
-    endpoint = API_PREFIX + '/move'
+    endpoint = api_prefix + '/move'
     output = app.post(endpoint, data=data, content_type='application/json')
     output_status_code = output.status_code
 
@@ -156,14 +153,14 @@ def test_move_no_address(app):
     assert expected_message == output_message
 
 
-def test_move_no_move(app, user, new_game):
+def test_move_no_move(app, api_prefix, user, new_game):
     # Expected values
     expected_status_code = UnknownMove.status_code
     expected_message = UnknownMove.message
 
     # Generate output
     data = json.dumps(dict(user=user.address))
-    endpoint = API_PREFIX + '/move'
+    endpoint = api_prefix + '/move'
     output = app.post(endpoint, data=data, content_type='application/json')
     output_status_code = output.status_code
 

@@ -21,12 +21,12 @@ def owner():
 
 
 @pytest.fixture(scope="module")
-def _owner():
+def user():
     account = accounts[1]
     return account
 
 
 @pytest.fixture(scope="module")
-def user():
+def user2():
     account = accounts[2]
     return account
