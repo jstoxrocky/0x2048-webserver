@@ -15,3 +15,19 @@ class MissingUser(InvalidUsage):
 
 class NoGameStarted(InvalidUsage):
     message = 'NoGameStarted'
+
+
+class UnexpectedDataFormat(InvalidUsage):
+    message = 'UnexpectedDataFormat'
+
+
+class UnexpectedDataType(InvalidUsage):
+    message = 'UnexpectedDataType'
+
+
+class UnexpectedPreimage(InvalidUsage):
+    message = 'UnexpectedPreimage'
+
+
+class UnexpectedSigner(InvalidUsage):
+    message = 'UnexpectedSigner'
