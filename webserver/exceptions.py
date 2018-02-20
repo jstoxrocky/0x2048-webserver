@@ -31,3 +31,7 @@ class UnexpectedPreimage(InvalidUsage):
 
 class UnexpectedSigner(InvalidUsage):
     message = 'UnexpectedSigner'
+
+
+class IOUPaymentTooLow(InvalidUsage):
+    message = 'IOUPaymentTooLow'

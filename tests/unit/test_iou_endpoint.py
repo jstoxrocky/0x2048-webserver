@@ -6,6 +6,7 @@ from webserver.exceptions import (
     MissingUser,
     UnexpectedPreimage,
     UnexpectedSigner,
+    IOUPaymentTooLow,
 )
 from toolz.dicttoolz import (
     merge,
@@ -15,6 +16,9 @@ from webserver import (
 )
 from webserver.config import (
     ACCOUNT_ADDR,
+)
+from webserver.endpoints.iou import (
+    mock_db_connection,
 )
 
 
@@ -178,11 +182,40 @@ def test_bad_signer(app, api_prefix, user, user2):
     assert expected_message == output_message
 
 
+def test_value_too_low(app, api_prefix, user, user2):
+    """
+    It should raise IOUPaymentTooLow exception
+    """
+    value = mock_db_connection.value
+
+    # Expected values
+    expected_status_code = IOUPaymentTooLow.status_code
+    expected_message = IOUPaymentTooLow.message
+
+    msg = state_channel.solidityKeccak(ACCOUNT_ADDR, user.address, value)
+    signed = state_channel.sign(msg, user.privateKey)
+    payload = merge(signed, {'user': user.address, 'value': value})
+    data = payload
+    json_data = json.dumps(data)
+    endpoint = api_prefix + '/iou'
+    response = app.post(
+        endpoint,
+        data=json_data,
+        content_type='application/json'
+    )
+
+    # Test
+    assert response.status_code == expected_status_code
+    output = json.loads(response.data)
+    output_message = output['message']
+    assert expected_message == output_message
+
+
 def test_iou_endpoint(app, api_prefix, user):
     """
     It should return the same data sent to it
     """
-    value = 1
+    value = mock_db_connection.value + 1
     msg = state_channel.solidityKeccak(ACCOUNT_ADDR, user.address, value)
     signed = state_channel.sign(msg, user.privateKey)
     payload = merge(signed, {'user': user.address, 'value': value})
