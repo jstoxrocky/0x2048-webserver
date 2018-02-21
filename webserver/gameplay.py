@@ -12,7 +12,7 @@ def new():
     return gamestate
 
 
-def load(state, direction):
+def next_state(state, direction):
     board, score = state['board'], state['score']
     game = TwentyFortyEight.load(board, score)
     try:
