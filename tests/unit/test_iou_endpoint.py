@@ -203,3 +203,6 @@ def test_iou_endpoint(app, api_prefix, user):
     )
     output = json.loads(response.data)
     assert output == data
+    with app as c:
+        with c.session_transaction() as sess:
+            assert sess['has_paid']

@@ -9,6 +9,7 @@ from flask_cors import (
 )
 from webserver.exceptions import (
     ValidationError,
+    PaymentRequired,
 )
 from webserver import (
     state_channel,
@@ -43,6 +44,8 @@ def move():
     payload = request.get_json()
     if MoveSchema().validate(payload):
         raise ValidationError
+    if not session.get('has_paid', False):
+        raise PaymentRequired
     # Load game
     state = session.get('state', INITIAL_STATE)
     state = new() if state['gameover'] else load(state, payload['direction'])
