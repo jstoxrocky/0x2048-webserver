@@ -13,17 +13,10 @@ from toolz.dicttoolz import (
 )
 
 
-def test_pay_and_move(mocker, app, api_prefix, owner, user, new_game):
+def test_pay_and_move(mocker, app, api_prefix, owner, user):
     mocker.patch('webserver.endpoints.move.PRIV', owner.privateKey)
     # Expected values
     expected_status_code = 200
-    expected_outer_subset = {
-        'signature', 'score', 'board', 'gameover',
-    }
-    expected_signature_subset = {
-        'message', 'messageHash', 'v', 'r', 's', 'signature',
-    }
-    expected_signer = owner.address
 
     # Pay
     value = mock_db_connection.value + 1
@@ -50,11 +43,27 @@ def test_pay_and_move(mocker, app, api_prefix, owner, user, new_game):
 
     # Test
     assert output_status_code == expected_status_code
-    output_data = json.loads(output.data)
-    ouput_outer_set = set(output_data.keys())
-    assert expected_outer_subset <= ouput_outer_set
-    output_signature_set = set(output_data['signature'].keys())
-    assert expected_signature_subset <= output_signature_set
-    signature = output_data['signature']
-    output_signer = state_channel.recover(signature)
-    assert expected_signer == output_signer
+
+
+def test_move_gameover_has_paid(app, api_prefix, owner, user):
+    """
+    It should revert session['has_paid'] to False on gameover
+    """
+    with app as c:
+        with c.session_transaction() as sess:
+            sess['has_paid'] = True
+            sess['state']['board'] = [
+                [8, 16, 8, 0],
+                [16, 8, 16, 8],
+                [8, 16, 8, 16],
+                [16, 8, 16, 8],
+            ]
+
+    # Generate Ouput
+    data = json.dumps(dict(direction=1, user=user.address))
+    endpoint = api_prefix + '/move'
+    app.post(endpoint, data=data, content_type='application/json')
+
+    with app as c:
+        with c.session_transaction() as sess:
+            assert not sess['has_paid']

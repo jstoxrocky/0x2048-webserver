@@ -15,7 +15,7 @@ from webserver import (
     state_channel,
 )
 from webserver.gameplay import (
-    load,
+    next_state,
     new,
 )
 from webserver.config import (
@@ -48,7 +48,11 @@ def move():
         raise PaymentRequired
     # Load game
     state = session.get('state', INITIAL_STATE)
-    state = new() if state['gameover'] else load(state, payload['direction'])
+    direction = payload['direction']
+    state = new() if state['gameover'] else next_state(state, direction)
+    # Reset payment to False on gameover
+    if state['gameover']:
+        session['has_paid'] = False
     # Create state-channel signature
     msg = state_channel.solidity_keccak(
         ARCADE_ADDR,
