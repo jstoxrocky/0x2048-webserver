@@ -12,7 +12,6 @@ from webserver.redis_session import (
     get_session,
 )
 from webserver.endpoints import (
-    price,
     move,
     gamestate,
     iou,
@@ -25,7 +24,6 @@ SESSION_REDIS = get_session()
 application.config.from_object(__name__)
 Session(application)
 API_PREFIX = '/api/v1'
-application.register_blueprint(price.blueprint, url_prefix=API_PREFIX)
 application.register_blueprint(move.blueprint, url_prefix=API_PREFIX)
 application.register_blueprint(gamestate.blueprint, url_prefix=API_PREFIX)
 application.register_blueprint(iou.blueprint, url_prefix=API_PREFIX)
