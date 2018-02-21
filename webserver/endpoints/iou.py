@@ -11,12 +11,7 @@ from webserver.config import (
 )
 from webserver.exceptions import (
     ValidationError,
-    UnexpectedPreimage,
-    UnexpectedSigner,
     IOUPaymentTooLow,
-)
-from webserver.config import (
-    ACCOUNT_ADDR,
 )
 from webserver import (
     state_channel,
@@ -44,17 +39,8 @@ def iou():
     payload = request.get_json()
     if SignatureSchema().validate(payload):
         raise ValidationError
-    # Do the preimages hash together to form the signed message
-    expected_msg = state_channel.solidityKeccak(
-        ACCOUNT_ADDR,
-        payload['user'],
-        payload['value'],
-    )
-    if expected_msg.hex() != payload['message']:
-        raise UnexpectedPreimage
-    # Does the message signer match the user preimage
-    if state_channel.recover(payload) != payload['user']:
-        raise UnexpectedSigner
+    # Validate IOU
+    state_channel.validate_iou(payload)
     # Is the preimage value strictly greater than the db value
     db_value = mock_db_connection.execute("""SELECT * FROM tbl;""")
     if payload['value'] <= db_value:

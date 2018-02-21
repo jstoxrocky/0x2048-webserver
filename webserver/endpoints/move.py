@@ -47,7 +47,7 @@ def move():
     state = session.get('state', INITIAL_STATE)
     state = new() if state['gameover'] else load(state, payload['direction'])
     # Create state-channel signature
-    msg = state_channel.solidityKeccak(
+    msg = state_channel.solidity_keccak(
         ARCADE_ADDR,
         payload['user'],
         state['score'],

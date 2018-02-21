@@ -1,20 +1,30 @@
+import pytest
 from webserver.state_channel import (
     sign,
     recover,
     int_to_hex,
-    solidityKeccak,
+    solidity_keccak,
+    validate_iou,
 )
 from webserver.config import (
     PRIV,
     ARCADE_ADDR,
+    ACCOUNT_ADDR,
 )
 from web3 import (
     Account,
 )
+from toolz.dicttoolz import (
+    merge,
+)
+from webserver.exceptions import (
+    UnexpectedPreimage,
+    UnexpectedSigner,
+)
 
 
 def test_sign(user):
-    msg = solidityKeccak(ARCADE_ADDR, user.address, 1, 2, 3)
+    msg = solidity_keccak(ARCADE_ADDR, user.address, 1, 2, 3)
     output = sign(msg, PRIV)
     assert isinstance(output['r'], str)
     assert isinstance(output['s'], str)
@@ -33,8 +43,44 @@ def test_recover(user):
     assert signer == user.address
 
 
-def test_solidityKeccak(user):
+def test_solidity_keccak(user):
     contract = ARCADE_ADDR
     value = 1
-    msg = solidityKeccak(contract, user.address, value)
+    msg = solidity_keccak(contract, user.address, value)
     assert msg == b'\xb7\xeaz\r:\x96\xd1\xd3\xda}\x9cI\x8c\xd1\xae\x02x\x05a0\xd4+\xbb\xce\xaf\xfd\xcd\x13$\xf2\xa7\xbe'  # noqa: E501
+
+
+def test_validate_iou(user):
+    value = 1
+    msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
+    signed = sign(msg, user.privateKey)
+    payload = merge(signed, {'user': user.address, 'value': value})
+    success = validate_iou(payload)
+    assert success
+
+
+@pytest.mark.parametrize('test_user, test_value', [
+    (None, 1337),
+    ('0x6813Eb9362372EEF6200f3b1dbC3f819671cBA69', None)  # user2.address
+])
+def test_validate_iou_bad_preimage(user, test_user, test_value):
+    value = 1
+    if not test_user:
+        test_user = user.address
+    if not test_value:
+        test_value = value
+
+    msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
+    signed = sign(msg, user.privateKey)
+    payload = merge(signed, {'user': test_user, 'value': test_value})
+    with pytest.raises(UnexpectedPreimage):
+        validate_iou(payload)
+
+
+def test_validate_iou_bad_signer(user, user2):
+    value = 1
+    msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
+    signed = sign(msg, user2.privateKey)
+    payload = merge(signed, {'user': user.address, 'value': value})
+    with pytest.raises(UnexpectedSigner):
+        validate_iou(payload)

@@ -90,7 +90,7 @@ def test_bad_types(app, api_prefix, key, value):
     assert expected_message == output_message
 
 
-@pytest.mark.parametrize('test_user,test_value', [
+@pytest.mark.parametrize('test_user, test_value', [
     (None, 1337),
     ('0x6813Eb9362372EEF6200f3b1dbC3f819671cBA69', None)  # user2.address
 ])
@@ -108,7 +108,7 @@ def test_bad_preimage(app, api_prefix, user, test_user, test_value):
     expected_status_code = UnexpectedPreimage.status_code
     expected_message = UnexpectedPreimage.message
 
-    msg = state_channel.solidityKeccak(ACCOUNT_ADDR, user.address, value)
+    msg = state_channel.solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = state_channel.sign(msg, user.privateKey)
     payload = merge(signed, {'user': test_user, 'value': test_value})
     data = payload
@@ -137,7 +137,7 @@ def test_bad_signer(app, api_prefix, user, user2):
     expected_status_code = UnexpectedSigner.status_code
     expected_message = UnexpectedSigner.message
 
-    msg = state_channel.solidityKeccak(ACCOUNT_ADDR, user.address, value)
+    msg = state_channel.solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = state_channel.sign(msg, user2.privateKey)
     payload = merge(signed, {'user': user.address, 'value': value})
     data = payload
@@ -166,7 +166,7 @@ def test_value_too_low(app, api_prefix, user, user2):
     expected_status_code = IOUPaymentTooLow.status_code
     expected_message = IOUPaymentTooLow.message
 
-    msg = state_channel.solidityKeccak(ACCOUNT_ADDR, user.address, value)
+    msg = state_channel.solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = state_channel.sign(msg, user.privateKey)
     payload = merge(signed, {'user': user.address, 'value': value})
     data = payload
@@ -190,7 +190,7 @@ def test_iou_endpoint(app, api_prefix, user):
     It should return the same data sent to it
     """
     value = mock_db_connection.value + 1
-    msg = state_channel.solidityKeccak(ACCOUNT_ADDR, user.address, value)
+    msg = state_channel.solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = state_channel.sign(msg, user.privateKey)
     payload = merge(signed, {'user': user.address, 'value': value})
     data = payload
