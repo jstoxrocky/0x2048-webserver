@@ -1,9 +1,7 @@
 import pytest
 import json
 from webserver.exceptions import (
-    UnexpectedDataFormat,
-    UnexpectedDataType,
-    MissingUser,
+    ValidationError,
     UnexpectedPreimage,
     UnexpectedSigner,
     IOUPaymentTooLow,
@@ -36,11 +34,11 @@ DEFAULT_DATA = {
 
 def test_bad_data(app, api_prefix):
     """
-    It should raise a UnexpectedDataFormat exception
+    It should raise a ValidationError exception
     """
     # Expected values
-    expected_status_code = UnexpectedDataFormat.status_code
-    expected_message = UnexpectedDataFormat.message
+    expected_status_code = ValidationError.status_code
+    expected_message = ValidationError.message
 
     data = {'x': 17}
     json_data = json.dumps(data)
@@ -70,37 +68,13 @@ def test_bad_data(app, api_prefix):
 ])
 def test_bad_types(app, api_prefix, key, value):
     """
-    It should raise a UnexpectedDataType exception
+    It should raise a ValidationError exception
     """
     # Expected values
-    expected_status_code = UnexpectedDataType.status_code
-    expected_message = UnexpectedDataType.message
+    expected_status_code = ValidationError.status_code
+    expected_message = ValidationError.message
 
     data = merge(DEFAULT_DATA, {key: value})
-    json_data = json.dumps(data)
-    endpoint = api_prefix + '/iou'
-    response = app.post(
-        endpoint,
-        data=json_data,
-        content_type='application/json'
-    )
-
-    # Test
-    assert response.status_code == expected_status_code
-    output = json.loads(response.data)
-    output_message = output['message']
-    assert expected_message == output_message
-
-
-def test_not_checksum_address(app, api_prefix):
-    """
-    It should raise a MissingUser exception
-    """
-    # Expected values
-    expected_status_code = MissingUser.status_code
-    expected_message = MissingUser.message
-
-    data = DEFAULT_DATA
     json_data = json.dumps(data)
     endpoint = api_prefix + '/iou'
     response = app.post(

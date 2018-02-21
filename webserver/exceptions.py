@@ -5,24 +5,12 @@ class InvalidUsage(Exception):
         Exception.__init__(self)
 
 
-class UnknownMove(InvalidUsage):
-    message = 'UnknownMove'
-
-
-class MissingUser(InvalidUsage):
-    message = 'MissingUser'
-
-
 class NoGameStarted(InvalidUsage):
     message = 'NoGameStarted'
 
 
-class UnexpectedDataFormat(InvalidUsage):
-    message = 'UnexpectedDataFormat'
-
-
-class UnexpectedDataType(InvalidUsage):
-    message = 'UnexpectedDataType'
+class ValidationError(InvalidUsage):
+    message = 'ValidationError'
 
 
 class UnexpectedPreimage(InvalidUsage):
