@@ -23,3 +23,7 @@ class UnexpectedSigner(InvalidUsage):
 
 class IOUPaymentTooLow(InvalidUsage):
     message = 'IOUPaymentTooLow'
+
+
+class PaymentRequired(InvalidUsage):
+    message = 'PaymentRequired'

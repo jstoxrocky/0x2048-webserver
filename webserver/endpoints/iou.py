@@ -1,6 +1,7 @@
 from flask import (
     jsonify,
     Blueprint,
+    session,
     request,
 )
 from flask_cors import (
@@ -47,6 +48,6 @@ def iou():
         raise IOUPaymentTooLow
     #  TODO:
     #  (1) Store IOU in db
-    #  (2) Set user has_paid state to True (session or db?)
-    #  (3) Allow user to play game
+    # Set user has_paid state to True (session or db?)
+    session['has_paid'] = True
     return jsonify(payload)
