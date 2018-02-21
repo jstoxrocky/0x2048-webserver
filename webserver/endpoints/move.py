@@ -8,7 +8,7 @@ from flask_cors import (
     cross_origin,
 )
 from webserver.exceptions import (
-    MissingUser,
+    ValidationError,
 )
 from webserver import (
     state_channel,
@@ -21,15 +21,15 @@ from webserver.config import (
     ORIGINS,
     INITIAL_STATE,
 )
-from eth_utils import (
-    is_checksum_address,
-)
 from toolz.dicttoolz import (
     merge,
 )
 from webserver.config import (
     PRIV,
     ARCADE_ADDR,
+)
+from webserver.schemas import (
+    MoveSchema,
 )
 
 
@@ -39,18 +39,19 @@ blueprint = Blueprint('move', __name__)
 @blueprint.route('/move', methods=['POST'])
 @cross_origin(origins=ORIGINS, methods=['POST'], supports_credentials=True)
 def move():
-    # Get payload from user
+    # Validate payload
     payload = request.get_json()
-    user = payload.get('user')
-    direction = payload.get('direction')
-    # State-channel signature requires a user's address
-    if not is_checksum_address(user):
-        raise MissingUser
+    if MoveSchema().validate(payload):
+        raise ValidationError
     # Load game
     state = session.get('state', INITIAL_STATE)
-    state = new() if state['gameover'] else load(state, direction)
+    state = new() if state['gameover'] else load(state, payload['direction'])
     # Create state-channel signature
-    msg = state_channel.solidityKeccak(ARCADE_ADDR, user, state['score'])
+    msg = state_channel.solidityKeccak(
+        ARCADE_ADDR,
+        payload['user'],
+        state['score'],
+    )
     signature = state_channel.sign(msg, PRIV)
     session['state'] = merge(state, {'signature': signature})
     return jsonify(session['state'])

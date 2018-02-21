@@ -10,15 +10,10 @@ from webserver.config import (
     ORIGINS,
 )
 from webserver.exceptions import (
-    UnexpectedDataFormat,
-    UnexpectedDataType,
-    MissingUser,
+    ValidationError,
     UnexpectedPreimage,
     UnexpectedSigner,
     IOUPaymentTooLow,
-)
-from eth_utils import (
-    is_checksum_address,
 )
 from webserver.config import (
     ACCOUNT_ADDR,
@@ -26,19 +21,12 @@ from webserver.config import (
 from webserver import (
     state_channel,
 )
+from webserver.schemas import (
+    SignatureSchema,
+)
 
 
 blueprint = Blueprint('iou', __name__)
-REQUIRED_DATA = {
-    'message': str,
-    'messageHash': str,
-    'v': int,
-    'r': str,
-    's': str,
-    'signature': str,
-    'user': str,
-    'value': int,
-}
 
 
 class mock_db_connection:
@@ -52,17 +40,10 @@ class mock_db_connection:
 @blueprint.route('/iou', methods=['POST'])
 @cross_origin(origins=ORIGINS, methods=['POST'], supports_credentials=True)
 def iou():
+    # Validate payload
     payload = request.get_json()
-    # Does the payload dict contain all the required keys
-    if not REQUIRED_DATA.keys() <= payload.keys():
-        raise UnexpectedDataFormat
-    # Does the payload data types match what we are expecting
-    for key, value in payload.items():
-        if not isinstance(value, REQUIRED_DATA[key]):
-            raise UnexpectedDataType
-    # Does the user address pass a checksum
-    if not is_checksum_address(payload['user']):
-        raise MissingUser
+    if SignatureSchema().validate(payload):
+        raise ValidationError
     # Do the preimages hash together to form the signed message
     expected_msg = state_channel.solidityKeccak(
         ACCOUNT_ADDR,
@@ -78,4 +59,8 @@ def iou():
     db_value = mock_db_connection.execute("""SELECT * FROM tbl;""")
     if payload['value'] <= db_value:
         raise IOUPaymentTooLow
+    #  TODO:
+    #  (1) Store IOU in db
+    #  (2) Set user has_paid state to True (session or db?)
+    #  (3) Allow user to play game
     return jsonify(payload)
