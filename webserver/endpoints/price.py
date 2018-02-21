@@ -44,6 +44,6 @@ def price():
     price_in_dollars = get_price()
     price = to_wei_per_dollar(price_in_dollars)
     # Create state-channel specific signature
-    msg = state_channel.solidityKeccak(ARCADE_ADDR, payload['user'], price)
+    msg = state_channel.solidity_keccak(ARCADE_ADDR, payload['user'], price)
     signature = state_channel.sign(msg, PRIV)
     return jsonify(merge({'signature': signature}, {'price': price}))

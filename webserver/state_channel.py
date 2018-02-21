@@ -9,13 +9,20 @@ from eth_utils import (
     encode_hex,
     int_to_big_endian,
 )
+from webserver.config import (
+    ACCOUNT_ADDR,
+)
+from webserver.exceptions import (
+    UnexpectedPreimage,
+    UnexpectedSigner,
+)
 
 
 def int_to_hex(integer):
     return encode_hex(int_to_big_endian(integer))
 
 
-def solidityKeccak(contract, user, *values):
+def solidity_keccak(contract, user, *values):
     abi_types = ['address', 'address'] + ['uint256'] * len(values)
     msg = Web3.soliditySha3(abi_types, [contract, user] + list(values))
     return msg
@@ -35,3 +42,18 @@ def recover(signed):
         signature=signed['signature'],
     )
     return signer
+
+
+def validate_iou(signature):
+    # Do the preimages hash together to form the signed message
+    expected_msg = solidity_keccak(
+        ACCOUNT_ADDR,
+        signature['user'],
+        signature['value'],
+    )
+    if expected_msg.hex() != signature['message']:
+        raise UnexpectedPreimage
+    # Does the message signer match the user preimage
+    if recover(signature) != signature['user']:
+        raise UnexpectedSigner
+    return True
