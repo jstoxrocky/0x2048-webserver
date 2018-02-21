@@ -1,9 +1,3 @@
-from webserver.exceptions import (
-    UnknownMove,
-)
-from game.mechanics import (
-    UP, DOWN, LEFT, RIGHT,
-)
 from game.game import (
     TwentyFortyEight
 )
@@ -19,8 +13,6 @@ def new():
 
 
 def load(state, direction):
-    if direction not in {UP, DOWN, LEFT, RIGHT}:
-        raise UnknownMove
     board, score = state['board'], state['score']
     game = TwentyFortyEight.load(board, score)
     try:

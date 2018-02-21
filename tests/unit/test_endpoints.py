@@ -1,8 +1,7 @@
 import json
 import io
 from webserver.exceptions import (
-    UnknownMove,
-    MissingUser,
+    ValidationError,
 )
 from eth_utils import (
     decode_hex,
@@ -66,8 +65,8 @@ def test_price_no_address(mocker, app, api_prefix):
     mocker.patch('webserver.price.requests.get')
 
     # Expected values
-    expected_status_code = MissingUser.status_code
-    expected_message = MissingUser.message
+    expected_status_code = ValidationError.status_code
+    expected_message = ValidationError.message
 
     # Generate output
     query_string = dict()
@@ -137,8 +136,8 @@ def test_move(mocker, app, api_prefix, owner, user, new_game):
 
 def test_move_no_address(app, api_prefix):
     # Expected values
-    expected_status_code = MissingUser.status_code
-    expected_message = MissingUser.message
+    expected_status_code = ValidationError.status_code
+    expected_message = ValidationError.message
 
     # Generate output
     data = json.dumps(dict(direction=1))
@@ -153,10 +152,10 @@ def test_move_no_address(app, api_prefix):
     assert expected_message == output_message
 
 
-def test_move_no_move(app, api_prefix, user, new_game):
+def test_move_no_direction(app, api_prefix, user, new_game):
     # Expected values
-    expected_status_code = UnknownMove.status_code
-    expected_message = UnknownMove.message
+    expected_status_code = ValidationError.status_code
+    expected_message = ValidationError.message
 
     # Generate output
     data = json.dumps(dict(user=user.address))
