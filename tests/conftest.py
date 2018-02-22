@@ -31,3 +31,17 @@ def new_game(request, app):
 @pytest.fixture(scope="module")
 def api_prefix():
     return '/api/v1'
+
+
+@pytest.fixture(scope="function")
+def session_has_paid(app):
+    with app as c:
+        with c.session_transaction() as sess:
+            sess['has_paid'] = True
+
+
+@pytest.fixture(scope="function")
+def session_has_not_paid(app):
+    with app as c:
+        with c.session_transaction() as sess:
+            sess['has_paid'] = False
