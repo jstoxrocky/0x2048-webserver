@@ -5,6 +5,7 @@ from webserver.exceptions import (
     UnexpectedPreimage,
     UnexpectedSigner,
     IOUPaymentTooLow,
+    UnexpectedPayment,
 )
 from toolz.dicttoolz import (
     merge,
@@ -32,7 +33,7 @@ DEFAULT_DATA = {
 }
 
 
-def test_bad_data(app, api_prefix):
+def test_bad_data(app, api_prefix, session_has_not_paid):
     """
     It should raise a ValidationError exception
     """
@@ -66,7 +67,7 @@ def test_bad_data(app, api_prefix):
     ('user', 0),
     ('value', ''),
 ])
-def test_bad_types(app, api_prefix, key, value):
+def test_bad_types(app, api_prefix, key, value, session_has_not_paid):
     """
     It should raise a ValidationError exception
     """
@@ -94,7 +95,9 @@ def test_bad_types(app, api_prefix, key, value):
     (None, 1337),
     ('0x6813Eb9362372EEF6200f3b1dbC3f819671cBA69', None)  # user2.address
 ])
-def test_bad_preimage(app, api_prefix, user, test_user, test_value):
+def test_bad_preimage(app, api_prefix,
+                      user, test_user, test_value,
+                      session_has_not_paid):
     """
     It should raise UnexpectedPreimage exception
     """
@@ -127,7 +130,7 @@ def test_bad_preimage(app, api_prefix, user, test_user, test_value):
     assert expected_message == output_message
 
 
-def test_bad_signer(app, api_prefix, user, user2):
+def test_bad_signer(app, api_prefix, user, user2, session_has_not_paid):
     """
     It should raise UnexpectedSigner exception
     """
@@ -156,7 +159,7 @@ def test_bad_signer(app, api_prefix, user, user2):
     assert expected_message == output_message
 
 
-def test_value_too_low(app, api_prefix, user, user2):
+def test_value_too_low(app, api_prefix, user, user2, session_has_not_paid):
     """
     It should raise IOUPaymentTooLow exception
     """
@@ -185,7 +188,35 @@ def test_value_too_low(app, api_prefix, user, user2):
     assert expected_message == output_message
 
 
-def test_iou_endpoint(app, api_prefix, user):
+def test_has_already_paid(app, api_prefix, user, session_has_paid):
+    """
+    It should return the same data sent to it
+    """
+    # Expected values
+    expected_status_code = UnexpectedPayment.status_code
+    expected_message = UnexpectedPayment.message
+
+    value = mock_db_connection.value + 1
+    msg = state_channel.solidity_keccak(ACCOUNT_ADDR, user.address, value)
+    signed = state_channel.sign(msg, user.privateKey)
+    payload = merge(signed, {'user': user.address, 'value': value})
+    data = payload
+    json_data = json.dumps(data)
+    endpoint = api_prefix + '/iou'
+    response = app.post(
+        endpoint,
+        data=json_data,
+        content_type='application/json'
+    )
+
+    # Test
+    assert response.status_code == expected_status_code
+    output = json.loads(response.data)
+    output_message = output['message']
+    assert expected_message == output_message
+
+
+def test_iou_endpoint(app, api_prefix, user, session_has_not_paid):
     """
     It should return the same data sent to it
     """

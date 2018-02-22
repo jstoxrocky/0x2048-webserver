@@ -13,6 +13,7 @@ from webserver.config import (
 from webserver.exceptions import (
     ValidationError,
     IOUPaymentTooLow,
+    UnexpectedPayment,
 )
 from webserver import (
     state_channel,
@@ -36,18 +37,20 @@ class mock_db_connection:
 @blueprint.route('/iou', methods=['POST'])
 @cross_origin(origins=ORIGINS, methods=['POST'], supports_credentials=True)
 def iou():
+    # Ensure user has not already paid
+    if session.get('has_paid', False):
+        raise UnexpectedPayment
     # Validate payload
     payload = request.get_json()
     if SignatureSchema().validate(payload):
         raise ValidationError
     # Validate IOU
     state_channel.validate_iou(payload)
-    # Is the preimage value strictly greater than the db value
+    # Ensure the preimage value is strictly greater than the db value
     db_value = mock_db_connection.execute("""SELECT * FROM tbl;""")
     if payload['value'] <= db_value:
         raise IOUPaymentTooLow
     #  TODO:
     #  (1) Store IOU in db
-    # Set user has_paid state to True (session or db?)
     session['has_paid'] = True
     return jsonify(payload)

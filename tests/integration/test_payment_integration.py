@@ -13,7 +13,8 @@ from toolz.dicttoolz import (
 )
 
 
-def test_pay_and_move(mocker, app, api_prefix, owner, user):
+def test_pay_and_move(mocker, app, api_prefix,
+                      owner, user, session_has_not_paid):
     mocker.patch('webserver.endpoints.move.PRIV', owner.privateKey)
     # Expected values
     expected_status_code = 200
@@ -45,13 +46,13 @@ def test_pay_and_move(mocker, app, api_prefix, owner, user):
     assert output_status_code == expected_status_code
 
 
-def test_move_gameover_has_paid(app, api_prefix, owner, user):
+def test_move_gameover_has_paid(app, api_prefix,
+                                owner, user, session_has_paid):
     """
     It should revert session['has_paid'] to False on gameover
     """
     with app as c:
         with c.session_transaction() as sess:
-            sess['has_paid'] = True
             sess['state']['board'] = [
                 [8, 16, 8, 0],
                 [16, 8, 16, 8],
