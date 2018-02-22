@@ -27,3 +27,7 @@ class IOUPaymentTooLow(InvalidUsage):
 
 class PaymentRequired(InvalidUsage):
     message = 'PaymentRequired'
+
+
+class UnexpectedPayment(InvalidUsage):
+    message = 'UnexpectedPayment'
