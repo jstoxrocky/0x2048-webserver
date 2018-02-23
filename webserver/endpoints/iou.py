@@ -14,12 +14,13 @@ from webserver.exceptions import (
     ValidationError,
     IOUPaymentTooLow,
     UnexpectedPayment,
+    UnexpectedSignature,
 )
 from webserver import (
     state_channel,
 )
 from webserver.schemas import (
-    SignatureSchema,
+    IOUSchema,
 )
 
 
@@ -42,10 +43,12 @@ def iou():
         raise UnexpectedPayment
     # Validate payload
     payload = request.get_json()
-    if SignatureSchema().validate(payload):
+    if IOUSchema().validate(payload):
         raise ValidationError
     # Validate IOU
-    state_channel.validate_iou(payload)
+    success = state_channel.validate_iou(payload)
+    if not success:
+        raise UnexpectedSignature
     # Ensure the preimage value is strictly greater than the db value
     db_value = mock_db_connection.execute("""SELECT * FROM tbl;""")
     if payload['value'] <= db_value:
@@ -53,4 +56,4 @@ def iou():
     #  TODO:
     #  (1) Store IOU in db
     session['has_paid'] = True
-    return jsonify(payload)
+    return jsonify({'success': True})

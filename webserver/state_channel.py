@@ -12,10 +12,6 @@ from eth_utils import (
 from webserver.config import (
     ACCOUNT_ADDR,
 )
-from webserver.exceptions import (
-    UnexpectedPreimage,
-    UnexpectedSigner,
-)
 
 
 def int_to_hex(integer):
@@ -52,8 +48,8 @@ def validate_iou(signature):
         signature['value'],
     )
     if expected_msg.hex() != signature['message']:
-        raise UnexpectedPreimage
+        return False
     # Does the message signer match the user preimage
     if recover(signature) != signature['user']:
-        raise UnexpectedSigner
+        return False
     return True
