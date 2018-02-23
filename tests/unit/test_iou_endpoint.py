@@ -1,239 +1,84 @@
-import pytest
 import json
 from webserver.exceptions import (
     ValidationError,
-    UnexpectedPreimage,
-    UnexpectedSigner,
+    UnexpectedSignature,
     IOUPaymentTooLow,
     UnexpectedPayment,
 )
-from toolz.dicttoolz import (
-    merge,
-)
-from webserver import (
-    state_channel,
-)
-from webserver.config import (
-    ACCOUNT_ADDR,
-)
-from webserver.endpoints.iou import (
-    mock_db_connection,
-)
 
 
-DEFAULT_DATA = {
-    'message': '0x00',
-    'messageHash': '0x00',
-    'v': 27,
-    'r': '0x00',
-    's': '0x00',
-    'signature': '0x00',
-    'user': '0x00',
-    'value': 1,
-}
-
-
-def test_bad_data(app, api_prefix, session_has_not_paid):
-    """
-    It should raise a ValidationError exception
-    """
-    # Expected values
-    expected_status_code = ValidationError.status_code
-    expected_message = ValidationError.message
-
-    data = {'x': 17}
-    json_data = json.dumps(data)
+def test_has_already_paid(app, api_prefix, session_has_paid):
     endpoint = api_prefix + '/iou'
     response = app.post(
         endpoint,
-        data=json_data,
+        data=json.dumps({}),
         content_type='application/json'
     )
-
-    # Test
-    assert response.status_code == expected_status_code
     output = json.loads(response.data)
-    output_message = output['message']
-    assert expected_message == output_message
+    assert response.status_code == UnexpectedPayment.status_code
+    assert output['message'] == UnexpectedPayment.message
 
 
-@pytest.mark.parametrize('key,value', [
-    ('message', 0),
-    ('messageHash', 0),
-    ('v', ''),
-    ('r', 0),
-    ('s', 0),
-    ('signature', 0),
-    ('user', 0),
-    ('value', ''),
-])
-def test_bad_types(app, api_prefix, key, value, session_has_not_paid):
-    """
-    It should raise a ValidationError exception
-    """
-    # Expected values
-    expected_status_code = ValidationError.status_code
-    expected_message = ValidationError.message
-
-    data = merge(DEFAULT_DATA, {key: value})
-    json_data = json.dumps(data)
+def test_validation_error(mocker, app, api_prefix, session_has_not_paid):
+    validate = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')
+    validate.return_value = {'error_key': ['error_message']}
     endpoint = api_prefix + '/iou'
     response = app.post(
         endpoint,
-        data=json_data,
+        data=json.dumps({}),
         content_type='application/json'
     )
-
-    # Test
-    assert response.status_code == expected_status_code
     output = json.loads(response.data)
-    output_message = output['message']
-    assert expected_message == output_message
+    assert response.status_code == ValidationError.status_code
+    assert output['message'] == ValidationError.message
 
 
-@pytest.mark.parametrize('test_user, test_value', [
-    (None, 1337),
-    ('0x6813Eb9362372EEF6200f3b1dbC3f819671cBA69', None)  # user2.address
-])
-def test_bad_preimage(app, api_prefix,
-                      user, test_user, test_value,
-                      session_has_not_paid):
-    """
-    It should raise UnexpectedPreimage exception
-    """
-    value = 1
-    if not test_user:
-        test_user = user.address
-    if not test_value:
-        test_value = value
-
-    # Expected values
-    expected_status_code = UnexpectedPreimage.status_code
-    expected_message = UnexpectedPreimage.message
-
-    msg = state_channel.solidity_keccak(ACCOUNT_ADDR, user.address, value)
-    signed = state_channel.sign(msg, user.privateKey)
-    payload = merge(signed, {'user': test_user, 'value': test_value})
-    data = payload
-    json_data = json.dumps(data)
+def test_signature_error(mocker, app, api_prefix, session_has_not_paid):
+    validate = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')
+    validate.return_value = {}
+    validate_iou = mocker.patch('webserver.endpoints.iou.state_channel.validate_iou')  # noqa: E501
+    validate_iou.return_value = False
     endpoint = api_prefix + '/iou'
     response = app.post(
         endpoint,
-        data=json_data,
+        data=json.dumps({}),
         content_type='application/json'
     )
-
-    # Test
-    assert response.status_code == expected_status_code
     output = json.loads(response.data)
-    output_message = output['message']
-    assert expected_message == output_message
+    assert response.status_code == UnexpectedSignature.status_code
+    assert output['message'] == UnexpectedSignature.message
 
 
-def test_bad_signer(app, api_prefix, user, user2, session_has_not_paid):
-    """
-    It should raise UnexpectedSigner exception
-    """
-    value = 1
-
-    # Expected values
-    expected_status_code = UnexpectedSigner.status_code
-    expected_message = UnexpectedSigner.message
-
-    msg = state_channel.solidity_keccak(ACCOUNT_ADDR, user.address, value)
-    signed = state_channel.sign(msg, user2.privateKey)
-    payload = merge(signed, {'user': user.address, 'value': value})
-    data = payload
-    json_data = json.dumps(data)
+def test_payment_error(mocker, app, api_prefix, session_has_not_paid):
+    validate = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')
+    validate.return_value = {}
+    validate_iou = mocker.patch('webserver.endpoints.iou.state_channel.validate_iou')  # noqa: E501
+    validate_iou.return_value = True
+    validate_iou = mocker.patch('webserver.endpoints.iou.mock_db_connection.execute')  # noqa: E501
+    validate_iou.return_value = 100
     endpoint = api_prefix + '/iou'
     response = app.post(
         endpoint,
-        data=json_data,
+        data=json.dumps({'value': 1}),
         content_type='application/json'
     )
-
-    # Test
-    assert response.status_code == expected_status_code
     output = json.loads(response.data)
-    output_message = output['message']
-    assert expected_message == output_message
+    assert response.status_code == IOUPaymentTooLow.status_code
+    assert output['message'] == IOUPaymentTooLow.message
 
 
-def test_value_too_low(app, api_prefix, user, user2, session_has_not_paid):
-    """
-    It should raise IOUPaymentTooLow exception
-    """
-    value = mock_db_connection.value
-
-    # Expected values
-    expected_status_code = IOUPaymentTooLow.status_code
-    expected_message = IOUPaymentTooLow.message
-
-    msg = state_channel.solidity_keccak(ACCOUNT_ADDR, user.address, value)
-    signed = state_channel.sign(msg, user.privateKey)
-    payload = merge(signed, {'user': user.address, 'value': value})
-    data = payload
-    json_data = json.dumps(data)
+def test_success(mocker, app, api_prefix, session_has_not_paid):
+    validate = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')
+    validate.return_value = {}
+    validate_iou = mocker.patch('webserver.endpoints.iou.state_channel.validate_iou')  # noqa: E501
+    validate_iou.return_value = True
+    validate_iou = mocker.patch('webserver.endpoints.iou.mock_db_connection.execute')  # noqa: E501
+    validate_iou.return_value = 0
     endpoint = api_prefix + '/iou'
     response = app.post(
         endpoint,
-        data=json_data,
-        content_type='application/json'
-    )
-
-    # Test
-    assert response.status_code == expected_status_code
-    output = json.loads(response.data)
-    output_message = output['message']
-    assert expected_message == output_message
-
-
-def test_has_already_paid(app, api_prefix, user, session_has_paid):
-    """
-    It should return the same data sent to it
-    """
-    # Expected values
-    expected_status_code = UnexpectedPayment.status_code
-    expected_message = UnexpectedPayment.message
-
-    value = mock_db_connection.value + 1
-    msg = state_channel.solidity_keccak(ACCOUNT_ADDR, user.address, value)
-    signed = state_channel.sign(msg, user.privateKey)
-    payload = merge(signed, {'user': user.address, 'value': value})
-    data = payload
-    json_data = json.dumps(data)
-    endpoint = api_prefix + '/iou'
-    response = app.post(
-        endpoint,
-        data=json_data,
-        content_type='application/json'
-    )
-
-    # Test
-    assert response.status_code == expected_status_code
-    output = json.loads(response.data)
-    output_message = output['message']
-    assert expected_message == output_message
-
-
-def test_iou_endpoint(app, api_prefix, user, session_has_not_paid):
-    """
-    It should return the same data sent to it
-    """
-    value = mock_db_connection.value + 1
-    msg = state_channel.solidity_keccak(ACCOUNT_ADDR, user.address, value)
-    signed = state_channel.sign(msg, user.privateKey)
-    payload = merge(signed, {'user': user.address, 'value': value})
-    data = payload
-    json_data = json.dumps(data)
-    endpoint = api_prefix + '/iou'
-    response = app.post(
-        endpoint,
-        data=json_data,
+        data=json.dumps({'value': 100}),
         content_type='application/json'
     )
     output = json.loads(response.data)
-    assert output == data
-    with app as c:
-        with c.session_transaction() as sess:
-            assert sess['has_paid']
+    assert output['success']
