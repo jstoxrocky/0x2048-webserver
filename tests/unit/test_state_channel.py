@@ -50,7 +50,10 @@ def test_validate_iou(user):
     value = 1
     msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = sign(msg, user.privateKey)
-    payload = merge(signed, {'user': user.address, 'value': value})
+    payload = merge(
+        {'signature': signed},
+        {'user': user.address, 'value': value},
+    )
     success = validate_iou(payload)
     assert success
 
@@ -63,7 +66,10 @@ def test_validate_iou_bad_preimage(user, key, test_value):
     value = 1
     msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = sign(msg, user.privateKey)
-    payload = merge(signed, {'user': user.address, 'value': value})
+    payload = merge(
+        {'signature': signed},
+        {'user': user.address, 'value': value},
+    )
     payload[key] = test_value
     success = validate_iou(payload)
     assert not success
@@ -73,6 +79,9 @@ def test_validate_iou_bad_signer(user, user2):
     value = 1
     msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = sign(msg, user2.privateKey)
-    payload = merge(signed, {'user': user.address, 'value': value})
+    payload = merge(
+        {'signature': signed},
+        {'user': user.address, 'value': value},
+    )
     success = validate_iou(payload)
     assert not success

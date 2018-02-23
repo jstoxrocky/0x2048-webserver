@@ -40,16 +40,16 @@ def recover(signed):
     return signer
 
 
-def validate_iou(signature):
+def validate_iou(signed):
     # Do the preimages hash together to form the signed message
     expected_msg = solidity_keccak(
         ACCOUNT_ADDR,
-        signature['user'],
-        signature['value'],
+        signed['user'],
+        signed['value'],
     )
-    if expected_msg.hex() != signature['message']:
+    if expected_msg.hex() != signed['signature']['message']:
         return False
     # Does the message signer match the user preimage
-    if recover(signature) != signature['user']:
+    if recover(signed['signature']) != signed['user']:
         return False
     return True
