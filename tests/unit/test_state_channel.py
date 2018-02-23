@@ -17,10 +17,6 @@ from web3 import (
 from toolz.dicttoolz import (
     merge,
 )
-from webserver.exceptions import (
-    UnexpectedPreimage,
-    UnexpectedSigner,
-)
 
 
 def test_sign(user):
@@ -59,22 +55,18 @@ def test_validate_iou(user):
     assert success
 
 
-@pytest.mark.parametrize('test_user, test_value', [
-    (None, 1337),
-    ('0x6813Eb9362372EEF6200f3b1dbC3f819671cBA69', None)  # user2.address
+@pytest.mark.parametrize('key, test_value', [
+    ('value', 1337),
+    ('user', '0x6813Eb9362372EEF6200f3b1dbC3f819671cBA69'),  # user2.address
 ])
-def test_validate_iou_bad_preimage(user, test_user, test_value):
+def test_validate_iou_bad_preimage(user, key, test_value):
     value = 1
-    if not test_user:
-        test_user = user.address
-    if not test_value:
-        test_value = value
-
     msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = sign(msg, user.privateKey)
-    payload = merge(signed, {'user': test_user, 'value': test_value})
-    with pytest.raises(UnexpectedPreimage):
-        validate_iou(payload)
+    payload = merge(signed, {'user': user.address, 'value': value})
+    payload[key] = test_value
+    success = validate_iou(payload)
+    assert not success
 
 
 def test_validate_iou_bad_signer(user, user2):
@@ -82,5 +74,5 @@ def test_validate_iou_bad_signer(user, user2):
     msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = sign(msg, user2.privateKey)
     payload = merge(signed, {'user': user.address, 'value': value})
-    with pytest.raises(UnexpectedSigner):
-        validate_iou(payload)
+    success = validate_iou(payload)
+    assert not success

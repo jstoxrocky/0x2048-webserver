@@ -13,12 +13,8 @@ class ValidationError(InvalidUsage):
     message = 'ValidationError'
 
 
-class UnexpectedPreimage(InvalidUsage):
-    message = 'UnexpectedPreimage'
-
-
-class UnexpectedSigner(InvalidUsage):
-    message = 'UnexpectedSigner'
+class UnexpectedSignature(InvalidUsage):
+    message = 'UnexpectedSignature'
 
 
 class IOUPaymentTooLow(InvalidUsage):

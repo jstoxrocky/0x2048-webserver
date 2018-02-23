@@ -12,7 +12,7 @@ def new():
     return gamestate
 
 
-def next_state(state, direction):
+def load(state, direction):
     board, score = state['board'], state['score']
     game = TwentyFortyEight.load(board, score)
     try:
@@ -22,3 +22,10 @@ def next_state(state, direction):
         gameover = True
     state = {'board': game.board, 'score': game.score, 'gameover': gameover}
     return state
+
+
+def next_state(state, direction, gameover):
+    if gameover:
+        return new()
+    else:
+        return load(state, direction)

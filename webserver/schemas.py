@@ -18,14 +18,29 @@ class SignatureSchema(Schema):
     r = fields.Str(required=True, validate=is_hex)
     s = fields.Str(required=True, validate=is_hex)
     signature = fields.Str(required=True, validate=is_hex)
+
+
+class GamestateSchema(Schema):
+    score = fields.Integer(required=True)
+    board = fields.List(
+        fields.List(
+            fields.Integer(
+                required=True,
+            ),
+            required=True
+        ),
+        required=True,
+    )
+    gameover = fields.Boolean(required=True)
+    signature = fields.Nested(SignatureSchema, required=True)
+
+
+class IOUSchema(Schema):
     user = fields.Str(required=True, validate=is_checksum_address)
     value = fields.Integer(required=True)
+    signature = fields.Nested(SignatureSchema, required=True)
 
 
 class MoveSchema(Schema):
     user = fields.Str(required=True, validate=is_checksum_address)
     direction = fields.Integer(required=True)
-
-
-class PriceSchema(Schema):
-    user = fields.Str(required=True, validate=is_checksum_address)

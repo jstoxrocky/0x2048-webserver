@@ -16,7 +16,6 @@ from webserver import (
 )
 from webserver.gameplay import (
     next_state,
-    new,
 )
 from webserver.config import (
     ORIGINS,
@@ -40,16 +39,16 @@ blueprint = Blueprint('move', __name__)
 @blueprint.route('/move', methods=['POST'])
 @cross_origin(origins=ORIGINS, methods=['POST'], supports_credentials=True)
 def move():
+    # Ensure user has already paid
+    if not session.get('has_paid', False):
+        raise PaymentRequired
     # Validate payload
     payload = request.get_json()
     if MoveSchema().validate(payload):
         raise ValidationError
-    if not session.get('has_paid', False):
-        raise PaymentRequired
     # Load game
     state = session.get('state', INITIAL_STATE)
-    direction = payload['direction']
-    state = new() if state['gameover'] else next_state(state, direction)
+    state = next_state(state, payload['direction'], state['gameover'])
     # Reset payment to False on gameover
     if state['gameover']:
         session['has_paid'] = False
