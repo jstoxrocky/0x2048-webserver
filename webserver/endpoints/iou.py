@@ -21,6 +21,7 @@ from webserver import (
 )
 from webserver.schemas import (
     IOUSchema,
+    UserSchema,
 )
 
 
@@ -40,7 +41,11 @@ class mock_db_connection:
               supports_credentials=True)
 def iou():
     if request.method == 'GET':
-        # Ensure the preimage value is strictly greater than the db value
+        # Validate payload
+        payload = request.args
+        if UserSchema().validate(payload):
+            raise ValidationError
+        # Get most recent value
         db_value = mock_db_connection.execute("""SELECT * FROM tbl;""")
         return jsonify({'value': db_value})
     elif request.method == 'POST':

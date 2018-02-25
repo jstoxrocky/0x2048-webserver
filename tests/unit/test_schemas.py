@@ -4,6 +4,7 @@ from webserver.schemas import (
     IOUSchema,
     GamestateSchema,
     MoveSchema,
+    UserSchema,
 )
 
 
@@ -131,4 +132,30 @@ def test_move_schema_missing_data(move_data, key):
 def test_move_schema_success(move_data):
     payload = move_data
     errors = MoveSchema().validate(payload)
+    assert not errors
+
+
+@pytest.mark.parametrize('key, value', [
+    ('user', 0),
+])
+def test_user_schema_wrong_datatype(user_data, key, value):
+    payload = user_data
+    payload[key] = value
+    errors = UserSchema().validate(payload)
+    assert len(errors) > 0
+
+
+@pytest.mark.parametrize('key', [
+    'user',
+])
+def test_user_schema_missing_data(user_data, key):
+    payload = user_data
+    payload.pop(key)
+    errors = UserSchema().validate(payload)
+    assert len(errors) > 0
+
+
+def test_user_schema_success(user_data):
+    payload = user_data
+    errors = UserSchema().validate(payload)
     assert not errors

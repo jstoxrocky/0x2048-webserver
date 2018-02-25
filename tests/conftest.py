@@ -98,3 +98,11 @@ def move_data(app, user):
         'direction': direction,
     }
     return payload
+
+
+@pytest.fixture(scope="function")
+def user_data(app, user):
+    payload = {
+        'user': user.address,
+    }
+    return payload
