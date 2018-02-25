@@ -11,6 +11,10 @@ from eth_utils import (
 MAX_V_VALUE = 28
 
 
+class UserSchema(Schema):
+    user = fields.Str(required=True, validate=is_checksum_address)
+
+
 class SignatureSchema(Schema):
     message = fields.Str(required=True, validate=is_hex)
     messageHash = fields.Str(required=True, validate=is_hex)
@@ -36,9 +40,9 @@ class GamestateSchema(Schema):
 
 
 class IOUSchema(Schema):
-    user = fields.Str(required=True, validate=is_checksum_address)
     value = fields.Integer(required=True)
     signature = fields.Nested(SignatureSchema, required=True)
+    user = fields.Str(UserSchema, required=True)
 
 
 class MoveSchema(Schema):
