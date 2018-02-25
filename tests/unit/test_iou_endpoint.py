@@ -54,8 +54,8 @@ def test_payment_error(mocker, app, api_prefix, session_has_not_paid):
     validate.return_value = {}
     validate_iou = mocker.patch('webserver.endpoints.iou.state_channel.validate_iou')  # noqa: E501
     validate_iou.return_value = True
-    validate_iou = mocker.patch('webserver.endpoints.iou.mock_db_connection.execute')  # noqa: E501
-    validate_iou.return_value = 100
+    execute = mocker.patch('webserver.endpoints.iou.mock_db_connection.execute')  # noqa: E501
+    execute.return_value = 100
     endpoint = api_prefix + '/iou'
     response = app.post(
         endpoint,
@@ -72,8 +72,8 @@ def test_success(mocker, app, api_prefix, session_has_not_paid):
     validate.return_value = {}
     validate_iou = mocker.patch('webserver.endpoints.iou.state_channel.validate_iou')  # noqa: E501
     validate_iou.return_value = True
-    validate_iou = mocker.patch('webserver.endpoints.iou.mock_db_connection.execute')  # noqa: E501
-    validate_iou.return_value = 0
+    execute = mocker.patch('webserver.endpoints.iou.mock_db_connection.execute')  # noqa: E501
+    execute.return_value = 0
     endpoint = api_prefix + '/iou'
     response = app.post(
         endpoint,
@@ -82,3 +82,15 @@ def test_success(mocker, app, api_prefix, session_has_not_paid):
     )
     output = json.loads(response.data)
     assert output['success']
+
+
+def test_get(mocker, app, api_prefix, user):
+    validate_iou = mocker.patch('webserver.endpoints.iou.mock_db_connection.execute')  # noqa: E501
+    validate_iou.return_value = 17
+    endpoint = api_prefix + '/iou'
+    response = app.get(
+        endpoint,
+        query_string={'user': user.address},
+    )
+    output = json.loads(response.data)
+    assert output == {'value': 17}
