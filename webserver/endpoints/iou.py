@@ -57,7 +57,7 @@ def iou():
         if IOUSchema().validate(payload):
             raise ValidationError
         # Validate IOU
-        success = state_channel.validate_iou(payload)
+        success = state_channel.validate_iou(**payload)
         if not success:
             raise UnexpectedSignature
         # Ensure the preimage value is strictly greater than the db value

@@ -4,7 +4,7 @@ from webserver.schemas import (
 )
 
 
-def test_success(app, api_prefix):
+def test_validates(app, api_prefix):
     endpoint = api_prefix + '/gamestate'
     response = app.get(endpoint)
     output = json.loads(response.data)

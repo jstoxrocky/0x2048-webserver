@@ -1,7 +1,7 @@
 import pytest
 from webserver.state_channel import (
     sign,
-    recover,
+    recover_message,
     int_to_hex,
     solidity_keccak,
     validate_iou,
@@ -13,9 +13,6 @@ from webserver.config import (
 )
 from web3 import (
     Account,
-)
-from toolz.dicttoolz import (
-    merge,
 )
 
 
@@ -32,10 +29,10 @@ def test_int_to_hex():
     assert len(int_to_hex(16**2)) % 2 == 0
 
 
-def test_recover(user):
-    msg = b'Joey to the world!'
+def test_recover_message(user):
+    msg = solidity_keccak(ARCADE_ADDR, user.address, 1, 2, 3)
     signed = Account.sign(msg, user.privateKey)
-    signer = recover(signed)
+    signer = recover_message(msg, signed['signature'])
     assert signer == user.address
 
 
@@ -50,11 +47,12 @@ def test_validate_iou(user):
     value = 1
     msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = sign(msg, user.privateKey)
-    payload = merge(
-        {'signature': signed},
-        {'user': user.address, 'value': value},
-    )
-    success = validate_iou(payload)
+    iou = {
+        'user': user.address,
+        'value': value,
+        'signature': signed['signature'],
+    }
+    success = validate_iou(iou)
     assert success
 
 
@@ -66,12 +64,13 @@ def test_validate_iou_bad_preimage(user, key, test_value):
     value = 1
     msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = sign(msg, user.privateKey)
-    payload = merge(
-        {'signature': signed},
-        {'user': user.address, 'value': value},
-    )
-    payload[key] = test_value
-    success = validate_iou(payload)
+    iou = {
+        'user': user.address,
+        'value': value,
+        'signature': signed['signature'],
+    }
+    iou[key] = test_value
+    success = validate_iou(iou)
     assert not success
 
 
@@ -79,9 +78,10 @@ def test_validate_iou_bad_signer(user, user2):
     value = 1
     msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signed = sign(msg, user2.privateKey)
-    payload = merge(
-        {'signature': signed},
-        {'user': user.address, 'value': value},
-    )
-    success = validate_iou(payload)
+    iou = {
+        'user': user.address,
+        'value': value,
+        'signature': signed['signature'],
+    }
+    success = validate_iou(iou)
     assert not success
