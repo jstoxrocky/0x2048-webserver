@@ -37,7 +37,7 @@ def test_validation_error(mocker, app, api_prefix, session_has_paid):
     assert output['message'] == ValidationError.message
 
 
-def test_success(mocker, app, api_prefix, user, session_has_paid):
+def test_validates(mocker, app, api_prefix, user, session_has_paid):
     validate = mocker.patch('webserver.endpoints.move.MoveSchema.validate')
     validate.return_value = {}
     next_state = mocker.patch('webserver.endpoints.move.next_state')

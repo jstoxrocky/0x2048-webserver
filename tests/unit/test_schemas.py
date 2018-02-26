@@ -1,11 +1,38 @@
 import pytest
 from webserver.schemas import (
-    SignatureSchema,
+    SimpleSignatureSchema,
+    FullSignatureSchema,
     IOUSchema,
     GamestateSchema,
     MoveSchema,
     UserSchema,
 )
+
+
+@pytest.mark.parametrize('key, value', [
+    ('signature', 0),
+])
+def test_simple_signature_schema_wrong_datatype(signature_data, key, value):
+    payload = {'signature': signature_data['signature']}
+    payload[key] = value
+    errors = SimpleSignatureSchema().validate(payload)
+    assert len(errors) > 0
+
+
+@pytest.mark.parametrize('key', [
+    'signature',
+])
+def test_simple_signature_schema_missing_data(signature_data, key):
+    payload = {'signature': signature_data['signature']}
+    payload.pop(key)
+    errors = SimpleSignatureSchema().validate(payload)
+    assert len(errors) > 0
+
+
+def test_simple_signature_schema_success(signature_data):
+    payload = {'signature': signature_data['signature']}
+    errors = SimpleSignatureSchema().validate(payload)
+    assert not errors
 
 
 @pytest.mark.parametrize('key, value', [
@@ -16,10 +43,10 @@ from webserver.schemas import (
     ('s', 0),
     ('signature', 0),
 ])
-def test_signature_schema_wrong_datatype(iou_data, key, value):
-    payload = iou_data['signature']
+def test_full_signature_schema_wrong_datatype(signature_data, key, value):
+    payload = signature_data
     payload[key] = value
-    errors = SignatureSchema().validate(payload)
+    errors = FullSignatureSchema().validate(payload)
     assert len(errors) > 0
 
 
@@ -31,17 +58,16 @@ def test_signature_schema_wrong_datatype(iou_data, key, value):
     's',
     'signature',
 ])
-def test_signature_schema_missing_data(iou_data, key):
-    payload = iou_data['signature']
+def test_full_signature_schema_missing_data(signature_data, key):
+    payload = signature_data
     payload.pop(key)
-    errors = SignatureSchema().validate(payload)
-    print(errors)
+    errors = FullSignatureSchema().validate(payload)
     assert len(errors) > 0
 
 
-def test_signature_schema_success(iou_data):
-    payload = iou_data['signature']
-    errors = SignatureSchema().validate(payload)
+def test_full_signature_schema_success(signature_data):
+    payload = signature_data
+    errors = FullSignatureSchema().validate(payload)
     assert not errors
 
 
