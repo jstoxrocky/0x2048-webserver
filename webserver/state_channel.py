@@ -32,24 +32,22 @@ def sign(msg, private_key):
     return signed
 
 
-def recover(signed):
-    signer = Account.recover(
-        signed['messageHash'],
-        signature=signed['signature'],
+def recover_message(msg, signature):
+    signer = Account.recoverMessage(
+        data=msg,
+        signature=signature,
     )
     return signer
 
 
 def validate_iou(iou):
     # Do the preimages hash together to form the signed message
-    expected_msg = solidity_keccak(
+    msg = solidity_keccak(
         ACCOUNT_ADDR,
         iou['user'],
         iou['value'],
     )
-    if expected_msg.hex() != iou['signature']['message']:
-        return False
     # Does the message signer match the user preimage
-    if recover(iou['signature']) != iou['user']:
+    if recover_message(msg, iou['signature']) != iou['user']:
         return False
     return True

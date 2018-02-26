@@ -8,8 +8,6 @@ from webserver.state_channel import (
 )
 from webserver.config import (
     ACCOUNT_ADDR,
-    ARCADE_ADDR,
-    PRIV,
 )
 from game.game import (
     TwentyFortyEight,
@@ -57,20 +55,26 @@ def session_has_not_paid(app):
 
 
 @pytest.fixture(scope="function")
-def iou_data(app, user):
+def signature_data(app, user):
     value = 8
     msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
     signature = sign(msg, user.privateKey)
+    return signature
+
+
+@pytest.fixture(scope="function")
+def iou_data(app, user, signature_data):
+    value = 8  # Comes from signature_data
     payload = {
         'user': user.address,
         'value': value,
-        'signature': signature,
+        'signature': signature_data['signature'],
     }
     return payload
 
 
 @pytest.fixture(scope="function")
-def gamestate_data(app, user):
+def gamestate_data(app, user, signature_data):
     board = [
         [0, 0, 0, 0],
         [0, 0, 0, 0],
@@ -78,14 +82,12 @@ def gamestate_data(app, user):
         [0, 0, 0, 0],
     ]
     gameover = True
-    score = 8
-    msg = solidity_keccak(ARCADE_ADDR, user.address, score)
-    signature = sign(msg, PRIV)
+    score = 8  # Comes from signature_data
     payload = {
         'score': score,
         'board': board,
         'gameover': gameover,
-        'signature': signature,
+        'signature': signature_data,
     }
     return payload
 
