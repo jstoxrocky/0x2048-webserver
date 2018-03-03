@@ -6,13 +6,10 @@ from webserver.schemas import (
     GamestateSchema,
 )
 from webserver.state_channel import (
-    recover_message,
+    recover,
 )
 from webserver.config import (
     PRIV,
-)
-from eth_utils import (
-    decode_hex,
 )
 from web3 import (
     Account,
@@ -63,8 +60,8 @@ def test_signer_is_envvar(mocker, app, api_prefix, user, session_has_paid):
     )
     output = json.loads(response.data)
     signed = output['signature']
-    signer = recover_message(
-        decode_hex(signed['message']),
+    signer = recover(
+        signed['messageHash'],
         signed['signature'],
     )
     owner = Account.privateKeyToAccount(PRIV).address
