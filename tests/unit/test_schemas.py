@@ -4,6 +4,7 @@ from webserver.schemas import (
     FullSignatureSchema,
     IOUSchema,
     GamestateSchema,
+    SignedGamestateSchema,
     MoveSchema,
     UserSchema,
 )
@@ -104,8 +105,6 @@ def test_iou_schema_success(iou_data):
 @pytest.mark.parametrize('key, value', [
     ('board', 0),
     ('score', ''),
-    ('gameover', ''),
-    ('signature', 0),
 ])
 def test_gamestate_schema_wrong_datatype(gamestate_data, key, value):
     payload = gamestate_data
@@ -117,8 +116,6 @@ def test_gamestate_schema_wrong_datatype(gamestate_data, key, value):
 @pytest.mark.parametrize('key', [
     'board',
     'score',
-    'gameover',
-    'signature',
 ])
 def test_gamestate_schema_missing_data(gamestate_data, key):
     payload = gamestate_data
@@ -130,6 +127,36 @@ def test_gamestate_schema_missing_data(gamestate_data, key):
 def test_gamestate_schema_success(gamestate_data):
     payload = gamestate_data
     errors = GamestateSchema().validate(payload)
+    assert not errors
+
+
+@pytest.mark.parametrize('key, value', [
+    ('board', 0),
+    ('score', ''),
+    ('signature', 0),
+])
+def test_signed_gamestate_schema_wrong_datatype(gamestate_data, key, value):
+    payload = gamestate_data
+    payload[key] = value
+    errors = SignedGamestateSchema().validate(payload)
+    assert len(errors) > 0
+
+
+@pytest.mark.parametrize('key', [
+    'board',
+    'score',
+    'signature',
+])
+def test_signed_gamestate_schema_missing_data(gamestate_data, key):
+    payload = gamestate_data
+    payload.pop(key)
+    errors = SignedGamestateSchema().validate(payload)
+    assert len(errors) > 0
+
+
+def test_signed_gamestate_schema_success(gamestate_data):
+    payload = gamestate_data
+    errors = SignedGamestateSchema().validate(payload)
     assert not errors
 
 
