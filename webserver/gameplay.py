@@ -8,11 +8,11 @@ from game.exceptions import (
 
 def new():
     game = TwentyFortyEight.new(4, 4)
-    gamestate = {'board': game.board, 'score': 0, 'gameover': False}
-    return gamestate
+    new_state = {'board': game.board, 'score': 0}
+    return new_state
 
 
-def load(state, direction):
+def next_state(state, direction):
     board, score = state['board'], state['score']
     game = TwentyFortyEight.load(board, score)
     try:
@@ -20,12 +20,5 @@ def load(state, direction):
         gameover = False
     except GameOver:
         gameover = True
-    state = {'board': game.board, 'score': game.score, 'gameover': gameover}
-    return state
-
-
-def next_state(state, direction, gameover):
-    if gameover:
-        return new()
-    else:
-        return load(state, direction)
+    new_state = {'board': game.board, 'score': game.score}
+    return new_state, gameover

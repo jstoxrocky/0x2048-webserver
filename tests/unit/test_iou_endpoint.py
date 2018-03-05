@@ -5,6 +5,9 @@ from webserver.exceptions import (
     IOUPaymentTooLow,
     UnexpectedPayment,
 )
+from webserver.schemas import (
+    SignedGamestateSchema,
+)
 
 
 def test_has_already_paid(app, api_prefix, session_has_paid):
@@ -67,7 +70,7 @@ def test_payment_error(mocker, app, api_prefix, session_has_not_paid):
     assert output['message'] == IOUPaymentTooLow.message
 
 
-def test_success(mocker, app, api_prefix, session_has_not_paid):
+def test_success(mocker, app, api_prefix, user, session_has_not_paid):
     validate = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')
     validate.return_value = {}
     validate_iou = mocker.patch('webserver.endpoints.iou.state_channel.validate_iou')  # noqa: E501
@@ -77,11 +80,15 @@ def test_success(mocker, app, api_prefix, session_has_not_paid):
     endpoint = api_prefix + '/iou'
     response = app.post(
         endpoint,
-        data=json.dumps({'value': 100}),
+        data=json.dumps({'value': 100, 'user': user.address}),
         content_type='application/json'
     )
     output = json.loads(response.data)
-    assert output['success']
+    errors = SignedGamestateSchema().validate(output)
+    assert not errors
+    with app as c:
+        with c.session_transaction() as sess:
+            assert sess['has_paid']
 
 
 def test_nonce_validation_error(mocker, app, api_prefix, user):

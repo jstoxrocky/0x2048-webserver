@@ -9,6 +9,8 @@ from flask_cors import (
 )
 from webserver.config import (
     ORIGINS,
+    PRIV,
+    ARCADE_ADDR,
 )
 from webserver.exceptions import (
     ValidationError,
@@ -22,6 +24,12 @@ from webserver import (
 from webserver.schemas import (
     IOUSchema,
     UserSchema,
+)
+from webserver.gameplay import (
+    new,
+)
+from toolz.dicttoolz import (
+    merge,
 )
 
 
@@ -68,7 +76,16 @@ def iou():
     db_value = mock_db_connection.execute("""SELECT * FROM tbl;""")
     if payload['value'] <= db_value:
         raise IOUPaymentTooLow
-    #  TODO:
-    #  (1) Store IOU in db
+    # TODO:
+    # Store IOU in db
+    # Start a new game
     session['has_paid'] = True
-    return jsonify({'success': True})
+    new_state = new()
+    msg = state_channel.solidity_keccak(
+        ARCADE_ADDR,
+        payload['user'],
+        new_state['score'],
+    )
+    signature = state_channel.sign(msg, PRIV)
+    session['state'] = merge(new_state, {'signature': signature})
+    return jsonify(session['state'])

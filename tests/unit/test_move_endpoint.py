@@ -41,7 +41,7 @@ def test_validates(mocker, app, api_prefix, user, session_has_paid):
     validate = mocker.patch('webserver.endpoints.move.MoveSchema.validate')
     validate.return_value = {}
     next_state = mocker.patch('webserver.endpoints.move.next_state')
-    next_state.return_value = new()
+    next_state.return_value = new(), False
     endpoint = api_prefix + '/move'
     response = app.post(
         endpoint,
@@ -53,7 +53,6 @@ def test_validates(mocker, app, api_prefix, user, session_has_paid):
     assert not errors
     with app as c:
         with c.session_transaction() as sess:
-            assert not sess['state']['gameover']
             assert sess['has_paid']
 
 
@@ -76,5 +75,4 @@ def test_gameover(mocker, app, api_prefix, user, session_has_paid):
     )
     with app as c:
         with c.session_transaction() as sess:
-            assert sess['state']['gameover']
             assert not sess['has_paid']
