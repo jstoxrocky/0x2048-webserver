@@ -84,10 +84,10 @@ def test_success(mocker, app, api_prefix, session_has_not_paid):
     assert output['success']
 
 
-def test_get_validation_error(mocker, app, api_prefix, user):
+def test_nonce_validation_error(mocker, app, api_prefix, user):
     validate = mocker.patch('webserver.endpoints.iou.UserSchema.validate')
     validate.return_value = {'error_key': ['error_message']}
-    endpoint = api_prefix + '/iou'
+    endpoint = api_prefix + '/nonce'
     response = app.get(
         endpoint,
         query_string={},
@@ -97,10 +97,10 @@ def test_get_validation_error(mocker, app, api_prefix, user):
     assert output['message'] == ValidationError.message
 
 
-def test_get_success(mocker, app, api_prefix, user):
+def test_nonce_success(mocker, app, api_prefix, user):
     validate_iou = mocker.patch('webserver.endpoints.iou.mock_db_connection.execute')  # noqa: E501
     validate_iou.return_value = 17
-    endpoint = api_prefix + '/iou'
+    endpoint = api_prefix + '/nonce'
     response = app.get(
         endpoint,
         query_string={'user': user.address},
