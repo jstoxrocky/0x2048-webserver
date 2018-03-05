@@ -48,16 +48,17 @@ def move():
         raise ValidationError
     # Load game
     state = session.get('state', INITIAL_STATE)
-    state = next_state(state, payload['direction'], state['gameover'])
+    new_state, gameover = next_state(state, payload['direction'])
+    # print(state, gameover)
     # Reset payment to False on gameover
-    if state['gameover']:
+    if gameover:
         session['has_paid'] = False
     # Create state-channel signature
     msg = state_channel.solidity_keccak(
         ARCADE_ADDR,
         payload['user'],
-        state['score'],
+        new_state['score'],
     )
     signature = state_channel.sign(msg, PRIV)
-    session['state'] = merge(state, {'signature': signature})
+    session['state'] = merge(new_state, {'signature': signature})
     return jsonify(session['state'])
