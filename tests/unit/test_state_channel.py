@@ -12,6 +12,7 @@ from webserver.state_channel import (
 from webserver.config import (
     PRIV,
     ARCADE_ADDR,
+    ACCOUNT_ADDR,
     DISCLAIMER,
 )
 from web3 import (
@@ -55,7 +56,7 @@ def test_solidity_keccak(user):
 def test_validate_iou(user):
     value = 1
     msg_params = [
-        {'type': 'string', 'name': 'Disclaimer', 'value': DISCLAIMER},
+        {'type': 'string', 'name': DISCLAIMER, 'value': ACCOUNT_ADDR},
         {'type': 'address', 'name': 'user', 'value': user.address},
         {'type': 'uint256', 'name': 'value', 'value': value},
     ]
@@ -76,7 +77,7 @@ def test_validate_iou(user):
 def test_validate_iou_bad_preimage(user, key, test_value):
     value = 1
     msg_params = [
-        {'type': 'string', 'name': 'Disclaimer', 'value': DISCLAIMER},
+        {'type': 'string', 'name': DISCLAIMER, 'value': ACCOUNT_ADDR},
         {'type': 'address', 'name': 'user', 'value': user.address},
         {'type': 'uint256', 'name': 'value', 'value': value},
     ]
@@ -94,8 +95,8 @@ def test_validate_iou_bad_preimage(user, key, test_value):
 def test_validate_iou_bad_signer(user, user2):
     value = 1
     msg_params = [
-        {'type': 'string', 'name': 'Disclaimer', 'value': DISCLAIMER},
-        {'type': 'address', 'name': 'user', 'value': user.address},
+        {'type': 'string', 'name': DISCLAIMER, 'value': ACCOUNT_ADDR},
+        {'type': 'address', 'name': 'user', 'value': user2.address},
         {'type': 'uint256', 'name': 'value', 'value': value},
     ]
     signature = sign_typed_data(msg_params, user2.privateKey)
