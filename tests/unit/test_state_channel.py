@@ -12,7 +12,7 @@ from webserver.state_channel import (
 from webserver.config import (
     PRIV,
     ARCADE_ADDR,
-    ACCOUNT_ADDR,
+    DISCLAIMER,
 )
 from web3 import (
     Account,
@@ -55,7 +55,7 @@ def test_solidity_keccak(user):
 def test_validate_iou(user):
     value = 1
     msg_params = [
-        {'type': 'address', 'name': 'destination', 'value': ACCOUNT_ADDR},
+        {'type': 'string', 'name': 'Disclaimer', 'value': DISCLAIMER},
         {'type': 'address', 'name': 'user', 'value': user.address},
         {'type': 'uint256', 'name': 'value', 'value': value},
     ]
@@ -75,12 +75,16 @@ def test_validate_iou(user):
 ])
 def test_validate_iou_bad_preimage(user, key, test_value):
     value = 1
-    msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
-    signed = sign(msg, user.privateKey)
+    msg_params = [
+        {'type': 'string', 'name': 'Disclaimer', 'value': DISCLAIMER},
+        {'type': 'address', 'name': 'user', 'value': user.address},
+        {'type': 'uint256', 'name': 'value', 'value': value},
+    ]
+    signature = sign_typed_data(msg_params, user.privateKey)
     iou = {
         'user': user.address,
         'value': value,
-        'signature': signed['signature'],
+        'signature': signature,
     }
     iou[key] = test_value
     success = validate_iou(iou)
@@ -89,12 +93,16 @@ def test_validate_iou_bad_preimage(user, key, test_value):
 
 def test_validate_iou_bad_signer(user, user2):
     value = 1
-    msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
-    signed = sign(msg, user2.privateKey)
+    msg_params = [
+        {'type': 'string', 'name': 'Disclaimer', 'value': DISCLAIMER},
+        {'type': 'address', 'name': 'user', 'value': user.address},
+        {'type': 'uint256', 'name': 'value', 'value': value},
+    ]
+    signature = sign_typed_data(msg_params, user2.privateKey)
     iou = {
         'user': user.address,
         'value': value,
-        'signature': signed['signature'],
+        'signature': signature,
     }
     success = validate_iou(iou)
     assert not success
