@@ -19,7 +19,7 @@ def test_new_game():
 def test_next_state():
     state = new()
     direction = 1
-    output, gameover = next_state(state, direction)
+    output = next_state(state, direction)
     errors = GamestateSchema().validate(output)
     assert not errors
 
@@ -34,5 +34,5 @@ def test_gameover():
     state = INITIAL_STATE
     state['board'] = board
     direction = 1  # Up
-    output, gameover = next_state(state, direction)
-    assert gameover
+    output = next_state(state, direction)
+    assert output['gameover']

@@ -48,10 +48,9 @@ def move():
         raise ValidationError
     # Load game
     state = session.get('state', INITIAL_STATE)
-    new_state, gameover = next_state(state, payload['direction'])
-    # print(state, gameover)
+    new_state = next_state(state, payload['direction'])
     # Reset payment to False on gameover
-    if gameover:
+    if new_state['gameover']:
         session['has_paid'] = False
     # Create state-channel signature
     msg = state_channel.solidity_keccak(
