@@ -8,7 +8,7 @@ from game.exceptions import (
 
 def new():
     game = TwentyFortyEight.new(4, 4)
-    new_state = {'board': game.board, 'score': 0}
+    new_state = {'board': game.board, 'score': 0, 'gameover': False}
     return new_state
 
 
@@ -19,6 +19,7 @@ def next_state(state, direction):
         board, score = game.move(direction)
         gameover = False
     except GameOver:
+        board, score = game.board, game.score
         gameover = True
-    new_state = {'board': game.board, 'score': game.score}
-    return new_state, gameover
+    new_state = {'board': board, 'score': score, 'gameover': gameover}
+    return new_state

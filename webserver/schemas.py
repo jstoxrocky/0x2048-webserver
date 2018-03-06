@@ -52,6 +52,7 @@ class GamestateSchema(Schema):
     """
     Validate gameplay output
     """
+    gameover = fields.Boolean(required=True)
     score = fields.Integer(required=True)
     board = fields.List(
         fields.List(
@@ -68,6 +69,7 @@ class SignedGamestateSchema(Schema):
     """
     Validate server output when calling POST /move or GET /gamestate
     """
+    gameover = fields.Boolean(required=True)
     score = fields.Integer(required=True)
     board = fields.List(
         fields.List(

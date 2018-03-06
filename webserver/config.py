@@ -11,6 +11,7 @@ INITIAL_STATE = {
         [0, 0, 0, 0],
         [0, 0, 0, 0],
     ],
+    'gameover': True,
     'score': 0,
     'signature': {
         'message': '0x0',

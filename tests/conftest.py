@@ -81,10 +81,12 @@ def gamestate_data(app, user, signature_data):
         [0, 0, 0, 0],
         [0, 0, 0, 0],
     ]
+    gameover = True
     score = 8  # Comes from signature_data
     payload = {
         'score': score,
         'board': board,
+        'gameover': gameover,
         'signature': signature_data,
     }
     return payload

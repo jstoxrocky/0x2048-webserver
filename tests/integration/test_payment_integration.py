@@ -26,7 +26,7 @@ def test_pay_and_move(mocker, app, api_prefix, user, session_has_not_paid):
     validate = mocker.patch('webserver.endpoints.move.MoveSchema.validate')
     validate.return_value = {}
     next_state = mocker.patch('webserver.endpoints.move.next_state')
-    next_state.return_value = new(), False
+    next_state.return_value = new()
 
     endpoint = api_prefix + '/iou'
     response = app.post(
@@ -49,7 +49,7 @@ def test_signer_is_envvar(mocker, app, api_prefix, user, session_has_paid):
     validate = mocker.patch('webserver.endpoints.move.MoveSchema.validate')
     validate.return_value = {}
     next_state = mocker.patch('webserver.endpoints.move.next_state')
-    next_state.return_value = new(), False
+    next_state.return_value = new()
     endpoint = api_prefix + '/move'
     response = app.post(
         endpoint,
