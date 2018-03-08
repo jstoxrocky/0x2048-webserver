@@ -5,16 +5,20 @@ from eth_utils import (
     remove_0x_prefix,
     encode_hex,
 )
+from webserver.db import (
+    insert_iou,
+    get_latest_nonce,
+)
 
 
 def test_create_table(conn):
     create_table = (
         """
         CREATE TABLE ious (
-          pk_id serial NOT NULL,
-          nonce integer NOT NULL,
-          user_id char(40) NOT NULL,
-          signature char(130) NOT NULL
+          user_id char(40),
+          nonce integer CONSTRAINT positive_nonce CHECK (nonce > 0),
+          signature char(130) NOT NULL,
+          PRIMARY KEY (user_id, nonce)
         )
         ;
         """
@@ -32,14 +36,7 @@ def test_create_table(conn):
     assert len(tables) == 1
 
 
-def test_insert_row(conn, user):
-    insert_row = (
-        """
-        INSERT INTO ious (nonce, user_id, signature)
-        VALUES (%(nonce)s, %(user_id)s, %(signature)s)
-        ;
-        """
-    )
+def test_insert_row(mocker, conn, user):
     select_rows = (
         """
         SELECT
@@ -47,42 +44,25 @@ def test_insert_row(conn, user):
             user_id,
             signature
         FROM ious
+        WHERE TRUE
+          AND user_id = %(user_id)s
+          AND nonce = %(nonce)s
         LIMIT 10
         ;
         """
     )
+    nonce = 1
+    user_id = remove_0x_prefix(user.address)
     signature = remove_0x_prefix(
         encode_hex(Account.sign(b'', user.privateKey).signature)
     )
-    params = {
-        'nonce': 1,
-        'user_id': remove_0x_prefix(user.address),
-        'signature': signature,
-    }
-    conn.execute(insert_row, params)
-    results = conn.execute(select_rows).fetchall()
-    assert len(results) == 1
+    insert_iou(conn, nonce, user_id, signature)
+    params = dict(user_id=user_id, nonce=nonce)
+    results = conn.execute(select_rows, params).fetchall()
+    assert results == [(nonce, user_id, signature)]
 
 
-def test_retrieve_nonce(conn, user):
-    retrieve_nonce = (
-        """
-        SELECT
-          ious.nonce
-        FROM ious
-        INNER JOIN (
-          SELECT
-            max(ious.nonce) AS nonce,
-            ious.user_id AS user_id
-          FROM ious
-          WHERE ious.user_id = %(user_id)s
-          GROUP BY user_id
-        ) AS this
-        ON ious.nonce = this.nonce
-        AND ious.user_id = this.user_id
-        ;
-        """
-    )
+def test_get_latest_nonce(conn, user):
     user_id = remove_0x_prefix(user.address)
-    result, = conn.execute(retrieve_nonce, dict(user_id=user_id)).fetchone()
-    assert result == 1
+    nonce = get_latest_nonce(conn, user_id)
+    assert nonce == 1
