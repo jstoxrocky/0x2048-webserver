@@ -74,7 +74,7 @@ def test_full_signature_schema_success(signature_data):
 
 @pytest.mark.parametrize('key, value', [
     ('user', 0),
-    ('value', ''),
+    ('nonce', ''),
     ('signature', 0),
 ])
 def test_iou_schema_wrong_datatype(iou_data, key, value):
@@ -86,7 +86,7 @@ def test_iou_schema_wrong_datatype(iou_data, key, value):
 
 @pytest.mark.parametrize('key', [
     'user',
-    'value',
+    'nonce',
     'signature',
 ])
 def test_iou_schema_missing_data(iou_data, key):

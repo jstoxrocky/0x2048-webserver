@@ -5,6 +5,9 @@
 
 import os
 import sqlalchemy
+from eth_utils import (
+    remove_0x_prefix,
+)
 
 
 def get_engine():
@@ -30,7 +33,7 @@ def get_connection():
     return engine.connect()
 
 
-def insert_iou(conn, nonce, user_id, signature):
+def insert_iou(nonce, user_id, signature):
     insert_row = (
         """
         INSERT INTO ious (nonce, user_id, signature)
@@ -38,11 +41,14 @@ def insert_iou(conn, nonce, user_id, signature):
         ;
         """
     )
+    user_id = remove_0x_prefix(user_id)
+    signature = remove_0x_prefix(signature)
     params = dict(nonce=nonce, user_id=user_id, signature=signature)
-    conn.execute(insert_row, params)
+    with get_connection() as conn:
+        conn.execute(insert_row, params)
 
 
-def get_latest_nonce(conn, user_id):
+def get_latest_nonce(user_id):
     get_nonce = (
         """
         SELECT
@@ -61,5 +67,7 @@ def get_latest_nonce(conn, user_id):
         ;
         """
     )
-    nonce, = conn.execute(get_nonce, dict(user_id=user_id)).fetchone()
+    user_id = remove_0x_prefix(user_id)
+    with get_connection() as conn:
+        nonce, = conn.execute(get_nonce, dict(user_id=user_id)).fetchone()
     return nonce

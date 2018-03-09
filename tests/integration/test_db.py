@@ -11,18 +11,7 @@ from webserver.db import (
 )
 
 
-def test_create_table(conn):
-    create_table = (
-        """
-        CREATE TABLE ious (
-          user_id char(40),
-          nonce integer CONSTRAINT positive_nonce CHECK (nonce > 0),
-          signature char(130) NOT NULL,
-          PRIMARY KEY (user_id, nonce)
-        )
-        ;
-        """
-    )
+def test_iou_table_exists(conn):
     find_table = (
         """
         SELECT tablename
@@ -31,12 +20,35 @@ def test_create_table(conn):
         ;
         """
     )
-    conn.execute(create_table)
     tables = conn.execute(find_table, dict(tablename='ious')).fetchall()
     assert len(tables) == 1
 
 
+def test_get_latest_nonce(mocker, conn, user):
+    get_connection = mocker.patch('webserver.db.get_connection')
+    get_connection.return_value.__enter__.return_value = conn
+    get_connection.return_value.__exit__.return_value = None
+    select_rows = (
+        """
+        SELECT
+            nonce
+        FROM ious
+        WHERE user_id = %(user_id)s
+        ORDER BY nonce DESC
+        LIMIT 1
+        ;
+        """
+    )
+    user_id = remove_0x_prefix(user.address)
+    expected, = conn.execute(select_rows, dict(user_id=user_id)).fetchone()
+    nonce = get_latest_nonce(user_id)
+    assert nonce == expected
+
+
 def test_insert_row(mocker, conn, user):
+    get_connection = mocker.patch('webserver.db.get_connection')
+    get_connection.return_value.__enter__.return_value = conn
+    get_connection.return_value.__exit__.return_value = None
     select_rows = (
         """
         SELECT
@@ -47,22 +59,15 @@ def test_insert_row(mocker, conn, user):
         WHERE TRUE
           AND user_id = %(user_id)s
           AND nonce = %(nonce)s
-        LIMIT 10
         ;
         """
     )
-    nonce = 1
     user_id = remove_0x_prefix(user.address)
-    signature = remove_0x_prefix(
-        encode_hex(Account.sign(b'', user.privateKey).signature)
-    )
-    insert_iou(conn, nonce, user_id, signature)
-    params = dict(user_id=user_id, nonce=nonce)
+    nonce = get_latest_nonce(user_id) + 1
+    signature = remove_0x_prefix(encode_hex(
+        Account.sign(b'', user.privateKey).signature
+    ))
+    insert_iou(nonce, user_id, signature)
+    params = dict(user_id=remove_0x_prefix(user_id), nonce=nonce)
     results = conn.execute(select_rows, params).fetchall()
     assert results == [(nonce, user_id, signature)]
-
-
-def test_get_latest_nonce(conn, user):
-    user_id = remove_0x_prefix(user.address)
-    nonce = get_latest_nonce(conn, user_id)
-    assert nonce == 1

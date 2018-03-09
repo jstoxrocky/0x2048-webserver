@@ -31,17 +31,13 @@ from webserver.gameplay import (
 from toolz.dicttoolz import (
     merge,
 )
+from webserver.db import (
+    get_latest_nonce,
+    insert_iou,
+)
 
 
 blueprint = Blueprint('iou', __name__)
-
-
-class mock_db_connection:
-    value = 7
-
-    @classmethod
-    def execute(cls, query):
-        return cls.value
 
 
 @blueprint.route('/nonce', methods=['GET'])
@@ -53,8 +49,8 @@ def nonce():
     if UserSchema().validate(payload):
         raise ValidationError
     # Get most recent value
-    db_value = mock_db_connection.execute("""SELECT * FROM tbl;""")
-    return jsonify({'value': db_value})
+    nonce = get_latest_nonce(payload['user'])
+    return jsonify({'nonce': nonce})
 
 
 @blueprint.route('/iou', methods=['POST'])
@@ -64,26 +60,26 @@ def iou():
     # Ensure user has not already paid
     if session.get('has_paid', False):
         raise UnexpectedPayment
-    # Validate payload
-    payload = request.get_json()
-    if IOUSchema().validate(payload):
+    # Validate iou
+    iou = request.get_json()
+    if IOUSchema().validate(iou):
         raise ValidationError
     # Validate IOU
-    success = state_channel.validate_iou(payload)
+    success = state_channel.validate_iou(iou)
     if not success:
         raise UnexpectedSignature
-    # Ensure the preimage value is strictly greater than the db value
-    db_value = mock_db_connection.execute("""SELECT * FROM tbl;""")
-    if payload['value'] <= db_value:
+    # Ensure the nonce is strictly greater than the db value
+    nonce = get_latest_nonce(iou['user'])
+    if iou['nonce'] <= nonce:
         raise IOUPaymentTooLow
-    # TODO:
     # Store IOU in db
+    insert_iou(*iou)
     # Start a new game
     session['has_paid'] = True
     new_state = new()
     msg = state_channel.solidity_keccak(
         ARCADE_ADDR,
-        payload['user'],
+        iou['user'],
         new_state['score'],
     )
     signature = state_channel.sign(msg, PRIV)

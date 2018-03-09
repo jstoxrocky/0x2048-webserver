@@ -35,7 +35,7 @@ class IOUSchema(Schema):
     """
     Validate user input when calling POST /iou route
     """
-    value = fields.Integer(required=True)
+    nonce = fields.Integer(required=True)
     signature = fields.Str(SimpleSignatureSchema, required=True)
     user = fields.Str(UserSchema, required=True)
 
