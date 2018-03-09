@@ -23,8 +23,8 @@ def test_has_already_paid(app, api_prefix, session_has_paid):
 
 
 def test_validation_error(mocker, app, api_prefix, session_has_not_paid):
-    validate = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')
-    validate.return_value = {'error_key': ['error_message']}
+    validate_schema = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')  # noqa: E501
+    validate_schema.return_value = {'error_key': ['error_message']}
     endpoint = api_prefix + '/iou'
     response = app.post(
         endpoint,
@@ -37,8 +37,8 @@ def test_validation_error(mocker, app, api_prefix, session_has_not_paid):
 
 
 def test_signature_error(mocker, app, api_prefix, session_has_not_paid):
-    validate = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')
-    validate.return_value = {}
+    validate_schema = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')  # noqa: E501
+    validate_schema.return_value = {}
     validate_iou = mocker.patch('webserver.endpoints.iou.state_channel.validate_iou')  # noqa: E501
     validate_iou.return_value = False
     endpoint = api_prefix + '/iou'
@@ -52,17 +52,17 @@ def test_signature_error(mocker, app, api_prefix, session_has_not_paid):
     assert output['message'] == UnexpectedSignature.message
 
 
-def test_payment_error(mocker, app, api_prefix, session_has_not_paid):
-    validate = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')
-    validate.return_value = {}
+def test_payment_error(mocker, app, api_prefix, user, session_has_not_paid):
+    validate_schema = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')  # noqa: E501
+    validate_schema.return_value = {}
     validate_iou = mocker.patch('webserver.endpoints.iou.state_channel.validate_iou')  # noqa: E501
     validate_iou.return_value = True
-    execute = mocker.patch('webserver.endpoints.iou.mock_db_connection.execute')  # noqa: E501
-    execute.return_value = 100
+    get_latest_nonce = mocker.patch('webserver.endpoints.iou.get_latest_nonce')
+    get_latest_nonce.return_value = 100
     endpoint = api_prefix + '/iou'
     response = app.post(
         endpoint,
-        data=json.dumps({'value': 1}),
+        data=json.dumps({'nonce': 1, 'user': user.address}),
         content_type='application/json'
     )
     output = json.loads(response.data)
@@ -70,17 +70,19 @@ def test_payment_error(mocker, app, api_prefix, session_has_not_paid):
     assert output['message'] == IOUPaymentTooLow.message
 
 
-def test_success(mocker, app, api_prefix, user, session_has_not_paid):
-    validate = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')
-    validate.return_value = {}
+def test_iou_success(mocker, app, api_prefix, user, session_has_not_paid):
+    validate_schema = mocker.patch('webserver.endpoints.iou.IOUSchema.validate')  # noqa: E501
+    validate_schema.return_value = {}
     validate_iou = mocker.patch('webserver.endpoints.iou.state_channel.validate_iou')  # noqa: E501
     validate_iou.return_value = True
-    execute = mocker.patch('webserver.endpoints.iou.mock_db_connection.execute')  # noqa: E501
-    execute.return_value = 0
+    get_latest_nonce = mocker.patch('webserver.endpoints.iou.get_latest_nonce')
+    get_latest_nonce.return_value = 0
+    insert_iou = mocker.patch('webserver.endpoints.iou.insert_iou')
+    insert_iou.return_value = True
     endpoint = api_prefix + '/iou'
     response = app.post(
         endpoint,
-        data=json.dumps({'value': 100, 'user': user.address}),
+        data=json.dumps({'nonce': 100, 'user': user.address}),
         content_type='application/json'
     )
     output = json.loads(response.data)
@@ -92,8 +94,8 @@ def test_success(mocker, app, api_prefix, user, session_has_not_paid):
 
 
 def test_nonce_validation_error(mocker, app, api_prefix, user):
-    validate = mocker.patch('webserver.endpoints.iou.UserSchema.validate')
-    validate.return_value = {'error_key': ['error_message']}
+    validate_schema = mocker.patch('webserver.endpoints.iou.UserSchema.validate')  # noqa: E501
+    validate_schema.return_value = {'error_key': ['error_message']}
     endpoint = api_prefix + '/nonce'
     response = app.get(
         endpoint,
@@ -105,12 +107,13 @@ def test_nonce_validation_error(mocker, app, api_prefix, user):
 
 
 def test_nonce_success(mocker, app, api_prefix, user):
-    validate_iou = mocker.patch('webserver.endpoints.iou.mock_db_connection.execute')  # noqa: E501
-    validate_iou.return_value = 17
+    nonce = 17
+    get_latest_nonce = mocker.patch('webserver.endpoints.iou.get_latest_nonce')
+    get_latest_nonce.return_value = nonce
     endpoint = api_prefix + '/nonce'
     response = app.get(
         endpoint,
         query_string={'user': user.address},
     )
     output = json.loads(response.data)
-    assert output == {'value': 17}
+    assert output == {'nonce': nonce}

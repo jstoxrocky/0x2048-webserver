@@ -1,6 +1,13 @@
 import pytest
 import os
 import sqlalchemy
+from web3 import (
+    Account,
+)
+from eth_utils import (
+    remove_0x_prefix,
+    encode_hex,
+)
 
 
 @pytest.fixture(scope="session")
@@ -34,3 +41,39 @@ def conn(request, engine):
 
     request.addfinalizer(teardown)
     return _conn
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_iou_table(conn):
+    create_table = (
+        """
+        CREATE TABLE ious (
+          user_id char(40),
+          nonce integer CONSTRAINT positive_nonce CHECK (nonce > 0),
+          signature char(130) NOT NULL,
+          PRIMARY KEY (user_id, nonce)
+        )
+        ;
+        """
+    )
+    conn.execute(create_table)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def populate_iou_table(conn, user, user2):
+    insert_row = (
+        """
+        INSERT INTO ious (nonce, user_id, signature)
+        VALUES (%(nonce)s, %(user_id)s, %(signature)s)
+        ;
+        """
+    )
+    for _user in [user, user2]:
+        for i in range(1, 11):
+            nonce = i
+            user_id = remove_0x_prefix(_user.address)
+            signature = remove_0x_prefix(
+                encode_hex(Account.sign(b'', _user.privateKey).signature)
+            )
+            params = dict(nonce=nonce, user_id=user_id, signature=signature)
+            conn.execute(insert_row, params)
