@@ -14,19 +14,19 @@ for i in range(1, num_accounts + 1):
     accounts.append(account)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def owner():
     account = accounts[0]
     return account
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def user():
     account = accounts[1]
     return account
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def user2():
     account = accounts[2]
     return account

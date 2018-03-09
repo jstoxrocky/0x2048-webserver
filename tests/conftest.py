@@ -56,18 +56,18 @@ def session_has_not_paid(app):
 
 @pytest.fixture(scope="function")
 def signature_data(app, user):
-    value = 8
-    msg = solidity_keccak(ACCOUNT_ADDR, user.address, value)
+    nonce = 8
+    msg = solidity_keccak(ACCOUNT_ADDR, user.address, nonce)
     signature = sign(msg, user.privateKey)
     return signature
 
 
 @pytest.fixture(scope="function")
 def iou_data(app, user, signature_data):
-    value = 8  # Comes from signature_data
+    nonce = 8  # Comes from signature_data
     payload = {
         'user': user.address,
-        'value': value,
+        'nonce': nonce,
         'signature': signature_data['signature'],
     }
     return payload
