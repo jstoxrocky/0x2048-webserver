@@ -54,16 +54,16 @@ def test_solidity_keccak(user):
 
 
 def test_validate_iou(user):
-    value = 1
+    nonce = 1
     msg_params = [
         {'type': 'string', 'name': DISCLAIMER, 'value': ACCOUNT_ADDR},
         {'type': 'address', 'name': 'user', 'value': user.address},
-        {'type': 'uint256', 'name': 'value', 'value': value},
+        {'type': 'uint256', 'name': 'nonce', 'value': nonce},
     ]
     signature = sign_typed_data(msg_params, user.privateKey)
     iou = {
         'user': user.address,
-        'value': value,
+        'nonce': nonce,
         'signature': signature,
     }
     success = validate_iou(iou)
@@ -71,20 +71,20 @@ def test_validate_iou(user):
 
 
 @pytest.mark.parametrize('key, test_value', [
-    ('value', 1337),
+    ('nonce', 1337),
     ('user', '0x6813Eb9362372EEF6200f3b1dbC3f819671cBA69'),  # user2.address
 ])
 def test_validate_iou_bad_preimage(user, key, test_value):
-    value = 1
+    nonce = 1
     msg_params = [
         {'type': 'string', 'name': DISCLAIMER, 'value': ACCOUNT_ADDR},
         {'type': 'address', 'name': 'user', 'value': user.address},
-        {'type': 'uint256', 'name': 'value', 'value': value},
+        {'type': 'uint256', 'name': 'nonce', 'value': nonce},
     ]
     signature = sign_typed_data(msg_params, user.privateKey)
     iou = {
         'user': user.address,
-        'value': value,
+        'nonce': nonce,
         'signature': signature,
     }
     iou[key] = test_value
@@ -93,16 +93,16 @@ def test_validate_iou_bad_preimage(user, key, test_value):
 
 
 def test_validate_iou_bad_signer(user, user2):
-    value = 1
+    nonce = 1
     msg_params = [
         {'type': 'string', 'name': DISCLAIMER, 'value': ACCOUNT_ADDR},
         {'type': 'address', 'name': 'user', 'value': user2.address},
-        {'type': 'uint256', 'name': 'value', 'value': value},
+        {'type': 'uint256', 'name': 'nonce', 'value': nonce},
     ]
     signature = sign_typed_data(msg_params, user2.privateKey)
     iou = {
         'user': user.address,
-        'value': value,
+        'nonce': nonce,
         'signature': signature,
     }
     success = validate_iou(iou)

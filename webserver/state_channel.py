@@ -83,7 +83,7 @@ def validate_iou(iou):
     msg_params = [
         {'type': 'string', 'name': DISCLAIMER, 'value': ACCOUNT_ADDR},
         {'type': 'address', 'name': 'user', 'value': iou['user']},
-        {'type': 'uint256', 'name': 'value', 'value': iou['value']},
+        {'type': 'uint256', 'name': 'nonce', 'value': iou['nonce']},
     ]
     msg_hash = hash_typed_data(msg_params)
     if recover(msg_hash, iou['signature']) != iou['user']:
