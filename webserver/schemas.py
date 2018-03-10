@@ -11,9 +11,16 @@ from eth_utils import (
 MAX_V_VALUE = 28
 
 
+class NonceSchema(Schema):
+    """
+    Validate emitted nonce data structures
+    """
+    nonce = fields.Integer(required=True, validate=lambda x: x > 0)
+
+
 class UserSchema(Schema):
     """
-    Validate user input when calling GET /iou route
+    Validate recieved user data structures
     """
     user = fields.Str(required=True, validate=is_checksum_address)
 
@@ -25,7 +32,7 @@ class SimpleSignatureSchema(Schema):
 class FullSignatureSchema(Schema):
     message = fields.Str(required=True, validate=is_hex)
     messageHash = fields.Str(required=True, validate=is_hex)
-    v = fields.Integer(required=True, validate=lambda _v: _v <= MAX_V_VALUE)
+    v = fields.Integer(required=True, validate=lambda x: x <= MAX_V_VALUE)
     r = fields.Str(required=True, validate=is_hex)
     s = fields.Str(required=True, validate=is_hex)
     signature = fields.Str(SimpleSignatureSchema, required=True)
@@ -33,7 +40,7 @@ class FullSignatureSchema(Schema):
 
 class IOUSchema(Schema):
     """
-    Validate user input when calling POST /iou route
+    Validate received iou data structures
     """
     nonce = fields.Integer(required=True)
     signature = fields.Str(SimpleSignatureSchema, required=True)
@@ -42,7 +49,7 @@ class IOUSchema(Schema):
 
 class MoveSchema(Schema):
     """
-    Validate user input when calling POST /move route
+    Validate recieved move data structures
     """
     user = fields.Str(required=True, validate=is_checksum_address)
     direction = fields.Integer(required=True)
@@ -50,7 +57,7 @@ class MoveSchema(Schema):
 
 class GamestateSchema(Schema):
     """
-    Validate gameplay output
+    Validate emitted gamestate data structures
     """
     gameover = fields.Boolean(required=True)
     score = fields.Integer(required=True)
@@ -67,7 +74,7 @@ class GamestateSchema(Schema):
 
 class SignedGamestateSchema(Schema):
     """
-    Validate server output when calling POST /move or GET /gamestate
+    Validate emitted signed gamestate data structures
     """
     gameover = fields.Boolean(required=True)
     score = fields.Integer(required=True)
