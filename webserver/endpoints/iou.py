@@ -73,7 +73,7 @@ def iou():
     if iou['nonce'] <= nonce:
         raise IOUPaymentTooLow
     # Store IOU in db
-    insert_iou(*iou)
+    insert_iou(**iou)
     # Start a new game
     session['has_paid'] = True
     new_state = new()

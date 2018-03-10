@@ -33,7 +33,7 @@ def get_connection():
     return engine.connect()
 
 
-def insert_iou(nonce, user_id, signature):
+def insert_iou(nonce, user, signature):
     insert_row = (
         """
         INSERT INTO ious (nonce, user_id, signature)
@@ -41,7 +41,7 @@ def insert_iou(nonce, user_id, signature):
         ;
         """
     )
-    user_id = remove_0x_prefix(user_id)
+    user_id = remove_0x_prefix(user)
     signature = remove_0x_prefix(signature)
     params = dict(nonce=nonce, user_id=user_id, signature=signature)
     with get_connection() as conn:
@@ -69,5 +69,7 @@ def get_latest_nonce(user_id):
     )
     user_id = remove_0x_prefix(user_id)
     with get_connection() as conn:
-        nonce, = conn.execute(get_nonce, dict(user_id=user_id)).fetchone()
+        result = conn.execute(get_nonce, dict(user_id=user_id)).fetchone()
+        result = result or (0,)
+        nonce, = result
     return nonce
