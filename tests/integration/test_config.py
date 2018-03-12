@@ -1,3 +1,5 @@
+import os
+import json
 from web3 import (
     Account,
 )
@@ -6,6 +8,15 @@ from webserver.config import (
 )
 
 
+this = os.path.dirname(__file__)
+tests = os.path.join(this, '..')
+webserver = os.path.abspath(os.path.join(tests, '..'))
+integration_tests_json = os.path.join(webserver, 'integration-tests-json')
+constants_dir = os.path.join(integration_tests_json, 'constants')
+
+
 def test_owner():
-    owner_addr = '0x60Bb3F9D894Bd74e72c3F90FA1A50Ea915a60260'
-    assert owner_addr == Account.privateKeyToAccount(PRIV).address
+    filepath = os.path.join(constants_dir, "address.json")
+    with open(filepath) as f:
+        data = json.load(f)
+    assert data['owner'] == Account.privateKeyToAccount(PRIV).address
