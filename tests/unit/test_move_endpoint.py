@@ -7,7 +7,7 @@ from webserver.gameplay import (
     new,
 )
 from webserver.schemas import (
-    GamestateSchema,
+    SignedGamestateSchema,
 )
 from webserver.config import (
     INITIAL_STATE,
@@ -52,7 +52,7 @@ def test_validates(mocker, app, api_prefix, user, session_has_paid):
         content_type='application/json'
     )
     output = json.loads(response.data)
-    errors = GamestateSchema().validate(output)
+    errors = SignedGamestateSchema().validate(output)
     assert not errors
     with app as c:
         with c.session_transaction() as sess:
