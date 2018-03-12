@@ -25,6 +25,14 @@ class UserSchema(Schema):
     user = fields.Str(required=True, validate=is_checksum_address)
 
 
+class MoveSchema(Schema):
+    """
+    Validate recieved move data structures
+    """
+    user = fields.Str(required=True, validate=is_checksum_address)
+    direction = fields.Integer(required=True)
+
+
 class SimpleSignatureSchema(Schema):
     signature = fields.Str(required=True, validate=is_hex)
 
@@ -47,14 +55,6 @@ class IOUSchema(Schema):
     user = fields.Str(UserSchema, required=True)
 
 
-class MoveSchema(Schema):
-    """
-    Validate recieved move data structures
-    """
-    user = fields.Str(required=True, validate=is_checksum_address)
-    direction = fields.Integer(required=True)
-
-
 class GamestateSchema(Schema):
     """
     Validate emitted gamestate data structures
@@ -72,19 +72,8 @@ class GamestateSchema(Schema):
     )
 
 
-class SignedGamestateSchema(Schema):
+class SignedGamestateSchema(GamestateSchema):
     """
     Validate emitted signed gamestate data structures
     """
-    gameover = fields.Boolean(required=True)
-    score = fields.Integer(required=True)
-    board = fields.List(
-        fields.List(
-            fields.Integer(
-                required=True,
-            ),
-            required=True
-        ),
-        required=True,
-    )
     signature = fields.Nested(FullSignatureSchema, required=True)
