@@ -50,7 +50,7 @@ def test_solidity_keccak(user):
     contract = ARCADE_ADDR
     value = 1
     msg = solidity_keccak(contract, user.address, value)
-    assert msg == b'\xb7\xeaz\r:\x96\xd1\xd3\xda}\x9cI\x8c\xd1\xae\x02x\x05a0\xd4+\xbb\xce\xaf\xfd\xcd\x13$\xf2\xa7\xbe'  # noqa: E501
+    assert msg == b'\x05F\xe5\xb3V\xfb)Y7\xb8c`\x85\x1f\xcaq\xee;\xa2\xaf\xeb\xe5\xa1U\xe1\x03\xe4Oy\x96\x9b\xdb'  # noqa: E501
 
 
 def test_validate_iou(user):

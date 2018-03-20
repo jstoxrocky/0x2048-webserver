@@ -27,3 +27,11 @@ class PaymentRequired(InvalidUsage):
 
 class UnexpectedPayment(InvalidUsage):
     message = 'UnexpectedPayment'
+
+
+class NoTimeLeft(InvalidUsage):
+    message = 'NoTimeLeft'
+
+
+class NoValueLeft(InvalidUsage):
+    message = 'NoValueLeft'

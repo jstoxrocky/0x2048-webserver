@@ -17,6 +17,8 @@ from webserver.exceptions import (
     IOUPaymentTooLow,
     UnexpectedPayment,
     UnexpectedSignature,
+    NoTimeLeft,
+    NoValueLeft,
 )
 from webserver import (
     state_channel,
@@ -34,6 +36,10 @@ from toolz.dicttoolz import (
 from webserver.db import (
     get_latest_nonce,
     insert_iou,
+)
+from webserver.chain import (
+    calc_net_time_left,
+    calc_net_balance,
 )
 
 
@@ -60,18 +66,26 @@ def iou():
     # Ensure user has not already paid
     if session.get('has_paid', False):
         raise UnexpectedPayment
-    # Validate iou
+    # Validate that request data is an iou
     iou = request.get_json()
     if IOUSchema().validate(iou):
         raise ValidationError
-    # Validate IOU
+    # Verfiy signature
     success = state_channel.validate_iou(iou)
     if not success:
         raise UnexpectedSignature
-    # Ensure the nonce is strictly greater than the db value
+    # Ensure the nonce is strictly greater than the db nonce
     nonce = get_latest_nonce(iou['user'])
     if iou['nonce'] <= nonce:
         raise IOUPaymentTooLow
+    # Ensure the user has time left on their onchain account
+    net_time_left = calc_net_time_left()
+    if net_time_left <= 0:
+        raise NoTimeLeft
+    # Endsure the user has value left in their onchain account
+    net_balance = calc_net_balance()
+    if net_balance <= 0:
+        raise NoValueLeft
     # Store IOU in db
     insert_iou(**iou)
     # Start a new game
