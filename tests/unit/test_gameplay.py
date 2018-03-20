@@ -1,21 +1,38 @@
 from webserver.gameplay import (
     new,
-    load,
+    next_state,
+)
+from webserver.config import (
+    INITIAL_STATE,
+)
+from webserver.schemas import (
+    GamestateSchema,
 )
 
 
 def test_new_game():
-    expected_keys = {'score', 'board', 'gameover'}
     output = new()
-    assert expected_keys <= set(output.keys())
-    assert output['score'] == 0
-    assert not output['gameover']
+    errors = GamestateSchema().validate(output)
+    assert not errors
 
 
-def test_load():
-    expected_keys = {'score', 'board', 'gameover'}
+def test_next_state():
     state = new()
     direction = 1
-    output = load(state, direction)
-    assert expected_keys <= set(output.keys())
-    assert not output['gameover']
+    output = next_state(state, direction)
+    errors = GamestateSchema().validate(output)
+    assert not errors
+
+
+def test_gameover():
+    board = [
+        [8, 16, 8, 0],
+        [16, 8, 16, 8],
+        [8, 16, 8, 16],
+        [16, 8, 16, 8],
+    ]
+    state = INITIAL_STATE
+    state['board'] = board
+    direction = 1  # Up
+    output = next_state(state, direction)
+    assert output['gameover']

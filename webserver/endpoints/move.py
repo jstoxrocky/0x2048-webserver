@@ -8,28 +8,28 @@ from flask_cors import (
     cross_origin,
 )
 from webserver.exceptions import (
-    MissingUser,
+    ValidationError,
+    PaymentRequired,
 )
 from webserver import (
     state_channel,
 )
 from webserver.gameplay import (
-    load,
-    new,
+    next_state,
 )
 from webserver.config import (
     ORIGINS,
     INITIAL_STATE,
-)
-from eth_utils import (
-    is_checksum_address,
 )
 from toolz.dicttoolz import (
     merge,
 )
 from webserver.config import (
     PRIV,
-    ADDR,
+    ARCADE_ADDR,
+)
+from webserver.schemas import (
+    MoveSchema,
 )
 
 
@@ -39,17 +39,25 @@ blueprint = Blueprint('move', __name__)
 @blueprint.route('/move', methods=['POST'])
 @cross_origin(origins=ORIGINS, methods=['POST'], supports_credentials=True)
 def move():
-    # Get payload from user
+    # Ensure user has already paid
+    if not session.get('has_paid', False):
+        raise PaymentRequired
+    # Validate payload
     payload = request.get_json()
-    user = payload.get('user')
-    direction = payload.get('direction')
-    # State-channel signature requires a user's address
-    if not is_checksum_address(user):
-        raise MissingUser
+    if MoveSchema().validate(payload):
+        raise ValidationError
     # Load game
     state = session.get('state', INITIAL_STATE)
-    state = new() if state['gameover'] else load(state, direction)
+    new_state = next_state(state, payload['direction'])
+    # Reset payment to False on gameover
+    if new_state['gameover']:
+        session['has_paid'] = False
     # Create state-channel signature
-    signature = state_channel.sign(PRIV, ADDR, user, state['score'])
-    session['state'] = merge(state, {'signature': signature})
+    msg = state_channel.solidity_keccak(
+        ARCADE_ADDR,
+        payload['user'],
+        new_state['score'],
+    )
+    signature = state_channel.sign(msg, PRIV)
+    session['state'] = merge(new_state, {'signature': signature})
     return jsonify(session['state'])
