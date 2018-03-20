@@ -25,6 +25,10 @@ def test_pay_and_move(mocker, app, api_prefix, user, session_has_not_paid):
     get_latest_nonce.return_value = 0
     get_latest_nonce = mocker.patch('webserver.endpoints.iou.insert_iou')
     get_latest_nonce.return_value = True
+    calc_net_time_left = mocker.patch('webserver.endpoints.iou.calc_net_time_left')  # noqa: E501
+    calc_net_time_left.return_value = 1
+    calc_net_balance = mocker.patch('webserver.endpoints.iou.calc_net_balance')
+    calc_net_balance.return_value = 1
     validate_move_schema = mocker.patch('webserver.endpoints.move.MoveSchema.validate')  # noqa: E501
     validate_move_schema.return_value = {}
     next_state = mocker.patch('webserver.endpoints.move.next_state')

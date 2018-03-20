@@ -1,8 +1,3 @@
-# Transferred value is hardcoded in the state channel.
-# A nonce is tracked in the contract.
-# Only a nonce greater than the current value will be able to transfer
-
-
 import os
 import sqlalchemy
 from eth_utils import (
@@ -70,6 +65,26 @@ def get_latest_nonce(user_id):
     user_id = remove_0x_prefix(user_id)
     with get_connection() as conn:
         result = conn.execute(get_nonce, dict(user_id=user_id)).fetchone()
+        result = result or (0,)
+        nonce, = result
+    return nonce
+
+
+def sum_outstanding_ious(user_id):
+    count_outstanding = (
+        """
+        SELECT
+          COUNT(nonce) AS count_outstanding
+        FROM ious
+        WHERE TRUE
+          AND ious.user_id = %(user_id)s
+          AND NOT finalized
+        """
+    )
+    user_id = remove_0x_prefix(user_id)
+    with get_connection() as conn:
+        params = dict(user_id=user_id)
+        result = conn.execute(count_outstanding, params).fetchone()
         result = result or (0,)
         nonce, = result
     return nonce

@@ -8,6 +8,7 @@ from eth_utils import (
 from webserver.db import (
     insert_iou,
     get_latest_nonce,
+    sum_outstanding_ious,
 )
 
 
@@ -71,3 +72,22 @@ def test_insert_row(mocker, conn, user):
     params = dict(user_id=remove_0x_prefix(user_id), nonce=nonce)
     results = conn.execute(select_rows, params).fetchall()
     assert results == [(nonce, user_id, signature)]
+
+
+def test_count_outstanding_ious(mocker, conn, user):
+    get_connection = mocker.patch('webserver.db.get_connection')
+    get_connection.return_value.__enter__.return_value = conn
+    get_connection.return_value.__exit__.return_value = None
+    user_id = remove_0x_prefix(user.address)
+    count = sum_outstanding_ious(user_id)
+    assert count > 0
+
+
+def test_count_outstanding_ious_new_user(mocker, conn, owner):
+    user = owner  # Owner has no rows in test db
+    get_connection = mocker.patch('webserver.db.get_connection')
+    get_connection.return_value.__enter__.return_value = conn
+    get_connection.return_value.__exit__.return_value = None
+    user_id = remove_0x_prefix(user.address)
+    count = sum_outstanding_ious(user_id)
+    assert count == 0
