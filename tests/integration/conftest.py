@@ -51,6 +51,7 @@ def create_iou_table(conn):
           user_id char(40),
           nonce integer CONSTRAINT positive_nonce CHECK (nonce > 0),
           signature char(130) NOT NULL,
+          finalized boolean DEFAULT FALSE NOT NULL,
           PRIMARY KEY (user_id, nonce)
         )
         ;
