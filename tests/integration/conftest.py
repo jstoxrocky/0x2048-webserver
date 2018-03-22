@@ -45,6 +45,15 @@ def conn(request, engine):
 
 @pytest.fixture(scope="session", autouse=True)
 def create_iou_table(conn):
+    # TODO user_id to address
+    # """
+    #     CREATE TABLE ious (
+    #       address char(40),
+    #       nonce integer CONSTRAINT positive_nonce CHECK (nonce > 0),
+    #       PRIMARY KEY (user_id, nonce)
+    #     )
+    # ;
+    # """
     create_table = (
         """
         CREATE TABLE ious (
