@@ -9,6 +9,7 @@ from eth_utils import (
     encode_hex,
     int_to_big_endian,
     to_bytes,
+    keccak,
 )
 from webserver.config import (
     ACCOUNT_ADDR,
@@ -21,6 +22,7 @@ from eth_account.signing import (
     to_eth_v,
     to_bytes32,
 )
+import os
 
 
 def int_to_hex(integer):
@@ -89,3 +91,12 @@ def validate_iou(iou):
     if recover(msg_hash, iou['signature']) != iou['user']:
         return False
     return True
+
+
+def generate_random_nonce():
+    nonce = os.urandom(64)
+    return nonce
+
+
+def prepare_messageHash_for_signing(msg):
+    return keccak(msg)

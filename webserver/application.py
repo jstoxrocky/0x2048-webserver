@@ -14,7 +14,7 @@ from webserver.redis_session import (
 from webserver.endpoints import (
     move,
     gamestate,
-    iou,
+    payment,
 )
 
 
@@ -26,7 +26,7 @@ Session(application)
 API_PREFIX = '/api/v1'
 application.register_blueprint(move.blueprint, url_prefix=API_PREFIX)
 application.register_blueprint(gamestate.blueprint, url_prefix=API_PREFIX)
-application.register_blueprint(iou.blueprint, url_prefix=API_PREFIX)
+application.register_blueprint(payment.blueprint, url_prefix=API_PREFIX)
 
 
 @application.errorhandler(InvalidUsage)
