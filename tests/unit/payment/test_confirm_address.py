@@ -37,12 +37,10 @@ def test_integrated_confirm_address_success(mocker, app, api_prefix, user):
         state_channel.prepare_messageHash_for_signing(nonce),
         user.privateKey,
     )
-    recover = mocker.patch('webserver.endpoints.payment.request')  # noqa: E501
-    recover.get_json.return_value = signature.to_bytes()
     expected = {'success': True}
     response = app.get(
         api_prefix + '/address-confirmation',
-        query_string={'signature': '0x'},
+        query_string={'signature': signature.to_hex()},
     )
     output = json.loads(response.data)
     assert output == expected

@@ -40,7 +40,7 @@ blueprint = Blueprint('move', __name__)
 @cross_origin(origins=ORIGINS, methods=['POST'], supports_credentials=True)
 def move():
     # Ensure user has already paid
-    if not session.get('has_paid', False):
+    if not session.get('paid', False):
         raise PaymentRequired
     # Validate payload
     payload = request.get_json()
@@ -51,7 +51,7 @@ def move():
     new_state = next_state(state, payload['direction'])
     # Reset payment to False on gameover
     if new_state['gameover']:
-        session['has_paid'] = False
+        session['paid'] = False
     # Create state-channel signature
     msg = state_channel.solidity_keccak(
         ARCADE_ADDR,

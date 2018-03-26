@@ -3,7 +3,6 @@ import os
 ORIGINS = ['*']
 PRIV = os.environ['PRIVATE_KEY_0x2048']
 ARCADE_ADDR = os.environ['ARCADE_ADDRESS']
-ACCOUNT_ADDR = os.environ['ACCOUNT_ADDRESS']
 INITIAL_STATE = {
     'board': [
         [0, 0, 0, 0],
