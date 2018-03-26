@@ -31,12 +31,9 @@ def generate_nonce_challenge():
     Generate a nonce for a user to sign
     Associate the nonce with the session
     """
-    # Cannot have already paid
-    if session.get('paid', False):
-        raise exceptions.UnexpectedPaymentAttempt
-    # Must not have nonce
-    if session.get('nonce', None):
-        raise exceptions.UnexpectedNonceGenerationAttempt
+    # Reset values upon request for new nonce
+    session['paid'] = False
+    session['nonce'] = None
     # Get random value for nonce
     # Associate the nonce with this session
     nonce = state_channel.generate_random_nonce()
