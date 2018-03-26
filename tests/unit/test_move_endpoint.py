@@ -56,7 +56,7 @@ def test_validates(mocker, app, api_prefix, user, session_has_paid):
     assert not errors
     with app as c:
         with c.session_transaction() as sess:
-            assert sess['has_paid']
+            assert sess['paid']
             assert not sess['state']['gameover']
 
 
@@ -80,5 +80,5 @@ def test_gameover(mocker, app, api_prefix, user, session_has_paid):
     )
     with app as c:
         with c.session_transaction() as sess:
-            assert not sess['has_paid']
+            assert not sess['paid']
             assert sess['state']['gameover']

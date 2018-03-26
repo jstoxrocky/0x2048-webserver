@@ -5,36 +5,12 @@ class InvalidUsage(Exception):
         Exception.__init__(self)
 
 
-class NoGameStarted(InvalidUsage):
-    message = 'NoGameStarted'
-
-
 class ValidationError(InvalidUsage):
     message = 'ValidationError'
 
 
-class UnexpectedSignature(InvalidUsage):
-    message = 'UnexpectedSignature'
-
-
-class IOUPaymentTooLow(InvalidUsage):
-    message = 'IOUPaymentTooLow'
-
-
 class PaymentRequired(InvalidUsage):
     message = 'PaymentRequired'
-
-
-class UnexpectedPayment(InvalidUsage):
-    message = 'UnexpectedPayment'
-
-
-class NoTimeLeft(InvalidUsage):
-    message = 'NoTimeLeft'
-
-
-class NoValueLeft(InvalidUsage):
-    message = 'NoValueLeft'
 
 
 class UnexpectedPaymentAttempt(InvalidUsage):

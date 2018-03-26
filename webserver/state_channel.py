@@ -12,7 +12,7 @@ from eth_utils import (
     keccak,
 )
 from webserver.config import (
-    ACCOUNT_ADDR,
+    ARCADE_ADDR,
     DISCLAIMER,
 )
 from eth_keys import (
@@ -83,7 +83,7 @@ def sign_typed_data(msg_params, private_key):
 
 def validate_iou(iou):
     msg_params = [
-        {'type': 'string', 'name': DISCLAIMER, 'value': ACCOUNT_ADDR},
+        {'type': 'string', 'name': DISCLAIMER, 'value': ARCADE_ADDR},
         {'type': 'address', 'name': 'user', 'value': iou['user']},
         {'type': 'uint256', 'name': 'nonce', 'value': iou['nonce']},
     ]

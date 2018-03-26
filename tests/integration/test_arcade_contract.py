@@ -8,19 +8,22 @@ from webserver.contract import (
 this = os.path.dirname(__file__)
 tests = os.path.join(this, '..')
 webserver = os.path.abspath(os.path.join(tests, '..'))
-integration_tests_json = os.path.join(webserver, 'integration-tests-json')
-constants_dir = os.path.join(integration_tests_json, 'constants')
+integration_json_fixtures = os.path.join(
+    webserver,
+    'integration-json-fixtures',
+)
+constants_dir = os.path.join(integration_json_fixtures, 'constants')
 
 
 def test_contract_address_matches_integration_json():
     filepath = os.path.join(constants_dir, "address.json")
     with open(filepath) as f:
         data = json.load(f)
-    assert data['account'] == contract.address
+    assert data['arcade'] == contract.address
 
 
 def test_contract_abi_matches_integration_json():
     filepath = os.path.join(constants_dir, "abi.json")
     with open(filepath) as f:
         data = json.load(f)
-    assert data['account'] == contract.abi
+    assert data['arcade'] == contract.abi

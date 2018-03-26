@@ -7,7 +7,7 @@ from webserver.state_channel import (
     sign,
 )
 from webserver.config import (
-    ACCOUNT_ADDR,
+    ARCADE_ADDR,
 )
 from game.game import (
     TwentyFortyEight,
@@ -44,20 +44,20 @@ def api_prefix():
 def session_has_paid(app):
     with app as c:
         with c.session_transaction() as sess:
-            sess['has_paid'] = True
+            sess['paid'] = True
 
 
 @pytest.fixture(scope="function")
 def session_has_not_paid(app):
     with app as c:
         with c.session_transaction() as sess:
-            sess['has_paid'] = False
+            sess['paid'] = False
 
 
 @pytest.fixture(scope="function")
 def signature_data(app, user):
     nonce = 8
-    msg = solidity_keccak(ACCOUNT_ADDR, user.address, nonce)
+    msg = solidity_keccak(ARCADE_ADDR, user.address, nonce)
     signature = sign(msg, user.privateKey)
     return signature
 

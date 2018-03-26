@@ -8,8 +8,11 @@ from webserver import (
 this = os.path.dirname(__file__)
 tests = os.path.join(this, '..')
 webserver = os.path.abspath(os.path.join(tests, '..'))
-integration_tests_json = os.path.join(webserver, 'integration-tests-json')
-schemas_dir = os.path.join(integration_tests_json, 'schemas')
+integration_json_fixtures = os.path.join(
+    webserver,
+    'integration-json-fixtures',
+)
+schemas_dir = os.path.join(integration_json_fixtures, 'schemas')
 
 
 def test_user_schema():
@@ -44,17 +47,6 @@ def test_move_schema():
     with open(filepath) as f:
         data = json.load(f)
     errors = schemas.MoveSchema().validate(data)
-    assert not errors
-
-
-def test_iou_schema():
-    """
-    Recevied data on POST /iou should validate IOUSchema
-    """
-    filepath = os.path.join(schemas_dir, "iou.json")
-    with open(filepath) as f:
-        data = json.load(f)
-    errors = schemas.IOUSchema().validate(data)
     assert not errors
 
 
