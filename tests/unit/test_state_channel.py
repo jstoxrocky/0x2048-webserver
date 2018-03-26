@@ -14,7 +14,6 @@ from webserver.state_channel import (
 from webserver.config import (
     PRIV,
     ARCADE_ADDR,
-    ACCOUNT_ADDR,
     DISCLAIMER,
 )
 from web3 import (
@@ -61,7 +60,7 @@ def test_solidity_keccak(user):
 def test_validate_iou(user):
     nonce = 1
     msg_params = [
-        {'type': 'string', 'name': DISCLAIMER, 'value': ACCOUNT_ADDR},
+        {'type': 'string', 'name': DISCLAIMER, 'value': ARCADE_ADDR},
         {'type': 'address', 'name': 'user', 'value': user.address},
         {'type': 'uint256', 'name': 'nonce', 'value': nonce},
     ]
@@ -82,7 +81,7 @@ def test_validate_iou(user):
 def test_validate_iou_bad_preimage(user, key, test_value):
     nonce = 1
     msg_params = [
-        {'type': 'string', 'name': DISCLAIMER, 'value': ACCOUNT_ADDR},
+        {'type': 'string', 'name': DISCLAIMER, 'value': ARCADE_ADDR},
         {'type': 'address', 'name': 'user', 'value': user.address},
         {'type': 'uint256', 'name': 'nonce', 'value': nonce},
     ]
@@ -100,7 +99,7 @@ def test_validate_iou_bad_preimage(user, key, test_value):
 def test_validate_iou_bad_signer(user, user2):
     nonce = 1
     msg_params = [
-        {'type': 'string', 'name': DISCLAIMER, 'value': ACCOUNT_ADDR},
+        {'type': 'string', 'name': DISCLAIMER, 'value': ARCADE_ADDR},
         {'type': 'address', 'name': 'user', 'value': user2.address},
         {'type': 'uint256', 'name': 'nonce', 'value': nonce},
     ]

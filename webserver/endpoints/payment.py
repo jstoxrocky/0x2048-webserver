@@ -17,6 +17,7 @@ from webserver import (
 from webserver.contract import (
     contract,
 )
+from webserver import schemas
 
 
 blueprint = Blueprint('payment', __name__)
@@ -56,12 +57,15 @@ def calculate_address():
     # Must have nonce
     if not session.get('nonce', None):
         raise exceptions.UnexpectedEmptyNonce
+    # Validate payload
+    payload = request.args
+    if schemas.SimpleSignatureSchema().validate(payload):
+        raise exceptions.ValidationError
     # Whoever signs this random nonce is our user-address
-    signature = request.get_json()
     messageHash = state_channel.prepare_messageHash_for_signing(
         session['nonce'],
     )
-    signer = state_channel.recover(messageHash, signature)
+    signer = state_channel.recover(messageHash, payload['signature'])
     session['address'] = signer
     return jsonify({'success': True})
 
