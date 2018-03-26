@@ -35,3 +35,19 @@ class NoTimeLeft(InvalidUsage):
 
 class NoValueLeft(InvalidUsage):
     message = 'NoValueLeft'
+
+
+class UnexpectedPaymentAttempt(InvalidUsage):
+    message = 'UnexpectedPaymentAttempt'
+
+
+class UnexpectedNonceGenerationAttempt(InvalidUsage):
+    message = 'UnexpectedNonceGenerationAttempt'
+
+
+class UnexpectedEmptyNonce(InvalidUsage):
+    message = 'UnexpectedEmptyNonce'
+
+
+class UnexpectedContractNonce(InvalidUsage):
+    message = 'UnexpectedContractNonce'

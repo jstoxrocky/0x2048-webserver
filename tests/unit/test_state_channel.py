@@ -8,6 +8,8 @@ from webserver.state_channel import (
     raw_sign,
     hash_typed_data,
     sign_typed_data,
+    generate_random_nonce,
+    prepare_messageHash_for_signing,
 )
 from webserver.config import (
     PRIV,
@@ -17,6 +19,9 @@ from webserver.config import (
 )
 from web3 import (
     Account,
+)
+from eth_utils import (
+    encode_hex,
 )
 
 
@@ -117,3 +122,14 @@ def test_sign_typed_data(user):
     signature = sign_typed_data(msg_params, user.privateKey)
     signer = recover(msg_hash, signature)
     assert signer == user.address
+
+
+def test_generate_random_nonce():
+    nonce = generate_random_nonce()
+    assert len(nonce) == 64
+
+
+def test_prepare_messageHash_for_signing():
+    value = b''
+    output = prepare_messageHash_for_signing(value)
+    assert encode_hex(output) == '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'  # noqa: E501
