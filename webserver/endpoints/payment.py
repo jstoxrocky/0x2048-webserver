@@ -9,6 +9,8 @@ from flask_cors import (
 )
 from webserver.config import (
     ORIGINS,
+    PRIV,
+    ARCADE_ADDR,
 )
 from webserver import exceptions
 from webserver import (
@@ -18,6 +20,12 @@ from webserver.contract import (
     contract,
 )
 from webserver import schemas
+from webserver.gameplay import (
+    new,
+)
+from toolz.dicttoolz import (
+    merge,
+)
 
 
 blueprint = Blueprint('payment', __name__)
@@ -85,6 +93,14 @@ def confirm_payment():
     nonce = contract.functions.getNonce(session['address']).call()
     if nonce != session['nonce']:
         raise exceptions.UnexpectedContractNonce
-
+    # Start a new game
     session['paid'] = True
-    return jsonify({'success': True})
+    new_state = new()
+    msg = state_channel.solidity_keccak(
+        ARCADE_ADDR,
+        session['address'],
+        new_state['score'],
+    )
+    signature = state_channel.sign(msg, PRIV)
+    session['state'] = merge(new_state, {'signature': signature})
+    return jsonify(session['state'])

@@ -15,22 +15,11 @@ integration_json_fixtures = os.path.join(
 schemas_dir = os.path.join(integration_json_fixtures, 'schemas')
 
 
-def test_user_schema():
-    """
-    Recevied data on GET /nonce should validate UserSchema
-    """
-    filepath = os.path.join(schemas_dir, "user.json")
-    with open(filepath) as f:
-        data = json.load(f)
-    errors = schemas.UserSchema().validate(data)
-    assert not errors
-
-
 def test_signed_gamestate_schema():
     """
     Emitted data on GET /gamestate should validate GamestateSchema
     Emitted data on POST /move should validate GamestateSchema
-    Emitted data on POST /iou should validate GamestateSchema
+    Emitted data on GET /payment-confirmation should validate GamestateSchema
     """
     filepath = os.path.join(schemas_dir, "signed-gamestate.json")  # noqa: E501
     with open(filepath) as f:
