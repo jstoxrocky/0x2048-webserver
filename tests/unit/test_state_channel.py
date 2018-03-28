@@ -21,6 +21,7 @@ from web3 import (
 )
 from eth_utils import (
     encode_hex,
+    decode_hex,
 )
 
 
@@ -131,7 +132,7 @@ def test_sign_typed_data(user):
 
 def test_generate_random_nonce():
     nonce = generate_random_nonce()
-    assert len(nonce) == 64
+    assert len(decode_hex(nonce)) == 32
 
 
 def test_prepare_messageHash_for_signing():
