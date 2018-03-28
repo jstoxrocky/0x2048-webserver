@@ -29,6 +29,12 @@ def test_sign(user):
     output = sign(msg, PRIV)
     assert isinstance(output['r'], str)
     assert isinstance(output['s'], str)
+    signer = recover(
+        output['messageHash'],
+        output['signature'],
+    )
+    owner = Account.privateKeyToAccount(PRIV).address
+    assert signer == owner
 
 
 def test_raw_sign(user):

@@ -1,5 +1,6 @@
 import json
 from webserver import exceptions
+from webserver import schemas
 
 
 def test_confirm_payment_success(mocker, app, api_prefix, user):
@@ -11,13 +12,13 @@ def test_confirm_payment_success(mocker, app, api_prefix, user):
             sess['address'] = user.address
     contract = mocker.patch('webserver.endpoints.payment.contract')
     contract.functions.getNonce.return_value.call.return_value = nonce  # noqa: E501
-    expected = {'success': True}
     response = app.get(
         api_prefix + '/payment-confirmation',
         query_string={'signature': '0x'},
     )
     output = json.loads(response.data)
-    assert output == expected
+    errors = schemas.SignedGamestateSchema().validate(output)
+    assert not errors
     with app as c:
         with c.session_transaction() as sess:
             assert sess['paid']

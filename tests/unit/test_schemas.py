@@ -2,11 +2,9 @@ import pytest
 from webserver.schemas import (
     SimpleSignatureSchema,
     FullSignatureSchema,
-    IOUSchema,
     GamestateSchema,
     SignedGamestateSchema,
     MoveSchema,
-    UserSchema,
 )
 
 
@@ -69,36 +67,6 @@ def test_full_signature_schema_missing_data(signature_data, key):
 def test_full_signature_schema_success(signature_data):
     payload = signature_data
     errors = FullSignatureSchema().validate(payload)
-    assert not errors
-
-
-@pytest.mark.parametrize('key, value', [
-    ('user', 0),
-    ('nonce', ''),
-    ('signature', 0),
-])
-def test_iou_schema_wrong_datatype(iou_data, key, value):
-    payload = iou_data
-    payload[key] = value
-    errors = IOUSchema().validate(payload)
-    assert len(errors) > 0
-
-
-@pytest.mark.parametrize('key', [
-    'user',
-    'nonce',
-    'signature',
-])
-def test_iou_schema_missing_data(iou_data, key):
-    payload = iou_data
-    payload.pop(key)
-    errors = IOUSchema().validate(payload)
-    assert len(errors) > 0
-
-
-def test_iou_schema_success(iou_data):
-    payload = iou_data
-    errors = IOUSchema().validate(payload)
     assert not errors
 
 
@@ -189,30 +157,4 @@ def test_move_schema_missing_data(move_data, key):
 def test_move_schema_success(move_data):
     payload = move_data
     errors = MoveSchema().validate(payload)
-    assert not errors
-
-
-@pytest.mark.parametrize('key, value', [
-    ('user', 0),
-])
-def test_user_schema_wrong_datatype(user_data, key, value):
-    payload = user_data
-    payload[key] = value
-    errors = UserSchema().validate(payload)
-    assert len(errors) > 0
-
-
-@pytest.mark.parametrize('key', [
-    'user',
-])
-def test_user_schema_missing_data(user_data, key):
-    payload = user_data
-    payload.pop(key)
-    errors = UserSchema().validate(payload)
-    assert len(errors) > 0
-
-
-def test_user_schema_success(user_data):
-    payload = user_data
-    errors = UserSchema().validate(payload)
     assert not errors
