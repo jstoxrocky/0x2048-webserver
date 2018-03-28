@@ -1,4 +1,5 @@
 import json
+from webserver import schemas
 
 
 def test_nonce_success(mocker, app, api_prefix, user):
@@ -17,8 +18,8 @@ def test_nonce_success(mocker, app, api_prefix, user):
         api_prefix + '/nonce',
     )
     output = json.loads(response.data)
-    assert output == {'nonce': nonce}
-
+    errors = schemas.NonceSchema().validate(output)
+    assert not errors
     with app as c:
         with c.session_transaction() as sess:
             assert sess['nonce'] == nonce

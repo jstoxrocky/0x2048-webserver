@@ -18,13 +18,6 @@ class NonceSchema(Schema):
     nonce = fields.Integer(required=True, validate=lambda x: x > 0)
 
 
-class UserSchema(Schema):
-    """
-    Validate recieved user data structures
-    """
-    user = fields.Str(required=True, validate=is_checksum_address)
-
-
 class MoveSchema(Schema):
     """
     Validate recieved move data structures
@@ -44,15 +37,6 @@ class FullSignatureSchema(Schema):
     r = fields.Str(required=True, validate=is_hex)
     s = fields.Str(required=True, validate=is_hex)
     signature = fields.Str(SimpleSignatureSchema, required=True)
-
-
-class IOUSchema(Schema):
-    """
-    Validate received iou data structures
-    """
-    nonce = fields.Integer(required=True)
-    signature = fields.Str(SimpleSignatureSchema, required=True)
-    user = fields.Str(UserSchema, required=True)
 
 
 class GamestateSchema(Schema):
