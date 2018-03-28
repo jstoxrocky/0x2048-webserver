@@ -15,7 +15,7 @@ class NonceSchema(Schema):
     """
     Validate emitted nonce data structures
     """
-    nonce = fields.Integer(required=True, validate=lambda x: x > 0)
+    nonce = fields.Str(required=True, validate=is_hex)
 
 
 class MoveSchema(Schema):

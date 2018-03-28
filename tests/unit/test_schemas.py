@@ -5,6 +5,7 @@ from webserver.schemas import (
     GamestateSchema,
     SignedGamestateSchema,
     MoveSchema,
+    NonceSchema,
 )
 
 
@@ -157,4 +158,30 @@ def test_move_schema_missing_data(move_data, key):
 def test_move_schema_success(move_data):
     payload = move_data
     errors = MoveSchema().validate(payload)
+    assert not errors
+
+
+@pytest.mark.parametrize('key, value', [
+    ('nonce', 0),
+])
+def test_nonce_schema_wrong_datatype(nonce_data, key, value):
+    payload = nonce_data
+    payload[key] = value
+    errors = NonceSchema().validate(payload)
+    assert len(errors) > 0
+
+
+@pytest.mark.parametrize('key', [
+    'nonce',
+])
+def test_nonce_schema_missing_data(nonce_data, key):
+    payload = nonce_data
+    payload.pop(key)
+    errors = NonceSchema().validate(payload)
+    assert len(errors) > 0
+
+
+def test_nonce_schema_success(nonce_data):
+    payload = nonce_data
+    errors = NonceSchema().validate(payload)
     assert not errors

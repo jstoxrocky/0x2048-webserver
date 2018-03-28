@@ -94,8 +94,8 @@ def validate_iou(iou):
 
 
 def generate_random_nonce():
-    nonce = os.urandom(64)
-    return nonce
+    nonce = os.urandom(32)
+    return encode_hex(nonce)
 
 
 def prepare_messageHash_for_signing(msg):

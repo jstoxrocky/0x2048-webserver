@@ -6,12 +6,11 @@ def test_nonce_success(mocker, app, api_prefix, user):
     """
     It should succeed and overwrite session.nonce and session.paid
     """
+    nonce = '0x987654'
     with app as c:
         with c.session_transaction() as sess:
-            sess['nonce'] = 987654
+            sess['nonce'] = nonce
             sess['paid'] = True
-
-    nonce = 123456
     generate_random_nonce = mocker.patch('webserver.endpoints.payment.state_channel.generate_random_nonce')  # noqa: E501
     generate_random_nonce.return_value = nonce
     response = app.get(

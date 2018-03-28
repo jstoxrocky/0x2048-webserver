@@ -63,17 +63,6 @@ def signature_data(app, user):
 
 
 @pytest.fixture(scope="function")
-def iou_data(app, user, signature_data):
-    nonce = 8  # Comes from signature_data
-    payload = {
-        'user': user.address,
-        'nonce': nonce,
-        'signature': signature_data['signature'],
-    }
-    return payload
-
-
-@pytest.fixture(scope="function")
 def gamestate_data(app, user, signature_data):
     board = [
         [0, 0, 0, 0],
@@ -103,8 +92,9 @@ def move_data(app, user):
 
 
 @pytest.fixture(scope="function")
-def user_data(app, user):
+def nonce_data(app, user):
+    nonce = '0x123456'
     payload = {
-        'user': user.address,
+        'nonce': nonce,
     }
     return payload
