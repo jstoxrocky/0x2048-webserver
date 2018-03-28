@@ -5,7 +5,6 @@ from web3 import (
 )
 from webserver.config import (
     PRIV,
-    ARCADE_ADDR,
 )
 from webserver.contract import (
     contract,
@@ -22,28 +21,21 @@ integration_json_fixtures = os.path.join(
 constants_dir = os.path.join(integration_json_fixtures, 'constants')
 
 
-def test_owner():
+def test_owner_address_matches_json_fixture():
     filepath = os.path.join(constants_dir, "address.json")
     with open(filepath) as f:
         data = json.load(f)
     assert data['owner'] == Account.privateKeyToAccount(PRIV).address
 
 
-def test_arcade_contract_address():
-    filepath = os.path.join(constants_dir, "address.json")
-    with open(filepath) as f:
-        data = json.load(f)
-    assert data['arcade'] == ARCADE_ADDR
-
-
-def test_contract_address_matches_integration_json():
+def test_contract_address_matches_json_fixture():
     filepath = os.path.join(constants_dir, "address.json")
     with open(filepath) as f:
         data = json.load(f)
     assert data['arcade'] == contract.address
 
 
-def test_contract_abi_matches_integration_json():
+def test_contract_abi_matches_json_fixture():
     filepath = os.path.join(constants_dir, "abi.json")
     with open(filepath) as f:
         data = json.load(f)
