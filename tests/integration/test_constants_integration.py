@@ -6,8 +6,9 @@ from web3 import (
 from webserver.config import (
     PRIV,
 )
-from webserver.contract import (
-    contract,
+from webserver.config import (
+    ARCADE_ADDRESS,
+    ARCADE_ABI,
 )
 
 
@@ -32,11 +33,11 @@ def test_contract_address_matches_json_fixture():
     filepath = os.path.join(constants_dir, "address.json")
     with open(filepath) as f:
         data = json.load(f)
-    assert data['arcade'] == contract.address
+    assert data['arcade'] == ARCADE_ADDRESS
 
 
 def test_contract_abi_matches_json_fixture():
     filepath = os.path.join(constants_dir, "abi.json")
     with open(filepath) as f:
         data = json.load(f)
-    assert data['arcade'] == contract.abi
+    assert data['arcade'] == json.loads(ARCADE_ABI)

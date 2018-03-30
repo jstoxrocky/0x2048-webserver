@@ -10,7 +10,7 @@ from flask_cors import (
 from webserver.config import (
     ORIGINS,
     PRIV,
-    ARCADE_ADDR,
+    ARCADE_ADDRESS,
 )
 from webserver import exceptions
 from webserver import (
@@ -25,6 +25,9 @@ from webserver.gameplay import (
 )
 from toolz.dicttoolz import (
     merge,
+)
+from eth_utils import (
+    decode_hex,
 )
 
 
@@ -72,6 +75,7 @@ def calculate_address():
     )
     signer = state_channel.recover(messageHash, payload['signature'])
     session['address'] = signer
+    print(signer)
     return jsonify({'success': True})
 
 
@@ -89,15 +93,16 @@ def confirm_payment():
     # Must have nonce
     if not session.get('nonce', None):
         raise exceptions.UnexpectedEmptyNonce
-
+    # TODO
+    # Get txhash and wait for transaction to be mined
     nonce = contract.functions.getNonce(session['address']).call()
-    if nonce != session['nonce']:
+    if nonce != decode_hex(session['nonce']):
         raise exceptions.UnexpectedContractNonce
     # Start a new game
     session['paid'] = True
     new_state = new()
     msg = state_channel.solidity_keccak(
-        ARCADE_ADDR,
+        ARCADE_ADDRESS,
         session['address'],
         new_state['score'],
     )

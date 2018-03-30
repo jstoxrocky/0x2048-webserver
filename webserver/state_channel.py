@@ -9,10 +9,9 @@ from eth_utils import (
     encode_hex,
     int_to_big_endian,
     to_bytes,
-    keccak,
 )
 from webserver.config import (
-    ARCADE_ADDR,
+    ARCADE_ADDRESS,
     DISCLAIMER,
 )
 from eth_keys import (
@@ -81,22 +80,15 @@ def sign_typed_data(msg_params, private_key):
     return signature
 
 
-def validate_iou(iou):
-    msg_params = [
-        {'type': 'string', 'name': DISCLAIMER, 'value': ARCADE_ADDR},
-        {'type': 'address', 'name': 'user', 'value': iou['user']},
-        {'type': 'uint256', 'name': 'nonce', 'value': iou['nonce']},
-    ]
-    msg_hash = hash_typed_data(msg_params)
-    if recover(msg_hash, iou['signature']) != iou['user']:
-        return False
-    return True
-
-
 def generate_random_nonce():
     nonce = os.urandom(32)
     return encode_hex(nonce)
 
 
-def prepare_messageHash_for_signing(msg):
-    return keccak(msg)
+def prepare_messageHash_for_signing(nonce):
+    msg_params = [
+        {'type': 'string', 'name': DISCLAIMER, 'value': ARCADE_ADDRESS},
+        {'type': 'bytes32', 'name': 'nonce', 'value': nonce},
+    ]
+    msgHash = hash_typed_data(msg_params)
+    return msgHash

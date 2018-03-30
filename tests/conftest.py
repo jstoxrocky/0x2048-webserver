@@ -7,7 +7,7 @@ from webserver.state_channel import (
     sign,
 )
 from webserver.config import (
-    ARCADE_ADDR,
+    ARCADE_ADDRESS,
 )
 from game.game import (
     TwentyFortyEight,
@@ -57,7 +57,7 @@ def session_has_not_paid(app):
 @pytest.fixture(scope="function")
 def signature_data(app, user):
     nonce = 8
-    msg = solidity_keccak(ARCADE_ADDR, user.address, nonce)
+    msg = solidity_keccak(ARCADE_ADDRESS, user.address, nonce)
     signature = sign(msg, user.privateKey)
     return signature
 
