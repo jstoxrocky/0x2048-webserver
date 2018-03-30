@@ -1,10 +1,8 @@
-import pytest
 from webserver.state_channel import (
     sign,
     recover,
     int_to_hex,
     solidity_keccak,
-    validate_iou,
     raw_sign,
     hash_typed_data,
     sign_typed_data,
@@ -13,20 +11,18 @@ from webserver.state_channel import (
 )
 from webserver.config import (
     PRIV,
-    ARCADE_ADDR,
-    DISCLAIMER,
+    ARCADE_ADDRESS,
 )
 from web3 import (
     Account,
 )
 from eth_utils import (
-    encode_hex,
     decode_hex,
 )
 
 
 def test_sign(user):
-    msg = solidity_keccak(ARCADE_ADDR, user.address, 1, 2, 3)
+    msg = solidity_keccak(ARCADE_ADDRESS, user.address, 1, 2, 3)
     output = sign(msg, PRIV)
     assert isinstance(output['r'], str)
     assert isinstance(output['s'], str)
@@ -51,7 +47,7 @@ def test_int_to_hex():
 
 
 def test_recover(user):
-    msg = solidity_keccak(ARCADE_ADDR, user.address, 1, 2, 3)
+    msg = solidity_keccak(ARCADE_ADDRESS, user.address, 1, 2, 3)
     signed = Account.sign(msg, user.privateKey)
     signer = recover(signed['messageHash'], signed['signature'])
     assert signer == user.address
@@ -62,62 +58,6 @@ def test_solidity_keccak(user):
     msg = solidity_keccak(user.address, user.address, value)
     print(msg)
     assert msg == b'g\xd5\x0c\x96A\xb5\xcbJ\xe4]{\x8c\x00\xd0\x8c\x1b\r\xb9>6\xb2j\xe7\x80@\xf9\x11\x14\x93!\xb7\x81'  # noqa: E501
-
-
-def test_validate_iou(user):
-    nonce = 1
-    msg_params = [
-        {'type': 'string', 'name': DISCLAIMER, 'value': ARCADE_ADDR},
-        {'type': 'address', 'name': 'user', 'value': user.address},
-        {'type': 'uint256', 'name': 'nonce', 'value': nonce},
-    ]
-    signature = sign_typed_data(msg_params, user.privateKey)
-    iou = {
-        'user': user.address,
-        'nonce': nonce,
-        'signature': signature,
-    }
-    success = validate_iou(iou)
-    assert success
-
-
-@pytest.mark.parametrize('key, test_value', [
-    ('nonce', 1337),
-    ('user', '0x6813Eb9362372EEF6200f3b1dbC3f819671cBA69'),  # user2.address
-])
-def test_validate_iou_bad_preimage(user, key, test_value):
-    nonce = 1
-    msg_params = [
-        {'type': 'string', 'name': DISCLAIMER, 'value': ARCADE_ADDR},
-        {'type': 'address', 'name': 'user', 'value': user.address},
-        {'type': 'uint256', 'name': 'nonce', 'value': nonce},
-    ]
-    signature = sign_typed_data(msg_params, user.privateKey)
-    iou = {
-        'user': user.address,
-        'nonce': nonce,
-        'signature': signature,
-    }
-    iou[key] = test_value
-    success = validate_iou(iou)
-    assert not success
-
-
-def test_validate_iou_bad_signer(user, user2):
-    nonce = 1
-    msg_params = [
-        {'type': 'string', 'name': DISCLAIMER, 'value': ARCADE_ADDR},
-        {'type': 'address', 'name': 'user', 'value': user2.address},
-        {'type': 'uint256', 'name': 'nonce', 'value': nonce},
-    ]
-    signature = sign_typed_data(msg_params, user2.privateKey)
-    iou = {
-        'user': user.address,
-        'nonce': nonce,
-        'signature': signature,
-    }
-    success = validate_iou(iou)
-    assert not success
 
 
 def test_sign_typed_data(user):
@@ -136,6 +76,6 @@ def test_generate_random_nonce():
 
 
 def test_prepare_messageHash_for_signing():
-    value = b''
-    output = prepare_messageHash_for_signing(value)
-    assert encode_hex(output) == '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'  # noqa: E501
+    nonce = '0x01'
+    msgHash = prepare_messageHash_for_signing(nonce)
+    assert msgHash == b'5-\xa3<G?\xc8\x08\r4\x1f\xda\xa8f\x90\x1c\xe5`\xaad\xac\x88\x10\x11B,\xc6,\xce-Y\xa9'  # noqa: E501

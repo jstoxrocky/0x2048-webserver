@@ -4,7 +4,7 @@ from webserver import state_channel
 
 
 def test_confirm_address_success(mocker, app, api_prefix, user):
-    nonce = 987654
+    nonce = '0x01'
     with app as c:
         with c.session_transaction() as sess:
             sess['paid'] = False
@@ -28,7 +28,7 @@ def test_confirm_address_success(mocker, app, api_prefix, user):
 
 
 def test_integrated_confirm_address_success(mocker, app, api_prefix, user):
-    nonce = b'Joey to the World!'
+    nonce = '0x01'
     with app as c:
         with c.session_transaction() as sess:
             sess['paid'] = False

@@ -26,7 +26,7 @@ from toolz.dicttoolz import (
 )
 from webserver.config import (
     PRIV,
-    ARCADE_ADDR,
+    ARCADE_ADDRESS,
 )
 from webserver.schemas import (
     MoveSchema,
@@ -54,7 +54,7 @@ def move():
         session['paid'] = False
     # Create state-channel signature
     msg = state_channel.solidity_keccak(
-        ARCADE_ADDR,
+        ARCADE_ADDRESS,
         payload['user'],
         new_state['score'],
     )
