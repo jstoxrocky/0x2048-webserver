@@ -9,10 +9,6 @@ class ValidationError(InvalidUsage):
     message = 'ValidationError'
 
 
-class PaymentRequired(InvalidUsage):
-    message = 'PaymentRequired'
-
-
 class UnexpectedPaymentAttempt(InvalidUsage):
     message = 'UnexpectedPaymentAttempt'
 

@@ -5,14 +5,12 @@ from webserver.gameplay import (
 from webserver.config import (
     INITIAL_STATE,
 )
-from webserver.schemas import (
-    GamestateSchema,
-)
+from webserver import schemas
 
 
 def test_new_game():
     output = new()
-    errors = GamestateSchema().validate(output)
+    errors = schemas.Gamestate().validate(output)
     assert not errors
 
 
@@ -20,7 +18,7 @@ def test_next_state():
     state = new()
     direction = 1
     output = next_state(state, direction)
-    errors = GamestateSchema().validate(output)
+    errors = schemas.Gamestate().validate(output)
     assert not errors
 
 
