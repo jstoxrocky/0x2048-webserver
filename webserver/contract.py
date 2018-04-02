@@ -8,9 +8,18 @@ from webserver.config import (
     ARCADE_ABI,
     ARCADE_ADDRESS,
 )
+from functools import (
+    partial,
+)
+from web3.utils.transactions import (
+    wait_for_transaction_receipt,
+)
+
 
 web3 = Web3(HTTPProvider('https://rinkeby.infura.io/%s' % (INFURA_TOKEN)))
 contract = web3.eth.contract(
     abi=json.loads(ARCADE_ABI),
     address=ARCADE_ADDRESS,
 )
+
+wait_for_transaction_receipt = partial(wait_for_transaction_receipt, web3=web3)

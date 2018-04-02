@@ -24,7 +24,7 @@ def test_signed_gamestate_schema():
     filepath = os.path.join(schemas_dir, "signed-gamestate.json")  # noqa: E501
     with open(filepath) as f:
         data = json.load(f)
-    errors = schemas.SignedGamestateSchema().validate(data)
+    errors = schemas.SignedGamestate().validate(data)
     assert not errors
 
 
@@ -35,7 +35,7 @@ def test_move_schema():
     filepath = os.path.join(schemas_dir, "move.json")
     with open(filepath) as f:
         data = json.load(f)
-    errors = schemas.MoveSchema().validate(data)
+    errors = schemas.Move().validate(data)
     assert not errors
 
 
@@ -46,5 +46,5 @@ def test_nonce_schema():
     filepath = os.path.join(schemas_dir, "nonce.json")
     with open(filepath) as f:
         data = json.load(f)
-    errors = schemas.NonceSchema().validate(data)
+    errors = schemas.Nonce().validate(data)
     assert not errors

@@ -1,12 +1,5 @@
 import pytest
-from webserver.schemas import (
-    SimpleSignatureSchema,
-    FullSignatureSchema,
-    GamestateSchema,
-    SignedGamestateSchema,
-    MoveSchema,
-    NonceSchema,
-)
+from webserver import schemas
 
 
 @pytest.mark.parametrize('key, value', [
@@ -15,7 +8,7 @@ from webserver.schemas import (
 def test_simple_signature_schema_wrong_datatype(signature_data, key, value):
     payload = {'signature': signature_data['signature']}
     payload[key] = value
-    errors = SimpleSignatureSchema().validate(payload)
+    errors = schemas.SimpleSignature().validate(payload)
     assert len(errors) > 0
 
 
@@ -25,13 +18,13 @@ def test_simple_signature_schema_wrong_datatype(signature_data, key, value):
 def test_simple_signature_schema_missing_data(signature_data, key):
     payload = {'signature': signature_data['signature']}
     payload.pop(key)
-    errors = SimpleSignatureSchema().validate(payload)
+    errors = schemas.SimpleSignature().validate(payload)
     assert len(errors) > 0
 
 
 def test_simple_signature_schema_success(signature_data):
     payload = {'signature': signature_data['signature']}
-    errors = SimpleSignatureSchema().validate(payload)
+    errors = schemas.SimpleSignature().validate(payload)
     assert not errors
 
 
@@ -46,7 +39,7 @@ def test_simple_signature_schema_success(signature_data):
 def test_full_signature_schema_wrong_datatype(signature_data, key, value):
     payload = signature_data
     payload[key] = value
-    errors = FullSignatureSchema().validate(payload)
+    errors = schemas.FullSignature().validate(payload)
     assert len(errors) > 0
 
 
@@ -61,13 +54,13 @@ def test_full_signature_schema_wrong_datatype(signature_data, key, value):
 def test_full_signature_schema_missing_data(signature_data, key):
     payload = signature_data
     payload.pop(key)
-    errors = FullSignatureSchema().validate(payload)
+    errors = schemas.FullSignature().validate(payload)
     assert len(errors) > 0
 
 
 def test_full_signature_schema_success(signature_data):
     payload = signature_data
-    errors = FullSignatureSchema().validate(payload)
+    errors = schemas.FullSignature().validate(payload)
     assert not errors
 
 
@@ -79,7 +72,7 @@ def test_full_signature_schema_success(signature_data):
 def test_gamestate_schema_wrong_datatype(gamestate_data, key, value):
     payload = gamestate_data
     payload[key] = value
-    errors = GamestateSchema().validate(payload)
+    errors = schemas.Gamestate().validate(payload)
     assert len(errors) > 0
 
 
@@ -91,13 +84,13 @@ def test_gamestate_schema_wrong_datatype(gamestate_data, key, value):
 def test_gamestate_schema_missing_data(gamestate_data, key):
     payload = gamestate_data
     payload.pop(key)
-    errors = GamestateSchema().validate(payload)
+    errors = schemas.Gamestate().validate(payload)
     assert len(errors) > 0
 
 
 def test_gamestate_schema_success(gamestate_data):
     payload = gamestate_data
-    errors = GamestateSchema().validate(payload)
+    errors = schemas.Gamestate().validate(payload)
     assert not errors
 
 
@@ -110,7 +103,7 @@ def test_gamestate_schema_success(gamestate_data):
 def test_signed_gamestate_schema_wrong_datatype(gamestate_data, key, value):
     payload = gamestate_data
     payload[key] = value
-    errors = SignedGamestateSchema().validate(payload)
+    errors = schemas.SignedGamestate().validate(payload)
     assert len(errors) > 0
 
 
@@ -123,13 +116,13 @@ def test_signed_gamestate_schema_wrong_datatype(gamestate_data, key, value):
 def test_signed_gamestate_schema_missing_data(gamestate_data, key):
     payload = gamestate_data
     payload.pop(key)
-    errors = SignedGamestateSchema().validate(payload)
+    errors = schemas.SignedGamestate().validate(payload)
     assert len(errors) > 0
 
 
 def test_signed_gamestate_schema_success(gamestate_data):
     payload = gamestate_data
-    errors = SignedGamestateSchema().validate(payload)
+    errors = schemas.SignedGamestate().validate(payload)
     assert not errors
 
 
@@ -140,7 +133,7 @@ def test_signed_gamestate_schema_success(gamestate_data):
 def test_move_schema_wrong_datatype(move_data, key, value):
     payload = move_data
     payload[key] = value
-    errors = MoveSchema().validate(payload)
+    errors = schemas.Move().validate(payload)
     assert len(errors) > 0
 
 
@@ -151,13 +144,13 @@ def test_move_schema_wrong_datatype(move_data, key, value):
 def test_move_schema_missing_data(move_data, key):
     payload = move_data
     payload.pop(key)
-    errors = MoveSchema().validate(payload)
+    errors = schemas.Move().validate(payload)
     assert len(errors) > 0
 
 
 def test_move_schema_success(move_data):
     payload = move_data
-    errors = MoveSchema().validate(payload)
+    errors = schemas.Move().validate(payload)
     assert not errors
 
 
@@ -167,7 +160,7 @@ def test_move_schema_success(move_data):
 def test_nonce_schema_wrong_datatype(nonce_data, key, value):
     payload = nonce_data
     payload[key] = value
-    errors = NonceSchema().validate(payload)
+    errors = schemas.Nonce().validate(payload)
     assert len(errors) > 0
 
 
@@ -177,11 +170,39 @@ def test_nonce_schema_wrong_datatype(nonce_data, key, value):
 def test_nonce_schema_missing_data(nonce_data, key):
     payload = nonce_data
     payload.pop(key)
-    errors = NonceSchema().validate(payload)
+    errors = schemas.Nonce().validate(payload)
     assert len(errors) > 0
 
 
 def test_nonce_schema_success(nonce_data):
     payload = nonce_data
-    errors = NonceSchema().validate(payload)
+    errors = schemas.Nonce().validate(payload)
+    assert not errors
+
+
+@pytest.mark.parametrize('key, value', [
+    ('signature', 0),
+    ('txhash', 0)
+])
+def test_receipt_schema_wrong_datatype(receipt_data, key, value):
+    payload = receipt_data
+    payload[key] = value
+    errors = schemas.Receipt().validate(payload)
+    assert len(errors) > 0
+
+
+@pytest.mark.parametrize('key', [
+    'signature',
+    'txhash',
+])
+def test_receipt_schema_missing_data(receipt_data, key):
+    payload = receipt_data
+    payload.pop(key)
+    errors = schemas.Receipt().validate(payload)
+    assert len(errors) > 0
+
+
+def test_receipt_schema_success(receipt_data):
+    payload = receipt_data
+    errors = schemas.Receipt().validate(payload)
     assert not errors

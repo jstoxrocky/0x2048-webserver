@@ -1,7 +1,5 @@
 import json
-from webserver.schemas import (
-    SignedGamestateSchema,
-)
+from webserver import schemas
 from webserver.config import (
     INITIAL_STATE,
 )
@@ -11,7 +9,7 @@ def test_gamestate_validates(app, api_prefix):
     endpoint = api_prefix + '/gamestate'
     response = app.get(endpoint)
     output = json.loads(response.data)
-    errors = SignedGamestateSchema().validate(output)
+    errors = schemas.SignedGamestate().validate(output)
     assert not errors
 
 
