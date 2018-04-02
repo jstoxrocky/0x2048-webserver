@@ -17,7 +17,7 @@ def test_nonce_success(mocker, app, api_prefix, user):
         api_prefix + '/nonce',
     )
     output = json.loads(response.data)
-    errors = schemas.NonceSchema().validate(output)
+    errors = schemas.Nonce().validate(output)
     assert not errors
     with app as c:
         with c.session_transaction() as sess:

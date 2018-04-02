@@ -12,6 +12,10 @@ from webserver.config import (
 from game.game import (
     TwentyFortyEight,
 )
+from eth_utils import (
+    encode_hex,
+    keccak,
+)
 
 
 @pytest.fixture(scope="module")
@@ -38,20 +42,6 @@ def new_game(request, app):
 @pytest.fixture(scope="module")
 def api_prefix():
     return '/api/v1'
-
-
-@pytest.fixture(scope="function")
-def session_has_paid(app):
-    with app as c:
-        with c.session_transaction() as sess:
-            sess['paid'] = True
-
-
-@pytest.fixture(scope="function")
-def session_has_not_paid(app):
-    with app as c:
-        with c.session_transaction() as sess:
-            sess['paid'] = False
 
 
 @pytest.fixture(scope="function")
@@ -96,5 +86,14 @@ def nonce_data(app, user):
     nonce = '0x123456'
     payload = {
         'nonce': nonce,
+    }
+    return payload
+
+
+@pytest.fixture(scope="function")
+def receipt_data(app, user, signature_data):
+    payload = {
+        'signature': signature_data['signature'],
+        'txhash': encode_hex(keccak(b'')),
     }
     return payload

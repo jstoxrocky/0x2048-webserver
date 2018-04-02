@@ -1,33 +1,18 @@
 import json
 from webserver.exceptions import (
     ValidationError,
-    PaymentRequired,
 )
 from webserver.gameplay import (
     new,
 )
-from webserver.schemas import (
-    SignedGamestateSchema,
-)
+from webserver import schemas
 from webserver.config import (
     INITIAL_STATE,
 )
 
 
-def test_has_not_already_paid(app, api_prefix, session_has_not_paid):
-    endpoint = api_prefix + '/move'
-    response = app.post(
-        endpoint,
-        data=json.dumps({}),
-        content_type='application/json'
-    )
-    output = json.loads(response.data)
-    assert response.status_code == PaymentRequired.status_code
-    assert output['message'] == PaymentRequired.message
-
-
-def test_validation_error(mocker, app, api_prefix, session_has_paid):
-    validate = mocker.patch('webserver.endpoints.move.MoveSchema.validate')
+def test_validation_error(mocker, app, api_prefix):
+    validate = mocker.patch('webserver.endpoints.move.schemas.Move.validate')
     validate.return_value = {'error_key': ['error_message']}
     endpoint = api_prefix + '/move'
     response = app.post(
@@ -40,8 +25,8 @@ def test_validation_error(mocker, app, api_prefix, session_has_paid):
     assert output['message'] == ValidationError.message
 
 
-def test_validates(mocker, app, api_prefix, user, session_has_paid):
-    validate = mocker.patch('webserver.endpoints.move.MoveSchema.validate')
+def test_validates(mocker, app, api_prefix, user):
+    validate = mocker.patch('webserver.endpoints.move.schemas.Move.validate')
     validate.return_value = {}
     next_state = mocker.patch('webserver.endpoints.move.next_state')
     next_state.return_value = new()
@@ -52,16 +37,15 @@ def test_validates(mocker, app, api_prefix, user, session_has_paid):
         content_type='application/json'
     )
     output = json.loads(response.data)
-    errors = SignedGamestateSchema().validate(output)
+    errors = schemas.SignedGamestate().validate(output)
     assert not errors
     with app as c:
         with c.session_transaction() as sess:
-            assert sess['paid']
             assert not sess['state']['gameover']
 
 
-def test_gameover(mocker, app, api_prefix, user, session_has_paid):
-    validate = mocker.patch('webserver.endpoints.move.MoveSchema.validate')
+def test_gameover(mocker, app, api_prefix, user):
+    validate = mocker.patch('webserver.endpoints.move.schemas.Move.validate')
     validate.return_value = {}
     with app as c:
         with c.session_transaction() as sess:
@@ -80,5 +64,4 @@ def test_gameover(mocker, app, api_prefix, user, session_has_paid):
     )
     with app as c:
         with c.session_transaction() as sess:
-            assert not sess['paid']
             assert sess['state']['gameover']

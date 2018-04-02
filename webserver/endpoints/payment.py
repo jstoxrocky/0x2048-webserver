@@ -18,6 +18,7 @@ from webserver import (
 )
 from webserver.contract import (
     contract,
+    wait_for_transaction_receipt,
 )
 from webserver import schemas
 from webserver.gameplay import (
@@ -52,12 +53,13 @@ def generate_nonce_challenge():
     return jsonify({'nonce': nonce})
 
 
-@blueprint.route('/address-confirmation', methods=['GET'])
+@blueprint.route('/payment-confirmation', methods=['GET'])
 @cross_origin(origins=ORIGINS, methods=['GET'],
               supports_credentials=True)
-def calculate_address():
+def confirm_payment():
     """
-    Associate the signer with the session
+    Recover the signer from the signed nonce
+    and verify that the signer has paid by checking the Arcade contract nonce
     """
     # Cannot have already paid
     if session.get('paid', False):
@@ -67,35 +69,18 @@ def calculate_address():
         raise exceptions.UnexpectedEmptyNonce
     # Validate payload
     payload = request.args
-    if schemas.SimpleSignatureSchema().validate(payload):
+    print(payload)
+    if schemas.Receipt().validate(payload):
         raise exceptions.ValidationError
-    # Whoever signs this random nonce is our user-address
+    # Whoever signs the nonce is our user-address
     messageHash = state_channel.prepare_messageHash_for_signing(
         session['nonce'],
     )
     signer = state_channel.recover(messageHash, payload['signature'])
-    session['address'] = signer
-    print(signer)
-    return jsonify({'success': True})
-
-
-@blueprint.route('/payment-confirmation', methods=['GET'])
-@cross_origin(origins=ORIGINS, methods=['GET'],
-              supports_credentials=True)
-def confirm_payment():
-    """
-    Verify that the user has paid by checking the nonce value added to
-    the contract
-    """
-    # Cannot have already paid
-    if session.get('paid', False):
-        raise exceptions.UnexpectedPaymentAttempt
-    # Must have nonce
-    if not session.get('nonce', None):
-        raise exceptions.UnexpectedEmptyNonce
-    # TODO
-    # Get txhash and wait for transaction to be mined
-    nonce = contract.functions.getNonce(session['address']).call()
+    # Wait for transaction to be mined
+    wait_for_transaction_receipt(txn_hash=payload['txhash'], timeout=120)
+    # Check contract nonce
+    nonce = contract.functions.getNonce(signer).call()
     if nonce != decode_hex(session['nonce']):
         raise exceptions.UnexpectedContractNonce
     # Start a new game
