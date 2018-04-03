@@ -13,7 +13,6 @@ def test_confirm_payment_success(mocker, app, api_prefix, user):
         with c.session_transaction() as sess:
             sess['paid'] = False
             sess['nonce'] = nonce
-            sess['address'] = user.address
 
     signature = state_channel.raw_sign(
         state_channel.prepare_messageHash_for_signing(nonce),
@@ -37,9 +36,36 @@ def test_confirm_payment_success(mocker, app, api_prefix, user):
             assert sess['paid']
 
 
-def test_confirm_address_already_paid(app, api_prefix, user):
+def test_recovered_address_is_user(mocker, app, api_prefix, user):
+    nonce = '0x01'
+    with app as c:
+        with c.session_transaction() as sess:
+            sess['paid'] = False
+            sess['nonce'] = nonce
+
+    signature = state_channel.raw_sign(
+        state_channel.prepare_messageHash_for_signing(nonce),
+        user.privateKey,
+    )
+    contract = mocker.patch('webserver.endpoints.payment.contract')
+    contract.functions.getNonce.return_value.call.return_value = decode_hex(nonce)  # noqa: E501
+    mocker.patch('webserver.endpoints.payment.wait_for_transaction_receipt')  # noqa: E501
+    app.get(
+        api_prefix + '/payment-confirmation',
+        query_string={
+            'signature': signature.to_hex(),
+            'txhash': '0x',
+        },
+    )
+    with app as c:
+        with c.session_transaction() as sess:
+            assert sess['recovered_address'] == user.address
+
+
+def test_already_paid(app, api_prefix, user):
     """
-    It should fail with exception UnexpectedPaymentAttempt
+    It should fail with exception UnexpectedPaymentAttempt when trying to pay
+    without first generating a new random nonce value
     """
     with app as c:
         with c.session_transaction() as sess:
@@ -51,7 +77,7 @@ def test_confirm_address_already_paid(app, api_prefix, user):
     assert output['message'] == exceptions.UnexpectedPaymentAttempt.message
 
 
-def test_confirm_address_empty_nonce(app, api_prefix, user):
+def test_empty_nonce(app, api_prefix, user):
     """
     It should fail with exception UnexpectedPaymentAttempt
     """
