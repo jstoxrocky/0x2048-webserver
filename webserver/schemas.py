@@ -59,4 +59,4 @@ class Gamestate(Schema):
 
 class SignedGamestate(Gamestate):
     signature = fields.Nested(FullSignature, required=True)
-    recovered_address = fields.Str(required=True, validate=is_checksum_address)
+    recoveredAddress = fields.Str(required=True, validate=is_checksum_address)

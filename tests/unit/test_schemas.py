@@ -99,7 +99,7 @@ def test_gamestate_schema_success(gamestate_data):
     ('score', ''),
     ('gameover', ''),
     ('signature', 0),
-    ('recovered_address', 0),
+    ('recoveredAddress', 0),
 ])
 def test_signed_gamestate_schema_wrong_datatype(gamestate_data, key, value):
     payload = gamestate_data
@@ -113,7 +113,7 @@ def test_signed_gamestate_schema_wrong_datatype(gamestate_data, key, value):
     'score',
     'gameover',
     'signature',
-    'recovered_address',
+    'recoveredAddress',
 ])
 def test_signed_gamestate_schema_missing_data(gamestate_data, key):
     payload = gamestate_data
