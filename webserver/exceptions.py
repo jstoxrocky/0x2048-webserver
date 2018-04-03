@@ -23,3 +23,7 @@ class UnexpectedEmptyNonce(InvalidUsage):
 
 class UnexpectedContractNonce(InvalidUsage):
     message = 'UnexpectedContractNonce'
+
+
+class UnexpectedMoveAttemptWithoutPaying(InvalidUsage):
+    message = 'UnexpectedMoveAttemptWithoutPaying'

@@ -99,6 +99,7 @@ def test_gamestate_schema_success(gamestate_data):
     ('score', ''),
     ('gameover', ''),
     ('signature', 0),
+    ('recovered_address', 0),
 ])
 def test_signed_gamestate_schema_wrong_datatype(gamestate_data, key, value):
     payload = gamestate_data
@@ -112,6 +113,7 @@ def test_signed_gamestate_schema_wrong_datatype(gamestate_data, key, value):
     'score',
     'gameover',
     'signature',
+    'recovered_address',
 ])
 def test_signed_gamestate_schema_missing_data(gamestate_data, key):
     payload = gamestate_data
@@ -127,7 +129,6 @@ def test_signed_gamestate_schema_success(gamestate_data):
 
 
 @pytest.mark.parametrize('key, value', [
-    ('user', 0),
     ('direction', ''),
 ])
 def test_move_schema_wrong_datatype(move_data, key, value):
@@ -138,7 +139,6 @@ def test_move_schema_wrong_datatype(move_data, key, value):
 
 
 @pytest.mark.parametrize('key', [
-    'user',
     'direction',
 ])
 def test_move_schema_missing_data(move_data, key):

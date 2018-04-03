@@ -22,7 +22,6 @@ class Move(Schema):
     """
     Validate recieved move data structures
     """
-    user = fields.Str(required=True, validate=is_checksum_address)
     direction = fields.Integer(required=True)
 
 
@@ -60,3 +59,4 @@ class Gamestate(Schema):
 
 class SignedGamestate(Gamestate):
     signature = fields.Nested(FullSignature, required=True)
+    recovered_address = fields.Str(required=True, validate=is_checksum_address)

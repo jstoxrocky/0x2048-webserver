@@ -67,15 +67,15 @@ def gamestate_data(app, user, signature_data):
         'board': board,
         'gameover': gameover,
         'signature': signature_data,
+        'recovered_address': user.address,
     }
     return payload
 
 
 @pytest.fixture(scope="function")
-def move_data(app, user):
+def move_data(app):
     direction = 1
     payload = {
-        'user': user.address,
         'direction': direction,
     }
     return payload

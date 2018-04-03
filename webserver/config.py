@@ -22,5 +22,6 @@ INITIAL_STATE = {
         's': '0x0',
         'signature': '0x0',
     },
+    'recovered_address': ARCADE_ADDRESS,
 }
 DISCLAIMER = 'This signature is for intended for use with 0x2048 at the below Rinkeby address. If you are seeing this message and not interacting with 0x2048, someone may be attempting forge your signature'  # noqa: E501
