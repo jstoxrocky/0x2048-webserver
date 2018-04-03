@@ -69,28 +69,36 @@ def confirm_payment():
         raise exceptions.UnexpectedEmptyNonce
     # Validate payload
     payload = request.args
-    print(payload)
     if schemas.Receipt().validate(payload):
         raise exceptions.ValidationError
     # Whoever signs the nonce is our user-address
     messageHash = state_channel.prepare_messageHash_for_signing(
         session['nonce'],
     )
-    signer = state_channel.recover(messageHash, payload['signature'])
+    recovered_address = state_channel.recover(
+        messageHash,
+        payload['signature'],
+    )
+    session['recovered_address'] = recovered_address
     # Wait for transaction to be mined
     wait_for_transaction_receipt(txn_hash=payload['txhash'], timeout=120)
     # Check contract nonce
-    nonce = contract.functions.getNonce(signer).call()
+    nonce = contract.functions.getNonce(session['recovered_address']).call()
     if nonce != decode_hex(session['nonce']):
         raise exceptions.UnexpectedContractNonce
     # Start a new game
     session['paid'] = True
-    new_state = new()
+    state = new()
     msg = state_channel.solidity_keccak(
         ARCADE_ADDRESS,
-        session['address'],
-        new_state['score'],
+        session['recovered_address'],
+        state['score'],
     )
-    signature = state_channel.sign(msg, PRIV)
-    session['state'] = merge(new_state, {'signature': signature})
+    signed_score = state_channel.sign(msg, PRIV)
+    session['state'] = merge(
+        state, {
+            'signature': signed_score,
+            'recovered_address': session['recovered_address'],
+        }
+    )
     return jsonify(session['state'])
