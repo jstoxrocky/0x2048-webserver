@@ -44,7 +44,7 @@ def test_validation_error(mocker, app, api_prefix):
 def test_output_validates(mocker, app, api_prefix, user):
     with app as c:
         with c.session_transaction() as sess:
-            sess['recovered_address'] = user.address
+            sess['recoveredAddress'] = user.address
             sess['paid'] = True
     validate = mocker.patch('webserver.endpoints.move.schemas.Move.validate')
     validate.return_value = {}
@@ -67,7 +67,7 @@ def test_output_validates(mocker, app, api_prefix, user):
 def test_gameover(mocker, app, api_prefix, user):
     with app as c:
         with c.session_transaction() as sess:
-            sess['recovered_address'] = user.address
+            sess['recoveredAddress'] = user.address
             sess['paid'] = True
     validate = mocker.patch('webserver.endpoints.move.schemas.Move.validate')
     validate.return_value = {}

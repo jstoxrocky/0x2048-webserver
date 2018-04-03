@@ -47,14 +47,14 @@ def move():
     # Create state-channel signature
     msg = state_channel.solidity_keccak(
         ARCADE_ADDRESS,
-        session['recovered_address'],
+        session['recoveredAddress'],
         new_state['score'],
     )
     signed_score = state_channel.sign(msg, PRIV)
     session['state'] = merge(
         new_state, {
             'signature': signed_score,
-            'recovered_address': session['recovered_address'],
+            'recoveredAddress': session['recoveredAddress'],
         }
     )
     return jsonify(session['state'])

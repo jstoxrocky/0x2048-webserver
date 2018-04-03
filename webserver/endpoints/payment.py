@@ -75,15 +75,15 @@ def confirm_payment():
     messageHash = state_channel.prepare_messageHash_for_signing(
         session['nonce'],
     )
-    recovered_address = state_channel.recover(
+    recoveredAddress = state_channel.recover(
         messageHash,
         payload['signature'],
     )
-    session['recovered_address'] = recovered_address
+    session['recoveredAddress'] = recoveredAddress
     # Wait for transaction to be mined
     wait_for_transaction_receipt(txn_hash=payload['txhash'], timeout=120)
     # Check contract nonce
-    nonce = contract.functions.getNonce(session['recovered_address']).call()
+    nonce = contract.functions.getNonce(session['recoveredAddress']).call()
     if nonce != decode_hex(session['nonce']):
         raise exceptions.UnexpectedContractNonce
     # Start a new game
@@ -91,14 +91,14 @@ def confirm_payment():
     state = new()
     msg = state_channel.solidity_keccak(
         ARCADE_ADDRESS,
-        session['recovered_address'],
+        session['recoveredAddress'],
         state['score'],
     )
     signed_score = state_channel.sign(msg, PRIV)
     session['state'] = merge(
         state, {
             'signature': signed_score,
-            'recovered_address': session['recovered_address'],
+            'recoveredAddress': session['recoveredAddress'],
         }
     )
     return jsonify(session['state'])

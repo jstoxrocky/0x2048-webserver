@@ -67,7 +67,7 @@ def gamestate_data(app, user, signature_data):
         'board': board,
         'gameover': gameover,
         'signature': signature_data,
-        'recovered_address': user.address,
+        'recoveredAddress': user.address,
     }
     return payload
 
