@@ -36,7 +36,7 @@ def test_confirm_payment_success(mocker, app, api_prefix, user):
             assert sess['paid']
 
 
-def test_recovered_address_is_user(mocker, app, api_prefix, user):
+def test_recoveredAddress_is_user(mocker, app, api_prefix, user):
     nonce = '0x01'
     with app as c:
         with c.session_transaction() as sess:
@@ -59,7 +59,7 @@ def test_recovered_address_is_user(mocker, app, api_prefix, user):
     )
     with app as c:
         with c.session_transaction() as sess:
-            assert sess['recovered_address'] == user.address
+            assert sess['recoveredAddress'] == user.address
 
 
 def test_already_paid(app, api_prefix, user):
