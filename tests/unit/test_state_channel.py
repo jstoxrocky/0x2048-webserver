@@ -75,7 +75,9 @@ def test_generate_random_nonce():
     assert len(decode_hex(nonce)) == 32
 
 
-def test_prepare_messageHash_for_signing():
+def test_prepare_messageHash_for_signing(mocker):
+    mock_addr = '0xA393E5Af104919f023ce0b6d0E5adD1CeDD0120C'
+    mocker.patch('webserver.state_channel.ARCADE_ADDRESS', mock_addr)
     nonce = '0x01'
     msgHash = prepare_messageHash_for_signing(nonce)
     assert msgHash == b'5-\xa3<G?\xc8\x08\r4\x1f\xda\xa8f\x90\x1c\xe5`\xaad\xac\x88\x10\x11B,\xc6,\xce-Y\xa9'  # noqa: E501
