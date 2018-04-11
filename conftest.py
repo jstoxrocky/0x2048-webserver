@@ -1,7 +1,6 @@
 import pytest
 from web3 import Account
 from eth_utils import (
-    pad_left,
     int_to_big_endian,
 )
 
@@ -9,7 +8,7 @@ from eth_utils import (
 num_accounts = 3
 accounts = []
 for i in range(1, num_accounts + 1):
-    pk_bytes = pad_left(int_to_big_endian(i), 32, b'\x00')
+    pk_bytes = int_to_big_endian(i).rjust(32, b'\x00')
     account = Account.privateKeyToAccount(pk_bytes)
     accounts.append(account)
 
