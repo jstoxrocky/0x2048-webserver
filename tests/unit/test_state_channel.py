@@ -56,7 +56,6 @@ def test_recover(user):
 def test_solidity_keccak(user):
     value = 1
     msg = solidity_keccak(user.address, user.address, value)
-    print(msg)
     assert msg == b'g\xd5\x0c\x96A\xb5\xcbJ\xe4]{\x8c\x00\xd0\x8c\x1b\r\xb9>6\xb2j\xe7\x80@\xf9\x11\x14\x93!\xb7\x81'  # noqa: E501
 
 
