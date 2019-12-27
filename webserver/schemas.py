@@ -15,7 +15,7 @@ class Nonce(Schema):
     """
     Validate emitted nonce data structures
     """
-    nonce = fields.Str(required=True, validate=is_hex)
+    nonce = fields.String(required=True, validate=is_hex)
 
 
 class Move(Schema):
@@ -26,21 +26,21 @@ class Move(Schema):
 
 
 class SimpleSignature(Schema):
-    signature = fields.Str(required=True, validate=is_hex)
+    signature = fields.String(required=True, validate=is_hex)
 
 
 class Receipt(Schema):
-    signature = fields.Str(SimpleSignature, required=True)
-    txhash = fields.Str(required=True, validate=is_hex)
+    # Pluck runs the child validations (is_hex)
+    signature = fields.Pluck(SimpleSignature, 'signature', required=True)
+    txhash = fields.String(required=True, validate=is_hex)
 
 
 class FullSignature(Schema):
-    message = fields.Str(required=True, validate=is_hex)
-    messageHash = fields.Str(required=True, validate=is_hex)
+    messageHash = fields.String(required=True, validate=is_hex)
     v = fields.Integer(required=True, validate=lambda x: x <= MAX_V_VALUE)
-    r = fields.Str(required=True, validate=is_hex)
-    s = fields.Str(required=True, validate=is_hex)
-    signature = fields.Str(SimpleSignature, required=True)
+    r = fields.String(required=True, validate=is_hex)
+    s = fields.String(required=True, validate=is_hex)
+    signature = fields.Pluck(SimpleSignature, 'signature', required=True)
 
 
 class Gamestate(Schema):
@@ -59,4 +59,7 @@ class Gamestate(Schema):
 
 class SignedGamestate(Gamestate):
     signature = fields.Nested(FullSignature, required=True)
-    recoveredAddress = fields.Str(required=True, validate=is_checksum_address)
+    recoveredAddress = fields.String(
+        required=True,
+        validate=is_checksum_address,
+    )

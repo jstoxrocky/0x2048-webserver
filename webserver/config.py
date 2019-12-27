@@ -15,7 +15,6 @@ INITIAL_STATE = {
     'gameover': True,
     'score': 0,
     'signature': {
-        'message': '0x0',
         'messageHash': '0x0',
         'v': 0,
         'r': '0x0',

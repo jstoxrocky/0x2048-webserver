@@ -48,7 +48,7 @@ def test_int_to_hex():
 
 def test_recover(user):
     msg = solidity_keccak(ARCADE_ADDRESS, user.address, 1, 2, 3)
-    signed = Account.sign(msg, user.privateKey)
+    signed = Account.signHash(msg, user.privateKey)
     signer = recover(signed['messageHash'], signed['signature'])
     assert signer == user.address
 

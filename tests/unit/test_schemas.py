@@ -44,7 +44,6 @@ def test_full_signature_schema_wrong_datatype(signature_data, key, value):
 
 
 @pytest.mark.parametrize('key', [
-    'message',
     'messageHash',
     'v',
     'r',
@@ -115,15 +114,15 @@ def test_signed_gamestate_schema_wrong_datatype(gamestate_data, key, value):
     'signature',
     'recoveredAddress',
 ])
-def test_signed_gamestate_schema_missing_data(gamestate_data, key):
-    payload = gamestate_data
+def test_signed_gamestate_schema_missing_data(signed_gamestate_data, key):
+    payload = signed_gamestate_data
     payload.pop(key)
     errors = schemas.SignedGamestate().validate(payload)
     assert len(errors) > 0
 
 
-def test_signed_gamestate_schema_success(gamestate_data):
-    payload = gamestate_data
+def test_signed_gamestate_schema_success(signed_gamestate_data):
+    payload = signed_gamestate_data
     errors = schemas.SignedGamestate().validate(payload)
     assert not errors
 
