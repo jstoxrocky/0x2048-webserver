@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/webserver
+    docker:
+      - image: circleci/python:3.6.4
+        environment:
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          ARCADE_ADDRESS: 0x38353E87173B67Db5fa11C1807DD53dA8736E726
+    steps:
+      - checkout
+      - run:
+          command: |
+            pip install virtualenv
+            virtualenv venv
+            source venv/bin/activate
+            pip install -r requirements.txt
+      - run:
+          command: |
+            source venv/bin/activate
+            pytest

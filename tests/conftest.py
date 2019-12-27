@@ -66,10 +66,15 @@ def gamestate_data(app, user, signature_data):
         'score': score,
         'board': board,
         'gameover': gameover,
-        'signature': signature_data,
-        'recoveredAddress': user.address,
     }
     return payload
+
+
+@pytest.fixture(scope="function")
+def signed_gamestate_data(app, gamestate_data, user, signature_data):
+    gamestate_data['signature'] = signature_data
+    gamestate_data['recoveredAddress'] = user.address
+    return gamestate_data
 
 
 @pytest.fixture(scope="function")

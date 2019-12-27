@@ -17,7 +17,7 @@ from webserver.config import (
 from eth_keys import (
     keys,
 )
-from eth_account.signing import (
+from eth_account._utils.signing import (
     to_eth_v,
     to_bytes32,
 )
@@ -35,7 +35,7 @@ def solidity_keccak(contract, user, *values):
 
 
 def sign(msg, private_key):
-    signed = Account.sign(msg, private_key)
+    signed = Account.signHash(msg, private_key)
     signed = valmap(lambda x: x.hex() if isinstance(x, bytes) else x, signed)
     signed['r'] = int_to_hex(signed['r'])
     signed['s'] = int_to_hex(signed['s'])
@@ -43,8 +43,8 @@ def sign(msg, private_key):
 
 
 def recover(msg, signature):
-    signer = Account.recover(
-        msghash=msg,
+    signer = Account.recoverHash(
+        message_hash=msg,
         signature=signature,
     )
     return signer

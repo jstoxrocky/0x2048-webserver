@@ -5,7 +5,7 @@ from eth_utils import (
 from eth_keys import (
     keys,
 )
-from eth_account.signing import (
+from eth_account._utils.signing import (
     to_eth_v,
     to_bytes32,
 )

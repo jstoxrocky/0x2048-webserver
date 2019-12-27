@@ -89,6 +89,8 @@ def confirm_payment():
     # Start a new game
     session['paid'] = True
     state = new()
+    # For information on why these three variables are included in the
+    # hash, check the contract source code in the contract repositiory.
     msg = state_channel.solidity_keccak(
         ARCADE_ADDRESS,
         session['recoveredAddress'],

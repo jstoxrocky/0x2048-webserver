@@ -11,10 +11,9 @@ from webserver.config import (
 from functools import (
     partial,
 )
-from web3.utils.transactions import (
+from web3._utils.transactions import (
     wait_for_transaction_receipt,
 )
-
 
 web3 = Web3(HTTPProvider('https://rinkeby.infura.io/%s' % (INFURA_TOKEN)))
 contract = web3.eth.contract(
