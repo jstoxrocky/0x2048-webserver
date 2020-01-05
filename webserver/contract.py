@@ -15,6 +15,7 @@ from web3._utils.transactions import (
     wait_for_transaction_receipt,
 )
 
+print(ARCADE_ADDRESS)
 web3 = Web3(HTTPProvider('https://rinkeby.infura.io/%s' % (INFURA_TOKEN)))
 contract = web3.eth.contract(
     abi=json.loads(ARCADE_ABI),
