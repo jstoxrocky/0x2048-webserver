@@ -24,6 +24,7 @@ $ python setup.py install
 ## Run
 
 ```bash
+$ python setup.py install
 $ python webserver/application.py
 ```
 
