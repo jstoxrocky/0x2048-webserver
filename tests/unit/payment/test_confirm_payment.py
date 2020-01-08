@@ -16,7 +16,7 @@ def test_confirm_payment_success(mocker, app, api_prefix, user):
 
     signature = state_channel.raw_sign(
         state_channel.prepare_messageHash_for_signing(nonce),
-        user.privateKey,
+        user.key,
     )
     contract = mocker.patch('webserver.endpoints.payment.contract')
     contract.functions.getNonce.return_value.call.return_value = decode_hex(nonce)  # noqa: E501
@@ -45,7 +45,7 @@ def test_recoveredAddress_is_user(mocker, app, api_prefix, user):
 
     signature = state_channel.raw_sign(
         state_channel.prepare_messageHash_for_signing(nonce),
-        user.privateKey,
+        user.key,
     )
     contract = mocker.patch('webserver.endpoints.payment.contract')
     contract.functions.getNonce.return_value.call.return_value = decode_hex(nonce)  # noqa: E501
@@ -102,7 +102,7 @@ def test_incorrect_contract_nonce(mocker, app, api_prefix, user):
             sess['address'] = user.address
     signature = state_channel.raw_sign(
         state_channel.prepare_messageHash_for_signing(nonce),
-        user.privateKey,
+        user.key,
     )
     contract = mocker.patch('webserver.endpoints.payment.contract')
     contract.functions.getNonce.return_value.call.return_value = incorrect_nonce  # noqa: E501

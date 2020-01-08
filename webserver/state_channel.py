@@ -30,7 +30,7 @@ def int_to_hex(integer):
 
 def solidity_keccak(contract, user, *values):
     abi_types = ['address', 'address'] + ['uint256'] * len(values)
-    msg = Web3.soliditySha3(abi_types, [contract, user] + list(values))
+    msg = Web3.solidityKeccak(abi_types, [contract, user] + list(values))
     return msg
 
 
@@ -60,11 +60,11 @@ def hash_typed_data(msg_params):
     data = list(map(lambda x: x['value'], msg_params))
     types = list(map(lambda x: x['type'], msg_params))
     schema = list(map(lambda x: ' '.join([x['type'], x['name']]), msg_params))
-    msg_hash = Web3.soliditySha3(
+    msg_hash = Web3.solidityKeccak(
         ['bytes32', 'bytes32'],
         [
-            Web3.soliditySha3(['string'] * len(msg_params), schema),
-            Web3.soliditySha3(types, data),
+            Web3.solidityKeccak(['string'] * len(msg_params), schema),
+            Web3.solidityKeccak(types, data),
         ]
     )
     return msg_hash

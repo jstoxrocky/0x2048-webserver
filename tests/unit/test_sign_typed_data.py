@@ -21,7 +21,7 @@ def test_one_string_match_metamask(user):
         {'type': 'string', 'name': 'x', 'value': 'x'},
     ]
     msg_hash = hash_typed_data(msg_params)
-    raw_signature = raw_sign(msg_hash, user.privateKey)
+    raw_signature = raw_sign(msg_hash, user.key)
     v_raw, r, s = raw_signature.vrs
     v = to_eth_v(v_raw)
     signature = encode_hex(to_bytes32(r) + to_bytes32(s) + to_bytes(v))
@@ -34,7 +34,7 @@ def test_one_number_match_metamask(user):
         {'type': 'uint256', 'name': 'x', 'value': 1},
     ]
     msg_hash = hash_typed_data(msg_params)
-    key = keys.PrivateKey(user.privateKey)
+    key = keys.PrivateKey(user.key)
     raw_signature = key.sign_msg_hash(msg_hash)
     v_raw, r, s = raw_signature.vrs
     v = to_eth_v(v_raw)
@@ -49,7 +49,7 @@ def test_two_strings_match_metamask(user):
         {'type': 'string', 'name': 'y', 'value': 'y'},
     ]
     msg_hash = hash_typed_data(msg_params)
-    key = keys.PrivateKey(user.privateKey)
+    key = keys.PrivateKey(user.key)
     raw_signature = key.sign_msg_hash(msg_hash)
     v_raw, r, s = raw_signature.vrs
     v = to_eth_v(v_raw)
@@ -64,7 +64,7 @@ def test_one_string_one_number_match_metamask(user):
         {'type': 'uint256', 'name': 'y', 'value': 1},
     ]
     msg_hash = hash_typed_data(msg_params)
-    key = keys.PrivateKey(user.privateKey)
+    key = keys.PrivateKey(user.key)
     raw_signature = key.sign_msg_hash(msg_hash)
     v_raw, r, s = raw_signature.vrs
     v = to_eth_v(v_raw)
@@ -79,7 +79,7 @@ def test_eip_example(user):
         {'type': 'uint32', 'name': 'A number', 'value': 1337},
     ]
     msg_hash = hash_typed_data(msg_params)
-    key = keys.PrivateKey(user.privateKey)
+    key = keys.PrivateKey(user.key)
     raw_signature = key.sign_msg_hash(msg_hash)
     v_raw, r, s = raw_signature.vrs
     v = to_eth_v(v_raw)
