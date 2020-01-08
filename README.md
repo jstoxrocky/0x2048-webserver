@@ -17,7 +17,7 @@ The 0x2048 project is a decentralized game of 2048 played over a state channel b
 ## Setup
 
 ```bash
-S pip install -r requirements.txt
+$ pip install -r requirements.txt
 $ python setup.py install
 ```
 
@@ -33,6 +33,7 @@ Endpoints are hosted at `http://localhost:5000/`
 ## Test
 
 ```bash
+$ git submodule update --init --recursive
 $ pytest
 $ flake8
 ```

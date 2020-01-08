@@ -48,7 +48,7 @@ def api_prefix():
 def signature_data(app, user):
     nonce = 8
     msg = solidity_keccak(ARCADE_ADDRESS, user.address, nonce)
-    signature = sign(msg, user.privateKey)
+    signature = sign(msg, user.key)
     return signature
 
 

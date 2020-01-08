@@ -30,13 +30,13 @@ def test_sign(user):
         output['messageHash'],
         output['signature'],
     )
-    owner = Account.privateKeyToAccount(PRIV).address
+    owner = Account.from_key(PRIV).address
     assert signer == owner
 
 
 def test_raw_sign(user):
     msg = b'Joey to the world!'
-    signature = raw_sign(msg, user.privateKey)
+    signature = raw_sign(msg, user.key)
     assert signature.to_hex() == '0xc940c68a311665c9329c22e3b858bcb91f9c7dc95844c61401ad61f28ba5274e7b1b5d673f6e9494df2fa1d586d49add102f736ac02cc28e6aff221e0fc09a5901'  # noqa: E501
 
 
@@ -48,7 +48,7 @@ def test_int_to_hex():
 
 def test_recover(user):
     msg = solidity_keccak(ARCADE_ADDRESS, user.address, 1, 2, 3)
-    signed = Account.signHash(msg, user.privateKey)
+    signed = Account.signHash(msg, user.key)
     signer = recover(signed['messageHash'], signed['signature'])
     assert signer == user.address
 
@@ -64,7 +64,7 @@ def test_sign_typed_data(user):
         {'type': 'uint256', 'name': 'x', 'value': 1},
     ]
     msg_hash = hash_typed_data(msg_params)
-    signature = sign_typed_data(msg_params, user.privateKey)
+    signature = sign_typed_data(msg_params, user.key)
     signer = recover(msg_hash, signature)
     assert signer == user.address
 

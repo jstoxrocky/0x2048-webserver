@@ -26,7 +26,7 @@ def test_owner_address_matches_json_fixture():
     filepath = os.path.join(constants_dir, "address.json")
     with open(filepath) as f:
         data = json.load(f)
-    assert data['owner'] == Account.privateKeyToAccount(PRIV).address
+    assert data['owner'] == Account.from_key(PRIV).address
 
 
 def test_contract_address_matches_json_fixture():
