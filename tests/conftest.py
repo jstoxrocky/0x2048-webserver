@@ -2,9 +2,8 @@ import pytest
 from webserver.application import (
     application,
 )
-from webserver.state_channel import (
-    solidity_keccak,
-    sign,
+from webserver.signing import (
+    sign_score,
 )
 from webserver.config import (
     ARCADE_ADDRESS,
@@ -47,8 +46,7 @@ def api_prefix():
 @pytest.fixture(scope="function")
 def signature_data(app, user):
     nonce = 8
-    msg = solidity_keccak(ARCADE_ADDRESS, user.address, nonce)
-    signature = sign(msg, user.key)
+    signature = sign_score(user.key, ARCADE_ADDRESS, user.address, nonce)
     return signature
 
 

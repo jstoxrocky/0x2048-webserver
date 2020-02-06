@@ -9,7 +9,7 @@ from flask_cors import (
 )
 from webserver import exceptions
 from webserver import (
-    state_channel,
+    signing,
 )
 from webserver.gameplay import (
     next_state,
@@ -45,12 +45,12 @@ def move():
     state = session.get('state', INITIAL_STATE)
     new_state = next_state(state, payload['direction'])
     # Create state-channel signature
-    msg = state_channel.solidity_keccak(
+    signed_score = signing.sign_score(
+        PRIV,
         ARCADE_ADDRESS,
         session['recoveredAddress'],
         new_state['score'],
     )
-    signed_score = state_channel.sign(msg, PRIV)
     session['state'] = merge(
         new_state, {
             'signature': signed_score,

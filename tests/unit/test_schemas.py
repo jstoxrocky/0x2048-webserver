@@ -32,8 +32,8 @@ def test_simple_signature_schema_success(signature_data):
     ('message', 0),
     ('messageHash', 0),
     ('v', ''),
-    ('r', 0),
-    ('s', 0),
+    ('r', ''),
+    ('s', ''),
     ('signature', 0),
 ])
 def test_full_signature_schema_wrong_datatype(signature_data, key, value):
