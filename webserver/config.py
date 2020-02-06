@@ -17,8 +17,8 @@ INITIAL_STATE = {
     'signature': {
         'messageHash': '0x0',
         'v': 0,
-        'r': '0x0',
-        's': '0x0',
+        'r': 0,
+        's': 0,
         'signature': '0x0',
     },
     'recoveredAddress': ARCADE_ADDRESS,

@@ -1,30 +1,35 @@
 import json
 from webserver import exceptions
 from webserver import schemas
-from eth_utils import (
-    decode_hex,
+from webserver.signing import (
+    prepare_structured_nonce_for_signing,
 )
-from webserver import state_channel
+from webserver.config import (
+    ARCADE_ADDRESS,
+)
+from web3 import (
+    Account,
+)
 
 
 def test_confirm_payment_success(mocker, app, api_prefix, user):
-    nonce = '0x01'
+    nonce = b'\x01' * 32
     with app as c:
         with c.session_transaction() as sess:
             sess['paid'] = False
             sess['nonce'] = nonce
-
-    signature = state_channel.raw_sign(
-        state_channel.prepare_messageHash_for_signing(nonce),
-        user.key,
+    structured_msg = prepare_structured_nonce_for_signing(
+        ARCADE_ADDRESS,
+        nonce,
     )
+    signature = Account.sign_message(structured_msg, user.key)
     contract = mocker.patch('webserver.endpoints.payment.contract')
-    contract.functions.getNonce.return_value.call.return_value = decode_hex(nonce)  # noqa: E501
+    contract.functions.getNonce.return_value.call.return_value = nonce  # noqa: E501
     mocker.patch('webserver.endpoints.payment.wait_for_transaction_receipt')  # noqa: E501
     response = app.get(
         api_prefix + '/payment-confirmation',
         query_string={
-            'signature': signature.to_hex(),
+            'signature': signature['signature'].hex(),
             'txhash': '0x',
         },
     )
@@ -36,24 +41,24 @@ def test_confirm_payment_success(mocker, app, api_prefix, user):
             assert sess['paid']
 
 
-def test_recoveredAddress_is_user(mocker, app, api_prefix, user):
-    nonce = '0x01'
+def test_recovered_address_is_user(mocker, app, api_prefix, user):
+    nonce = b'\x01' * 32
     with app as c:
         with c.session_transaction() as sess:
             sess['paid'] = False
             sess['nonce'] = nonce
-
-    signature = state_channel.raw_sign(
-        state_channel.prepare_messageHash_for_signing(nonce),
-        user.key,
+    structured_msg = prepare_structured_nonce_for_signing(
+        ARCADE_ADDRESS,
+        nonce,
     )
+    signature = Account.sign_message(structured_msg, user.key)
     contract = mocker.patch('webserver.endpoints.payment.contract')
-    contract.functions.getNonce.return_value.call.return_value = decode_hex(nonce)  # noqa: E501
+    contract.functions.getNonce.return_value.call.return_value = nonce  # noqa: E501
     mocker.patch('webserver.endpoints.payment.wait_for_transaction_receipt')  # noqa: E501
     app.get(
         api_prefix + '/payment-confirmation',
         query_string={
-            'signature': signature.to_hex(),
+            'signature': signature['signature'].hex(),
             'txhash': '0x',
         },
     )
@@ -93,24 +98,25 @@ def test_empty_nonce(app, api_prefix, user):
 
 
 def test_incorrect_contract_nonce(mocker, app, api_prefix, user):
-    nonce = '0x01'
-    incorrect_nonce = '0x02'
+    nonce = b'\x01' * 32
+    incorrect_nonce = b'\x02' * 32
     with app as c:
         with c.session_transaction() as sess:
             sess['paid'] = False
             sess['nonce'] = nonce
             sess['address'] = user.address
-    signature = state_channel.raw_sign(
-        state_channel.prepare_messageHash_for_signing(nonce),
-        user.key,
+    structured_msg = prepare_structured_nonce_for_signing(
+        ARCADE_ADDRESS,
+        nonce,
     )
+    signature = Account.sign_message(structured_msg, user.key)
     contract = mocker.patch('webserver.endpoints.payment.contract')
     contract.functions.getNonce.return_value.call.return_value = incorrect_nonce  # noqa: E501
     mocker.patch('webserver.endpoints.payment.wait_for_transaction_receipt')  # noqa: E501
     response = app.get(
         api_prefix + '/payment-confirmation',
         query_string={
-            'signature': signature.to_hex(),
+            'signature': signature['signature'].hex(),
             'txhash': '0x',
         },
     )

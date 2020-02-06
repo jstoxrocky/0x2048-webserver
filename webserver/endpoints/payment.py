@@ -14,7 +14,7 @@ from webserver.config import (
 )
 from webserver import exceptions
 from webserver import (
-    state_channel,
+    signing,
 )
 from webserver.contract import (
     contract,
@@ -26,9 +26,6 @@ from webserver.gameplay import (
 )
 from toolz.dicttoolz import (
     merge,
-)
-from eth_utils import (
-    decode_hex,
 )
 
 
@@ -48,7 +45,7 @@ def generate_nonce_challenge():
     session['nonce'] = None
     # Get random value for nonce
     # Associate the nonce with this session
-    nonce = state_channel.generate_random_nonce()
+    nonce = signing.generate_random_nonce().hex()
     session['nonce'] = nonce
     return jsonify({'nonce': nonce})
 
@@ -72,11 +69,9 @@ def confirm_payment():
     if schemas.Receipt().validate(payload):
         raise exceptions.ValidationError
     # Whoever signs the nonce is our user-address
-    messageHash = state_channel.prepare_messageHash_for_signing(
+    recoveredAddress = signing.recover_signer_from_signed_nonce(
+        ARCADE_ADDRESS,
         session['nonce'],
-    )
-    recoveredAddress = state_channel.recover(
-        messageHash,
         payload['signature'],
     )
     session['recoveredAddress'] = recoveredAddress
@@ -84,19 +79,19 @@ def confirm_payment():
     wait_for_transaction_receipt(txn_hash=payload['txhash'], timeout=120)
     # Check contract nonce
     nonce = contract.functions.getNonce(session['recoveredAddress']).call()
-    if nonce != decode_hex(session['nonce']):
+    if nonce != session['nonce']:
         raise exceptions.UnexpectedContractNonce
     # Start a new game
     session['paid'] = True
     state = new()
     # For information on why these three variables are included in the
     # hash, check the contract source code in the contract repositiory.
-    msg = state_channel.solidity_keccak(
+    signed_score = signing.sign_score(
+        PRIV,
         ARCADE_ADDRESS,
         session['recoveredAddress'],
-        state['score'],
+        state['score']
     )
-    signed_score = state_channel.sign(msg, PRIV)
     session['state'] = merge(
         state, {
             'signature': signed_score,

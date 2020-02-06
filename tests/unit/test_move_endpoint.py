@@ -53,7 +53,7 @@ def test_output_validates(mocker, app, api_prefix, user):
     endpoint = api_prefix + '/move'
     response = app.post(
         endpoint,
-        data=json.dumps({'user': user.address, 'direction': 1}),
+        data=json.dumps({'direction': 1}),
         content_type='application/json'
     )
     output = json.loads(response.data)

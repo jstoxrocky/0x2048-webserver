@@ -38,8 +38,8 @@ class Receipt(Schema):
 class FullSignature(Schema):
     messageHash = fields.String(required=True, validate=is_hex)
     v = fields.Integer(required=True, validate=lambda x: x <= MAX_V_VALUE)
-    r = fields.String(required=True, validate=is_hex)
-    s = fields.String(required=True, validate=is_hex)
+    r = fields.Integer(required=True)
+    s = fields.Integer(required=True)
     signature = fields.Pluck(SimpleSignature, 'signature', required=True)
 
 
