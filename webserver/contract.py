@@ -4,21 +4,30 @@ from web3 import (
     HTTPProvider,
 )
 from webserver.config import (
-    INFURA_TOKEN,
-    ARCADE_ABI,
+    PROVIDER_URI,
+    PROVIDER_HEADERS,
     ARCADE_ADDRESS,
-)
-from functools import (
-    partial,
-)
-from web3._utils.transactions import (
-    wait_for_transaction_receipt,
+    ARCADE_ABI,
 )
 
-web3 = Web3(HTTPProvider('https://rinkeby.infura.io/%s' % (INFURA_TOKEN)))
-contract = web3.eth.contract(
-    abi=json.loads(ARCADE_ABI),
-    address=ARCADE_ADDRESS,
-)
 
-wait_for_transaction_receipt = partial(wait_for_transaction_receipt, web3=web3)
+class Contract():
+
+    def __init__(self, uri, headers):
+        self.web3 = Web3(HTTPProvider(uri, headers))
+
+    def new(self, address, abi):
+        contract = self.web3.eth.contract(
+            abi=json.loads(abi),
+            address=address,
+        )
+        return contract
+
+
+def confirm_payment(signer, challenge):
+    arcade_contract = Contract(
+        PROVIDER_URI,
+        PROVIDER_HEADERS
+    ).new(ARCADE_ADDRESS, ARCADE_ABI)
+    nonce = arcade_contract.functions.getNonce(signer).call()
+    return nonce == challenge

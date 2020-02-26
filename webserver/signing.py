@@ -10,6 +10,10 @@ from toolz.dicttoolz import (
 from hexbytes import (
     HexBytes,
 )
+from webserver.config import (
+    ARCADE_ADDRESS,
+    PRIV,
+)
 import os
 
 
@@ -56,47 +60,44 @@ STRUCTURED_NONCE = {
 }
 
 
-def sign_score(private_key, contract, user, score):
+def sign_score(user, score):
     structured_highscore = STRUCTURED_HIGHSCORE
     structured_highscore["message"] = {
         "user": user,
         "score": score,
     }
-    structured_highscore["domain"]["verifyingContract"] = contract
+    structured_highscore["domain"]["verifyingContract"] = ARCADE_ADDRESS
     structured_msg = encode_structured_data(
         primitive=structured_highscore,
     )
-    # sign_message passes data through
-    # eth_account.messages._hash_eip191_message which is keccak256
-    signature = Account.sign_message(structured_msg, private_key)
+    signature = Account.sign_message(structured_msg, PRIV)
     signature = valmap(
         lambda x: x.hex() if isinstance(x, bytes) else x,
         signature,
     )
+    signature['r'] = HexBytes(signature['r']).hex()
+    signature['s'] = HexBytes(signature['s']).hex()
     return signature
 
 
-def prepare_structured_nonce_for_signing(contract, nonce):
-    # We are assuming that metamask with hash and sign
-    # the nonce as bytes. If it instead signs it as a string, we need to know.
-    # Whether we treat the nonce as bytes or string depends on metamask.
+def prepare_structured_nonce_for_signing(nonce):
     structured_nonce = STRUCTURED_NONCE
     structured_nonce["message"] = {
-        "nonce": nonce,
+        "nonce": HexBytes(nonce),
     }
-    structured_nonce["domain"]["verifyingContract"] = contract
+    structured_nonce["domain"]["verifyingContract"] = ARCADE_ADDRESS
     structured_msg = encode_structured_data(
         primitive=structured_nonce,
     )
     return structured_msg
 
 
-def recover_signer_from_signed_nonce(contract, nonce, signature):
-    message = prepare_structured_nonce_for_signing(contract, nonce)
-    signer = Account.recover_message(message, signature=signature)
+def recover_challenge_signer(nonce, v, r, s):
+    message = prepare_structured_nonce_for_signing(nonce)
+    signer = Account.recover_message(message, vrs=(v, r, s))
     return signer
 
 
-def generate_random_nonce():
+def nonce():
     nonce = HexBytes(os.urandom(32))
-    return nonce
+    return nonce.hex()

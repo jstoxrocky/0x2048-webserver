@@ -5,25 +5,21 @@ class InvalidUsage(Exception):
         Exception.__init__(self)
 
 
-class ValidationError(InvalidUsage):
-    message = 'ValidationError'
+class ChallengeResponseValidationError(InvalidUsage):
+    message = 'ChallengeResponseValidationError'
 
 
-class UnexpectedPaymentAttempt(InvalidUsage):
-    message = 'UnexpectedPaymentAttempt'
+class UnpaidSessionValidationError(InvalidUsage):
+    message = 'UnpaidSessionValidationError'
 
 
-class UnexpectedNonceGenerationAttempt(InvalidUsage):
-    message = 'UnexpectedNonceGenerationAttempt'
+class PaymentError(InvalidUsage):
+    message = 'PaymentError'
 
 
-class UnexpectedEmptyNonce(InvalidUsage):
-    message = 'UnexpectedEmptyNonce'
+class MoveValidationError(InvalidUsage):
+    message = 'MoveValidationError'
 
 
-class UnexpectedContractNonce(InvalidUsage):
-    message = 'UnexpectedContractNonce'
-
-
-class UnexpectedMoveAttemptWithoutPaying(InvalidUsage):
-    message = 'UnexpectedMoveAttemptWithoutPaying'
+class PaidSessionValidationError(InvalidUsage):
+    message = 'PaidSessionValidationError'

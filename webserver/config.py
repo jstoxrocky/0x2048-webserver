@@ -1,26 +1,11 @@
 import os
 
-ORIGINS = ['*']
+REDIS_HOST = os.environ['AWS_REDIS_HOST']
+REDIS_PORT = os.environ['AWS_REDIS_PORT']
 PRIV = os.environ['PRIVATE_KEY_0x2048']
 ARCADE_ADDRESS = os.environ['ARCADE_ADDRESS']
-ARCADE_ABI = '[{"constant": true, "inputs": [], "name": "round", "outputs": [{"name": "", "type": "uint256"}], "payable": false, "stateMutability": "view", "type": "function"}, {"constant": true, "inputs": [{"name": "addr", "type": "address"}], "name": "getNonce", "outputs": [{"name": "", "type": "bytes32"}], "payable": false, "stateMutability": "view", "type": "function"}, {"constant": false, "inputs": [{"name": "v", "type": "uint8"}, {"name": "r", "type": "bytes32"}, {"name": "s", "type": "bytes32"}, {"name": "user", "type": "address"}, {"name": "score", "type": "uint256"}], "name": "uploadScore", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function"}, {"constant": true, "inputs": [], "name": "jackpot", "outputs": [{"name": "", "type": "uint256"}], "payable": false, "stateMutability": "view", "type": "function"}, {"constant": true, "inputs": [{"name": "", "type": "address"}], "name": "nonces", "outputs": [{"name": "", "type": "bytes32"}], "payable": false, "stateMutability": "view", "type": "function"}, {"constant": false, "inputs": [{"name": "nonce", "type": "bytes32"}], "name": "pay", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function"}, {"constant": true, "inputs": [], "name": "highscore", "outputs": [{"name": "", "type": "uint256"}], "payable": false, "stateMutability": "view", "type": "function"}, {"constant": true, "inputs": [], "name": "owner", "outputs": [{"name": "", "type": "address"}], "payable": false, "stateMutability": "view", "type": "function"}, {"constant": true, "inputs": [], "name": "price", "outputs": [{"name": "", "type": "uint256"}], "payable": false, "stateMutability": "view", "type": "function"}, {"inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor"}]'  # noqa: E501
-INFURA_TOKEN = os.environ['INFURA_ACCESS_TOKEN']
-INITIAL_STATE = {
-    'board': [
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-    ],
-    'gameover': True,
-    'score': 0,
-    'signature': {
-        'messageHash': '0x0',
-        'v': 0,
-        'r': 0,
-        's': 0,
-        'signature': '0x0',
-    },
-    'recoveredAddress': ARCADE_ADDRESS,
-}
-DISCLAIMER = 'This signature is for intended for use with 0x2048 at the below Rinkeby address. If you are seeing this message and not interacting with 0x2048, someone may be attempting forge your signature'  # noqa: E501
+ARCADE_ABI = '[{"inputs": [], "stateMutability": "nonpayable", "type": "constructor"}, {"inputs": [{"internalType": "address", "name": "addr", "type": "address"}], "name": "getNonce", "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}], "stateMutability": "view", "type": "function"}, {"inputs": [], "name": "highscore", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"}, {"inputs": [], "name": "jackpot", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "address", "name": "", "type": "address"}], "name": "nonces", "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}], "stateMutability": "view", "type": "function"}, {"inputs": [], "name": "owner", "outputs": [{"internalType": "address", "name": "", "type": "address"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "bytes32", "name": "nonce", "type": "bytes32"}], "name": "pay", "outputs": [], "stateMutability": "payable", "type": "function"}, {"inputs": [], "name": "price", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"}, {"inputs": [], "name": "round", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"}, {"inputs": [{"internalType": "uint8", "name": "v", "type": "uint8"}, {"internalType": "bytes32", "name": "r", "type": "bytes32"}, {"internalType": "bytes32", "name": "s", "type": "bytes32"}, {"internalType": "uint256", "name": "score", "type": "uint256"}], "name": "uploadScore", "outputs": [], "stateMutability": "nonpayable", "type": "function"}]'  # noqa: E501
+INFURA_PROJECT_ID = os.environ['INFURA_PROJECT_ID']
+INFURA_PROJECT_SECRET = os.environ['INFURA_PROJECT_SECRET']
+PROVIDER_HEADERS = {"auth": ("", INFURA_PROJECT_SECRET)}
+PROVIDER_URI = 'https://ropsten.infura.io/v3/%s' % (INFURA_PROJECT_ID)
