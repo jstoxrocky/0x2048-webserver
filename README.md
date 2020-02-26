@@ -60,3 +60,8 @@ The API accepts a transaction hash and a signed value (nonce) from the client an
 
 #### API
 Upon payment confirmation, the API generates a blank game state and sends this to the client along with a signed message. The message is signed by the Arcade's private key and contains the client's Ethereum address (recovered from the initial signed nonce) and the client's current score in the game (initially zero). With each update of the game state via gameplay, the game's new state and is sent to the client along with an updated signed message.
+
+
+
+docker build -t webserver . 
+docker run -p 5000:5000 webserver

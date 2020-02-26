@@ -1,7 +1,7 @@
 from webserver.signing import (
     sign_score,
-    recover_signer_from_signed_nonce,
-    generate_random_nonce,
+    recover_challenge_signer,
+    nonce,
     STRUCTURED_HIGHSCORE,
     STRUCTURED_NONCE,
 )
@@ -14,9 +14,13 @@ from web3 import (
 from eth_account.messages import (
     encode_structured_data,
 )
+from hexbytes import (
+    HexBytes,
+)
 
 
-def test_sign_score(user, owner):
+def test_sign_score(user, owner, monkeypatch):
+    monkeypatch.setattr("webserver.signing.PRIV", owner.key)
     score = 1
     structured_highscore = STRUCTURED_HIGHSCORE
     structured_highscore["message"] = {
@@ -28,7 +32,7 @@ def test_sign_score(user, owner):
         primitive=structured_highscore,
     )
     expected_signer = Account.from_key(owner.key).address
-    signature = sign_score(owner.key, ARCADE_ADDRESS, user.address, score)
+    signature = sign_score(user.address, score)
     actual_signer = Account.recover_message(
         structured_msg,
         signature=signature['signature'],
@@ -36,13 +40,15 @@ def test_sign_score(user, owner):
     assert actual_signer == expected_signer
 
 
-def test_recover_signer_from_signed_nonce(user):
-    nonce = b'\x01' * 32
+def test_recover_challenge_signer(monkeypatch, user):
+    nonce = '0x0101010101010101010101010101010101010101010101010101010101010101'  # noqa: E501
     structured_nonce = STRUCTURED_NONCE
     structured_nonce["message"] = {
-        "nonce": nonce,
+        "nonce": HexBytes(nonce),
     }
-    structured_nonce["domain"]["verifyingContract"] = ARCADE_ADDRESS
+    arcade_address_v1 = '0x6097038687bed106f87DB3fF9d96e71933526C98'
+    monkeypatch.setattr("webserver.signing.ARCADE_ADDRESS", arcade_address_v1)
+    structured_nonce["domain"]["verifyingContract"] = arcade_address_v1
     structured_msg = encode_structured_data(
         primitive=structured_nonce,
     )
@@ -59,14 +65,15 @@ def test_recover_signer_from_signed_nonce(user):
     # for the same StructuredData (bytes32 is a 0x prefixed hex string
     # for Metamask).
     assert signature['signature'].hex() == '0x912892885067b2aac5eafd080d8438d6235c369e626d8d64efcee56ef58c141077f0e72b77a853b6a3a5a7bfaa439a17603a0b375cb8caac7e2e81d55be924f11c'  # noqa: E501
-    actual_signer = recover_signer_from_signed_nonce(
-        ARCADE_ADDRESS,
+    actual_signer = recover_challenge_signer(
         nonce,
-        signature['signature'],
+        signature['v'],
+        signature['r'],
+        signature['s'],
     )
     assert actual_signer == expected_signer
 
 
 def test_generate_random_nonce():
-    nonce = generate_random_nonce()
-    assert len(nonce) == 32
+    value = HexBytes(nonce())
+    assert len(value) == 32

@@ -5,42 +5,66 @@ from marshmallow import (
 from eth_utils import (
     is_hex,
     is_checksum_address,
+    to_bytes,
 )
 
 
+def is_positive(value):
+    return value > 0
+
+
+def hex_is_length_20_bytes(hex):
+    return len(to_bytes(hexstr=hex)) == 20
+
+
+def hex_is_length_32_bytes(hex):
+    return len(to_bytes(hexstr=hex)) == 32
+
+
+def direction_allowed(direction):
+    return direction in ALLOWED_DIRECTIONS
+
+
 MAX_V_VALUE = 28
+ALLOWED_DIRECTIONS = [1, 2, 3, 4]
+
+
+class Address(Schema):
+    address = fields.String(
+        required=True,
+        validate=[is_hex, hex_is_length_20_bytes, is_checksum_address],
+    )
 
 
 class Nonce(Schema):
-    """
-    Validate emitted nonce data structures
-    """
-    nonce = fields.String(required=True, validate=is_hex)
+    nonce = fields.String(
+        required=True,
+        validate=[is_hex, hex_is_length_32_bytes],
+    )
 
 
-class Move(Schema):
-    """
-    Validate recieved move data structures
-    """
-    direction = fields.Integer(required=True)
+class Challenge(Schema):
+    session_id = fields.Pluck(Nonce, 'nonce', required=True)
+    challenge = fields.Pluck(Nonce, 'nonce', required=True)
 
 
-class SimpleSignature(Schema):
-    signature = fields.String(required=True, validate=is_hex)
+class UnpaidSession(Schema):
+    paid = fields.Boolean(required=True, validate=lambda x: x is False)
+    challenge = fields.Pluck(Nonce, 'nonce', required=True)
 
 
-class Receipt(Schema):
-    # Pluck runs the child validations (is_hex)
-    signature = fields.Pluck(SimpleSignature, 'signature', required=True)
-    txhash = fields.String(required=True, validate=is_hex)
+class Signature(Schema):
+    v = fields.Integer(
+        required=True,
+        validate=[is_positive, lambda x: x <= MAX_V_VALUE],
+    )
+    r = fields.String(required=True, validate=[hex_is_length_32_bytes])
+    s = fields.String(required=True, validate=[hex_is_length_32_bytes])
 
 
-class FullSignature(Schema):
-    messageHash = fields.String(required=True, validate=is_hex)
-    v = fields.Integer(required=True, validate=lambda x: x <= MAX_V_VALUE)
-    r = fields.Integer(required=True)
-    s = fields.Integer(required=True)
-    signature = fields.Pluck(SimpleSignature, 'signature', required=True)
+class ChallengeResponse(Schema):
+    session_id = fields.Pluck(Nonce, 'nonce', required=True)
+    signature = fields.Nested(Signature, required=True)
 
 
 class Gamestate(Schema):
@@ -57,9 +81,18 @@ class Gamestate(Schema):
     )
 
 
-class SignedGamestate(Gamestate):
-    signature = fields.Nested(FullSignature, required=True)
-    recoveredAddress = fields.String(
-        required=True,
-        validate=is_checksum_address,
-    )
+class PaidSession(Schema):
+    paid = fields.Boolean(required=True, validate=lambda x: x is True)
+    gamestate = fields.Nested(Gamestate, required=True)
+    recovered_address = fields.Pluck(Address, 'address', required=True)
+
+
+class SignedGamestate(Schema):
+    session_id = fields.Pluck(Nonce, 'nonce', required=True)
+    signature = fields.Nested(Signature, required=True)
+    gamestate = fields.Nested(Gamestate, required=True)
+
+
+class Move(Schema):
+    session_id = fields.Pluck(Nonce, 'nonce', required=True)
+    direction = fields.Integer(required=True, validate=direction_allowed)
