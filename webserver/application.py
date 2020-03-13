@@ -2,6 +2,7 @@ from flask import (
     Flask,
     jsonify,
 )
+import os
 
 
 application = Flask(__name__)
@@ -14,4 +15,6 @@ def index():
 
 
 if __name__ == '__main__':
-    application.run(threaded=True)
+    # For Heroku
+    port = int(os.environ.get('PORT', 5000))
+    application.run(threaded=True, port=port)
