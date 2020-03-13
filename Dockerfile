@@ -10,4 +10,4 @@ RUN pip install -r requirements.txt
 COPY setup.py setup.py
 RUN python setup.py install
 COPY . .
-CMD ["flask", "run"]
+CMD flask run --host 0.0.0.0 --port $PORT

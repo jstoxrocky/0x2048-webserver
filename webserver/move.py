@@ -14,6 +14,7 @@ from webserver.schemas import (
 from webserver.config import (
     REDIS_HOST,
     REDIS_PORT,
+    REDIS_PASSWORD,
 )
 
 
@@ -25,7 +26,11 @@ def move(event, context):
         raise MoveValidationError
 
     # Validate session
-    sessions = redis.Redis(REDIS_HOST, REDIS_PORT)
+    sessions = redis.Redis(
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        password=REDIS_PASSWORD,
+    )
     session_id = move_payload['session_id']
     serialized_session = sessions.get(session_id) or '{}'
     session = json.loads(serialized_session)

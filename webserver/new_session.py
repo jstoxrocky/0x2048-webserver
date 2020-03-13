@@ -6,6 +6,7 @@ from webserver.arcade import (
 from webserver.config import (
     REDIS_HOST,
     REDIS_PORT,
+    REDIS_PASSWORD,
 )
 
 
@@ -14,7 +15,11 @@ def new_session(event, context):
     Reset session data with new session ID and challenge
     Send challenge and session_id "cookie" back to client
     '''
-    sessions = redis.Redis(REDIS_HOST, REDIS_PORT)
+    sessions = redis.Redis(
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        password=REDIS_PASSWORD,
+    )
     arcade_response = Arcade.new_session()
     session_data = {
         'paid': False,
