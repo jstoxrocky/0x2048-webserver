@@ -16,5 +16,4 @@ def index():
 
 if __name__ == '__main__':
     # For Heroku
-    port = int(os.environ.get('PORT', 5000))
-    application.run(threaded=True, port=port)
+    application.run(threaded=True)
