@@ -96,6 +96,5 @@ ENV/
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 node_modules
-static/dist/*
-!static/dist/bundle.js
+static/dist
 .env
