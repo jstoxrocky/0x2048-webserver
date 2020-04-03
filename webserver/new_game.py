@@ -40,6 +40,7 @@ def new_game(event, context):
         raise UnpaidSessionValidationError
 
     # Confirm payment
+    # should this change to Arcade.confirm_payment(address, challenge)...?
     payment_confirmation = Arcade.confirm_payment(
         session['challenge'],
         challenge_response['signature']['v'],

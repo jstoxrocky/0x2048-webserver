@@ -33,7 +33,7 @@ Endpoints are hosted at `http://localhost:5000/`
 ## Test
 
 ```bash
-$ git submodule update --init --recursive
+$ git submodule update --recursive --remote
 $ pytest
 $ flake8
 ```
