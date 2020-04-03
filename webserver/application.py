@@ -17,8 +17,8 @@ from webserver.move import (
 application = Flask(
     __name__,
     static_url_path='',
-    static_folder='static/dist',
-    template_folder='templates',
+    static_folder='../static/dist',
+    template_folder='../templates',
 )
 
 
