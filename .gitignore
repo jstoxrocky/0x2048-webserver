@@ -11,7 +11,6 @@ __pycache__/
 env/
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -96,3 +95,6 @@ ENV/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+node_modules
+static/dist/*
+!static/dist/bundle.js

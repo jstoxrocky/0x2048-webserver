@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+      "target": "es6",
+      "noEmitOnError": true,
+      "noImplicitAny": true,
+      "skipLibCheck": true,
+      "allowSyntheticDefaultImports": true,
+      "jsx": "react",
+      "noUnusedLocals": false,
+      "strict": true,
+      "moduleResolution": "node",
+      "outDir": "static/dist"
+  },
+  "include": [
+      "./static/src/**/*.ts",
+      "./static/src/**/*.tsx",
+  ]
+}

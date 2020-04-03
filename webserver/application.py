@@ -1,6 +1,7 @@
 from flask import (
     Flask,
     request,
+    render_template,
 )
 from webserver.new_session import (
     new_session as endpoints_new_session,
@@ -13,7 +14,17 @@ from webserver.move import (
 )
 
 
-application = Flask(__name__)
+application = Flask(
+    __name__,
+    static_url_path='',
+    static_folder='static/dist',
+    template_folder='templates',
+)
+
+
+@application.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
 
 
 @application.route('/new_session', methods=['GET'])
@@ -37,4 +48,4 @@ def move():
 
 
 if __name__ == '__main__':
-    application.run(threaded=True)
+    application.run(debug=True, threaded=True)

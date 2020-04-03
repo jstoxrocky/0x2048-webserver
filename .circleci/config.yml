@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/webserver
     docker:
-      - image: circleci/python:3.6.8
+      - image: circleci/python:3.6.8-node-browsers
     steps:
       - checkout
       - run:
@@ -13,19 +13,31 @@ jobs:
             git submodule update --recursive --remote
             
       - run:
-          name: "Install"
+          name: "Install Python dependencies"
           command: |
             pip install virtualenv
             virtualenv ../venv
             source ../venv/bin/activate
             pip install -r requirements.txt
       - run:
-          name: "Test"
+          name: "Test Python"
           command: |
             source ../venv/bin/activate
             pytest
       - run:
-          name: "Lint"
+          name: "Lint Python"
           command: |
             source ../venv/bin/activate
             flake8
+      - run:
+          name: "Install Typescript and dependencies"
+          command: |
+            yarn install
+      - run:
+          name: "Compile Typescript"
+          command: |
+            yarn tsc
+      - run:
+          name: "Lint Typescript"
+          command: |
+            yarn lint
