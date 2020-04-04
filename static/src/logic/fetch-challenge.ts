@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import { Protected, ChallengeData } from '../types';
 import protectedCall from './protected-call';
 
-const baseURL = 'http://0.0.0.0:5000/';
+const baseURL = '//0.0.0.0:5000/';
 const api = axios.create({ baseURL });
 
 type ApiResponse = AxiosResponse<ChallengeData>;
