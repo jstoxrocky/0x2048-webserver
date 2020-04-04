@@ -2,9 +2,6 @@ import axios, { AxiosResponse } from 'axios';
 import { Protected, ChallengeData } from '../types';
 import protectedCall from './protected-call';
 
-const baseURL = '/';
-const api = axios.create({ baseURL });
-
 type ApiResponse = AxiosResponse<ChallengeData>;
 
 interface ProtectedChallenge extends Protected {
@@ -14,6 +11,9 @@ interface ProtectedChallenge extends Protected {
 interface ProtectedAxiosResponse extends Protected {
     response: ApiResponse | null;
 }
+
+const baseURL = '/api/v1';
+const api = axios.create({ baseURL });
 
 const fetchChallenge = async (): Promise<ProtectedChallenge> => {
     const errorMessage = 'There was an error retrieving the challenge';

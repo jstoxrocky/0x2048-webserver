@@ -19,7 +19,7 @@ def test_new_session_happy_path():
     app.testing = True
     data = {}
     response = app.get(
-        '/new_session',
+        '/api/v1/new_session',
         data=json.dumps(data),
         content_type='application/json'
     )
@@ -63,7 +63,7 @@ def test_new_game_happy_path(mocker, user):
         .call.return_value = challenge
 
     response = app.post(
-        '/new_game',
+        '/api/v1/new_game',
         data=json.dumps(data),
         content_type='application/json'
     )
@@ -104,7 +104,7 @@ def test_move_happy_path(mocker, user):
     mocker.patch('webserver.new_game.redis.Redis').return_value = redis
 
     response = app.post(
-        '/move',
+        '/api/v1/move',
         data=json.dumps(data),
         content_type='application/json'
     )
