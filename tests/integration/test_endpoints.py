@@ -6,8 +6,8 @@ from web3 import (
 from hexbytes import (
     HexBytes,
 )
-from webserver.application import (
-    application,
+from app import (
+    app as application,
 )
 from webserver.signing import (
     prepare_structured_nonce_for_signing
