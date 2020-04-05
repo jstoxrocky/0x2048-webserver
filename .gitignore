@@ -97,4 +97,4 @@ ENV/
 !.elasticbeanstalk/*.global.yml
 node_modules
 static/dist
-.env
+docker.env
