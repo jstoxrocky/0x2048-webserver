@@ -98,3 +98,4 @@ ENV/
 node_modules
 static/dist
 docker.env
+dist
