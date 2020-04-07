@@ -3,33 +3,33 @@ from webserver import (
 )
 
 
-def test_nonce_schema_wrong_datatype():
-    payload = {'nonce': 1}
-    errors = schemas.Nonce().validate(payload)
+def test_random32bytes_schema_wrong_datatype():
+    payload = {'value': 1}
+    errors = schemas.Random32Bytes().validate(payload)
     assert len(errors) > 0
 
 
-def test_nonce_schema_missing_data():
+def test_random32bytes_schema_missing_data():
     payload = {}
-    errors = schemas.Nonce().validate(payload)
+    errors = schemas.Random32Bytes().validate(payload)
     assert len(errors) > 0
 
 
-def test_nonce_schema_hex_not_32_bytes():
-    nonce = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d'
+def test_random32bytes_schema_hex_not_32_bytes():
+    value = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47'
     payload = {
-        'nonce': nonce,
+        'value': value,
     }
-    errors = schemas.Nonce().validate(payload)
+    errors = schemas.Random32Bytes().validate(payload)
     assert len(errors) > 0
 
 
-def test_nonce_schema_success():
-    nonce = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4d'  # noqa: E501
+def test_random32bytes_schema_success():
+    value = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4d'  # noqa: E501
     payload = {
-        'nonce': nonce,
+        'value': value,
     }
-    errors = schemas.Nonce().validate(payload)
+    errors = schemas.Random32Bytes().validate(payload)
     assert not errors
 
 
@@ -63,39 +63,39 @@ def test_address_schema_success(user):
     assert not errors
 
 
-def test_challenge_schema_wrong_datatype():
-    challenge = 1
+def test_gamecode_schema_wrong_datatype():
+    gamecode = 1
     session_id = 2
     payload = {
-        'challenge': challenge,
+        'gamecode': gamecode,
         'session_id': session_id
     }
-    errors = schemas.Challenge().validate(payload)
+    errors = schemas.Gamecode().validate(payload)
     assert len(errors) > 0
 
 
-def test_challenge_schema_missing_data():
+def test_gamecode_schema_missing_data():
     payload = {}
-    errors = schemas.Challenge().validate(payload)
+    errors = schemas.Gamecode().validate(payload)
     assert len(errors) > 0
 
 
-def test_challenge_schema_success():
-    challenge = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4d'  # noqa: E501
+def test_gamecode_schema_success():
+    gamecode = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4d'  # noqa: E501
     session_id = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4e'  # noqa: E501
     payload = {
-        'challenge': challenge,
+        'gamecode': gamecode,
         'session_id': session_id
     }
-    errors = schemas.Challenge().validate(payload)
+    errors = schemas.Gamecode().validate(payload)
     assert not errors
 
 
 def test_unpaid_session_schema_wrong_datatype():
-    challenge = 1
+    gamecode = 1
     paid = 2
     payload = {
-        'challenge': challenge,
+        'gamecode': gamecode,
         'paid': paid
     }
     errors = schemas.UnpaidSession().validate(payload)
@@ -103,10 +103,10 @@ def test_unpaid_session_schema_wrong_datatype():
 
 
 def test_unpaid_session_schema_paid_true():
-    challenge = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4d'  # noqa: E501
+    gamecode = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4d'  # noqa: E501
     paid = True
     payload = {
-        'challenge': challenge,
+        'gamecode': gamecode,
         'paid': paid
     }
     errors = schemas.UnpaidSession().validate(payload)
@@ -120,10 +120,10 @@ def test_unpaid_session_schema_missing_data():
 
 
 def test_unpaid_session_schema_success():
-    challenge = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4d'  # noqa: E501
+    gamecode = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4d'  # noqa: E501
     paid = False
     payload = {
-        'challenge': challenge,
+        'gamecode': gamecode,
         'paid': paid
     }
     errors = schemas.UnpaidSession().validate(payload)
@@ -141,8 +141,8 @@ def test_signature_schema_wrong_datatype():
 
 def test_signature_schema_hex_not_32_bytes():
     v = 27
-    r = '0x2d3ce8d3b4978bb56e9411453b890d8fe8046c3face40ba1074a2e6a357c9f'
-    s = '0x29f3fc97295e0128173f694fbc8b75f3d0b3759dd58409727bb8d7e1c39f4c'
+    r = '0x2d3ce8d3b4978bb56e9411453b890d8fe8046c3face40ba1074a2e6a35'
+    s = '0x29f3fc97295e0128173f694fbc8b75f3d0b3759dd58409727bb8d7e1c3'
     payload = {'v': v, 'r': r, 's': s}
     errors = schemas.Signature().validate(payload)
     assert len(errors) > 0
@@ -181,7 +181,7 @@ def test_signature_schema_success():
     assert not errors
 
 
-def test_challenge_response_wrong_datatype():
+def test_signature_payload_wrong_datatype():
     payload = {
         'session_id': 1,
         'signature': {
@@ -190,17 +190,17 @@ def test_challenge_response_wrong_datatype():
             's': 'C',
         },
     }
-    errors = schemas.ChallengeResponse().validate(payload)
+    errors = schemas.SignaturePayload().validate(payload)
     assert len(errors) > 0
 
 
-def test_challenge_response_missing_data():
+def test_signature_payload_missing_data():
     payload = {}
-    errors = schemas.ChallengeResponse().validate(payload)
+    errors = schemas.SignaturePayload().validate(payload)
     assert len(errors) > 0
 
 
-def test_challenge_response_success():
+def test_signature_payload_success():
     v = 28
     r = '0x2d3ce8d3b4978bb56e9411453b890d8fe8046c3face40ba1074a2e6a357c9f9b'
     s = '0x29f3fc97295e0128173f694fbc8b75f3d0b3759dd58409727bb8d7e1c39f4c47'
@@ -213,7 +213,7 @@ def test_challenge_response_success():
             's': s,
         },
     }
-    errors = schemas.ChallengeResponse().validate(payload)
+    errors = schemas.SignaturePayload().validate(payload)
     assert not errors
 
 
@@ -251,11 +251,11 @@ def test_gamestate_schema_success():
 def test_paid_session_schema_wrong_datatype():
     paid = 1
     gamestate = 2
-    recovered_address = 3
+    address = 3
     payload = {
         'paid': paid,
         'gamestate': gamestate,
-        'recovered_address': recovered_address,
+        'address': address,
     }
     errors = schemas.PaidSession().validate(payload)
     assert len(errors) > 0
@@ -276,7 +276,7 @@ def test_paid_session_schema_paid_false(user):
     payload = {
         'gamestate': gamestate,
         'paid': paid,
-        'recovered_address': user.address,
+        'address': user.address,
     }
     errors = schemas.PaidSession().validate(payload)
     assert len(errors) > 0
@@ -303,7 +303,7 @@ def test_paid_session_schema_success(user):
     payload = {
         'gamestate': gamestate,
         'paid': paid,
-        'recovered_address': user.address,
+        'address': user.address,
     }
     errors = schemas.PaidSession().validate(payload)
     assert not errors

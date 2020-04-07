@@ -18,9 +18,8 @@ from webserver.config import (
 )
 
 
-def move(event, context):
-    # Validate challenge response
-    move_payload = event
+def move(move_payload):
+    # Validate gamecode response
     errors = Move().validate(move_payload)
     if errors:
         raise MoveValidationError
@@ -39,16 +38,17 @@ def move(event, context):
         raise PaidSessionValidationError
 
     # Move
-    arcade = Arcade(player_address=session['recovered_address'])
-    signed_gamestate = arcade.update_game(
+    address = session['address']
+    signed_gamestate = Arcade.update_game(
         current_state=session['gamestate'],
         update=move_payload['direction'],
+        address=address,
     )
 
     session_data = {
         'paid': True,
         'gamestate': signed_gamestate['state'],
-        'recovered_address': session['recovered_address'],
+        'address': address,
     }
     sessions.set(session_id, json.dumps(session_data))
     payload = {

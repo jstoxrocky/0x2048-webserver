@@ -1,6 +1,6 @@
 from webserver.signing import (
-    nonce,
-    recover_challenge_signer,
+    random_32bytes,
+    recover_gamecode_signer,
     sign_score,
 )
 from webserver.contract import (
@@ -13,33 +13,36 @@ from game.game import (
 
 class Arcade():
 
-    def __init__(self, player_address):
-        self.player_address = player_address
+    def __init__(self):
+        pass
 
     @staticmethod
-    def new_session():
-        session_id = nonce()
-        challenge = nonce()
-        return {
-            'session_id': session_id,
-            'challenge': challenge,
-        }
+    def new_gamecode():
+        gamecode = random_32bytes()
+        return gamecode
 
     @staticmethod
-    def confirm_payment(challenge, v, r, s):
-        recovered_address = recover_challenge_signer(challenge, v, r, s)
-        confirmed = confirm_payment(recovered_address, challenge)
+    def new_session_id():
+        session_id = random_32bytes()
+        return session_id
+
+    @staticmethod
+    def recover_signer(gamecode, v, r, s):
+        recovered_address = recover_gamecode_signer(gamecode, v, r, s)
+        return recovered_address
+
+    @staticmethod
+    def confirm_payment(address, gamecode):
+        confirmed = confirm_payment(address, gamecode)
         success = True
         if not confirmed:
             success = False
-        return {
-            'recovered_address': recovered_address,
-            'success': success
-        }
+        return success
 
-    def new_game(self):
+    @staticmethod
+    def new_game(address):
         state = TwentyFortyEight.new()
-        signed_score = sign_score(self.player_address, state['score'])
+        signed_score = sign_score(address, state['score'])
         return {
             'state': state,
             'signed_score': {
@@ -49,9 +52,10 @@ class Arcade():
             }
         }
 
-    def update_game(self, current_state, update):
+    @staticmethod
+    def update_game(current_state, update, address):
         state = TwentyFortyEight.update(current_state, update)
-        signed_score = sign_score(self.player_address, state['score'])
+        signed_score = sign_score(address, state['score'])
         return {
             'state': state,
             'signed_score': {

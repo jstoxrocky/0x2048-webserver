@@ -1,9 +1,9 @@
 from webserver.signing import (
     sign_score,
-    recover_challenge_signer,
-    nonce,
+    recover_gamecode_signer,
+    random_32bytes,
     STRUCTURED_HIGHSCORE,
-    STRUCTURED_NONCE,
+    STRUCTURED_GAMECODE,
 )
 from webserver.config import (
     ARCADE_ADDRESS,
@@ -40,24 +40,24 @@ def test_sign_score(user, owner, monkeypatch):
     assert actual_signer == expected_signer
 
 
-def test_recover_challenge_signer(monkeypatch, user):
-    nonce = '0x0101010101010101010101010101010101010101010101010101010101010101'  # noqa: E501
-    structured_nonce = STRUCTURED_NONCE
-    structured_nonce["message"] = {
-        "nonce": HexBytes(nonce),
+def test_recover_gamecode_signer(monkeypatch, user):
+    gamecode = '0x0101010101010101010101010101010101010101010101010101010101010101'  # noqa: E501
+    structured_gamecode = STRUCTURED_GAMECODE
+    structured_gamecode["message"] = {
+        "nonce": HexBytes(gamecode),
     }
     arcade_address_v1 = '0x6097038687bed106f87DB3fF9d96e71933526C98'
     monkeypatch.setattr("webserver.signing.ARCADE_ADDRESS", arcade_address_v1)
-    structured_nonce["domain"]["verifyingContract"] = arcade_address_v1
+    structured_gamecode["domain"]["verifyingContract"] = arcade_address_v1
     structured_msg = encode_structured_data(
-        primitive=structured_nonce,
+        primitive=structured_gamecode,
     )
     expected_signer = user.address
     signature = Account.sign_message(structured_msg, user.key)
     # This hardcoded assertion is necessary.
     # Metamask has changed the way EIP 712 is implemented at least
     # four times so far (as of Feb. 2020). In the Arcade game, the user
-    # will sign the nonce in the browser via Metamask. We then recover the
+    # will sign the gamecode in the browser via Metamask. We then recover the
     # signer's address from the signature on the server side via the Python
     # implementation. For this reason, we need to ensure that Metamask is
     # hashing and signing according to EIP 712 in the same way that the Python
@@ -65,8 +65,8 @@ def test_recover_challenge_signer(monkeypatch, user):
     # for the same StructuredData (bytes32 is a 0x prefixed hex string
     # for Metamask).
     assert signature['signature'].hex() == '0x912892885067b2aac5eafd080d8438d6235c369e626d8d64efcee56ef58c141077f0e72b77a853b6a3a5a7bfaa439a17603a0b375cb8caac7e2e81d55be924f11c'  # noqa: E501
-    actual_signer = recover_challenge_signer(
-        nonce,
+    actual_signer = recover_gamecode_signer(
+        gamecode,
         signature['v'],
         signature['r'],
         signature['s'],
@@ -74,6 +74,6 @@ def test_recover_challenge_signer(monkeypatch, user):
     assert actual_signer == expected_signer
 
 
-def test_generate_random_nonce():
-    value = HexBytes(nonce())
+def test_generate_random_32bytes():
+    value = HexBytes(random_32bytes())
     assert len(value) == 32
