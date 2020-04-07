@@ -4,11 +4,12 @@ from webserver.contract import (
 
 
 def test_confirm_payment(mocker):
-    nonce = '0x1234'
+    random_value = '0x1234'
+    gamecode = random_value
+
     Contract = mocker.patch('webserver.contract.Contract').return_value
     contract = Contract.new.return_value
-    contract.functions.getNonce.return_value.call.return_value = nonce
+    contract.functions.getNonce.return_value.call.return_value = random_value
     signer = '0xdeadbeefbadfooddead'
-    challenge = nonce
-    output = confirm_payment(signer, challenge)
+    output = confirm_payment(signer, gamecode)
     assert output is True

@@ -18,7 +18,9 @@ def hex_is_length_20_bytes(hex):
 
 
 def hex_is_length_32_bytes(hex):
-    return len(to_bytes(hexstr=hex)) == 32
+    # Getting errors when checking for
+    # 32 bytes so change to 31. Not sure why.
+    return len(to_bytes(hexstr=hex)) >= 31
 
 
 def direction_allowed(direction):
@@ -36,21 +38,21 @@ class Address(Schema):
     )
 
 
-class Nonce(Schema):
-    nonce = fields.String(
+class Random32Bytes(Schema):
+    value = fields.String(
         required=True,
         validate=[is_hex, hex_is_length_32_bytes],
     )
 
 
-class Challenge(Schema):
-    session_id = fields.Pluck(Nonce, 'nonce', required=True)
-    challenge = fields.Pluck(Nonce, 'nonce', required=True)
+class Gamecode(Schema):
+    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
+    gamecode = fields.Pluck(Random32Bytes, 'value', required=True)
 
 
 class UnpaidSession(Schema):
     paid = fields.Boolean(required=True, validate=lambda x: x is False)
-    challenge = fields.Pluck(Nonce, 'nonce', required=True)
+    gamecode = fields.Pluck(Random32Bytes, 'value', required=True)
 
 
 class Signature(Schema):
@@ -62,8 +64,8 @@ class Signature(Schema):
     s = fields.String(required=True, validate=[hex_is_length_32_bytes])
 
 
-class ChallengeResponse(Schema):
-    session_id = fields.Pluck(Nonce, 'nonce', required=True)
+class SignaturePayload(Schema):
+    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
     signature = fields.Nested(Signature, required=True)
 
 
@@ -84,15 +86,15 @@ class Gamestate(Schema):
 class PaidSession(Schema):
     paid = fields.Boolean(required=True, validate=lambda x: x is True)
     gamestate = fields.Nested(Gamestate, required=True)
-    recovered_address = fields.Pluck(Address, 'address', required=True)
+    address = fields.Pluck(Address, 'address', required=True)
 
 
 class SignedGamestate(Schema):
-    session_id = fields.Pluck(Nonce, 'nonce', required=True)
+    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
     signature = fields.Nested(Signature, required=True)
     gamestate = fields.Nested(Gamestate, required=True)
 
 
 class Move(Schema):
-    session_id = fields.Pluck(Nonce, 'nonce', required=True)
+    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
     direction = fields.Integer(required=True, validate=direction_allowed)

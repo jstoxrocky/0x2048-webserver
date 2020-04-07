@@ -2,7 +2,7 @@ import pytest
 import fakeredis
 import json
 from webserver.move import (
-    move,
+    move as post_move,
 )
 from webserver.schemas import (
     SignedGamestate,
@@ -19,9 +19,9 @@ from webserver.exceptions import (
 
 def test_happy_path(user, mocker):
     # Move
-    arcade_response = Arcade.new_session()
+    session_id = Arcade.new_session_id()
     move_payload = {
-        'session_id': arcade_response['session_id'],
+        'session_id': session_id,
         'direction': 1,
     }
 
@@ -39,17 +39,16 @@ def test_happy_path(user, mocker):
     paid_session = {
         'paid': True,
         'gamestate': gamestate,
-        'recovered_address': user.address,
+        'address': user.address,
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
-    redis.set(arcade_response['session_id'], json.dumps(paid_session))
-    mocker.patch('webserver.new_game.redis.Redis').return_value = redis
+    redis.set(session_id, json.dumps(paid_session))
+    mocker.patch('webserver.game.redis.Redis').return_value = redis
 
     # Run
-    event, context = move_payload, None
-    signed_gamestate = json.loads(move(event, context))
-    session = json.loads(redis.get(arcade_response['session_id']))
+    signed_gamestate = json.loads(post_move(move_payload))
+    session = json.loads(redis.get(session_id))
 
     # Test
     errors = SignedGamestate().validate(signed_gamestate)
@@ -63,33 +62,31 @@ def test_user_provides_bad_move_payload(user, mocker):
     move_payload = {}
 
     # Run / Test
-    event, context = move_payload, None
     with pytest.raises(MoveValidationError):
-        move(event, context)
+        post_move(move_payload)
 
 
 def test_user_has_no_session_id_in_redis(user, mocker):
     # Move
-    arcade_response = Arcade.new_session()
+    session_id = Arcade.new_session_id()
     move_payload = {
-        'session_id': arcade_response['session_id'],
+        'session_id': session_id,
         'direction': 1,
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
-    mocker.patch('webserver.new_game.redis.Redis').return_value = redis
+    mocker.patch('webserver.game.redis.Redis').return_value = redis
 
     # Run / Test
-    event, context = move_payload, None
     with pytest.raises(PaidSessionValidationError):
-        move(event, context)
+        post_move(move_payload)
 
 
 def test_user_has_incorrect_session(user, mocker):
     # Move
-    arcade_response = Arcade.new_session()
+    session_id = Arcade.new_session_id()
     move_payload = {
-        'session_id': arcade_response['session_id'],
+        'session_id': session_id,
         'direction': 1,
     }
 
@@ -97,10 +94,9 @@ def test_user_has_incorrect_session(user, mocker):
     paid_session = {}
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
-    redis.set(arcade_response['session_id'], json.dumps(paid_session))
-    mocker.patch('webserver.new_game.redis.Redis').return_value = redis
+    redis.set(session_id, json.dumps(paid_session))
+    mocker.patch('webserver.game.redis.Redis').return_value = redis
 
     # Run / Test
-    event, context = move_payload, None
     with pytest.raises(PaidSessionValidationError):
-        move(event, context)
+        post_move(move_payload)

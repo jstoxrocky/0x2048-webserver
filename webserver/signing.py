@@ -39,7 +39,7 @@ STRUCTURED_HIGHSCORE = {
 }
 
 
-STRUCTURED_NONCE = {
+STRUCTURED_GAMECODE = {
     "types": {
         "EIP712Domain": [
             {"name": "name", "type": "string"},
@@ -80,24 +80,24 @@ def sign_score(user, score):
     return signature
 
 
-def prepare_structured_nonce_for_signing(nonce):
-    structured_nonce = STRUCTURED_NONCE
-    structured_nonce["message"] = {
-        "nonce": HexBytes(nonce),
+def prepare_structured_gamecode_for_signing(gamecode):
+    structured_gamecode = STRUCTURED_GAMECODE
+    structured_gamecode["message"] = {
+        "nonce": HexBytes(gamecode),
     }
-    structured_nonce["domain"]["verifyingContract"] = ARCADE_ADDRESS
+    structured_gamecode["domain"]["verifyingContract"] = ARCADE_ADDRESS
     structured_msg = encode_structured_data(
-        primitive=structured_nonce,
+        primitive=structured_gamecode,
     )
     return structured_msg
 
 
-def recover_challenge_signer(nonce, v, r, s):
-    message = prepare_structured_nonce_for_signing(nonce)
+def recover_gamecode_signer(gamecode, v, r, s):
+    message = prepare_structured_gamecode_for_signing(gamecode)
     signer = Account.recover_message(message, vrs=(v, r, s))
     return signer
 
 
-def nonce():
-    nonce = HexBytes(os.urandom(32))
-    return nonce.hex()
+def random_32bytes():
+    value = HexBytes(os.urandom(32))
+    return value.hex()

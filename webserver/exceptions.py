@@ -5,8 +5,8 @@ class InvalidUsage(Exception):
         Exception.__init__(self)
 
 
-class ChallengeResponseValidationError(InvalidUsage):
-    message = 'ChallengeResponseValidationError'
+class SignaturePayloadValidationError(InvalidUsage):
+    message = 'SignaturePayloadValidationError'
 
 
 class UnpaidSessionValidationError(InvalidUsage):
