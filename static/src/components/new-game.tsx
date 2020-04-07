@@ -63,7 +63,7 @@ const NewGame = (): JSX.Element => {
         }
         const signedChallenge = signChallengeData as SignedChallenge;
 
-        setPendingChallenge({ transactionHash, signedChallenge });
+        setPendingChallenge({ signedChallenge });
     };
 
     // const onClickConfirmPayment = async (): Promise<void> => {
@@ -96,3 +96,66 @@ const NewGame = (): JSX.Element => {
 };
 
 export default NewGame;
+
+
+// try and wait...
+// if not have a button like: tx wen tthrough but arcade messed up?
+// try to confirm again here. again here.
+
+// explain why tho:
+// 
+// To play the game you will need to pay the [arcade's smart contract]
+// and then let the arcade know who you are.
+// Payment will open up a metamask window.
+// 
+
+// We've given you a secret code. Payment works
+// by sending 0.001 ETH to the Arcade's account along with the secret code.
+// After you've paid, you've got to let us know who you are so we can 
+// confirm your payment. You can do this by sending us back your signature.
+// We'll confirm that your account 
+//
+// Secret code: [SECRET CODE]
+
+// 
+//
+// To verify that you are the payer 
+
+
+
+// 
+//---------------------------------------------------
+// We've sent you a game code. To get playing you must 
+// submit this game code to the Arcade's contract along with 
+// 0.001 ETH as payment. After that, you've got to let us know 
+// who you are so we can confirm the payment. You can do this
+// by signing the game code and sending it back to us.
+// 
+// Game code: [GAME CODE]
+// 
+// [Cancel] [Pay]
+//---------------------------------------------------
+// Waiting for payment confirmation...
+//---------------------------------------------------
+// Error 
+// Something went wrong. You can Cancel or
+// if you're sure that the transaction went through 
+// you can click Sign to continue with payment confirmation.
+//---------------------------------------------------
+// Success
+// Let us know who paid! Send us your signature so we
+// can confirm the payment.
+// 
+// [Cancel] [Sign]
+//---------------------------------------------------
+// Error 
+// Something went wrong. You can Cancel or
+// if want to try again click Sign to retry payment confirmation.
+//---------------------------------------------------
+// Success
+// 
+
+
+// challenege and session id are thr same....
+// Think of a game code as an
+// identifier for a round of play.

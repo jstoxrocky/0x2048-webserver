@@ -17,10 +17,10 @@ from webserver.config import (
     REDIS_PASSWORD,
 )
 
+# we cant allow users to tell us what the session is here
+# they can overwrite someone elses that way.
 
-def move(event, context):
-    # Validate challenge response
-    move_payload = event
+def move(move_payload):
     errors = Move().validate(move_payload)
     if errors:
         raise MoveValidationError
@@ -31,29 +31,30 @@ def move(event, context):
         port=REDIS_PORT,
         password=REDIS_PASSWORD,
     )
-    session_id = move_payload['session_id']
-    serialized_session = sessions.get(session_id) or '{}'
+    gamecode = move_payload['gamecode']
+    serialized_session = sessions.get(gamecode) or '{}'
     session = json.loads(serialized_session)
     errors = PaidSession().validate(session)
     if errors:
         raise PaidSessionValidationError
 
     # Move
-    arcade = Arcade(player_address=session['recovered_address'])
-    signed_gamestate = arcade.update_game(
+    address = session['address']
+    updated_game = Arcade.update_game(
+        address,
         current_state=session['gamestate'],
         update=move_payload['direction'],
     )
 
     session_data = {
         'paid': True,
-        'gamestate': signed_gamestate['state'],
-        'recovered_address': session['recovered_address'],
+        'gamestate': updated_game['state'],
+        'address': address,
     }
-    sessions.set(session_id, json.dumps(session_data))
+    sessions.set(gamecode, json.dumps(session_data))
     payload = {
-        'session_id': session_id,
-        'gamestate': signed_gamestate['state'],
-        'signature': signed_gamestate['signed_score'],
+        'gamecode': gamecode,
+        'gamestate': updated_game['state'],
+        'signature': updated_game['signed_score'],
     }
     return json.dumps(payload)

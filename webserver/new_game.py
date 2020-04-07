@@ -4,13 +4,13 @@ from webserver.arcade import (
     Arcade,
 )
 from webserver.exceptions import (
-    ChallengeResponseValidationError,
+    AuthenticationResponseValidationError,
     UnpaidSessionValidationError,
     PaymentError,
 )
 from webserver.schemas import (
     UnpaidSession,
-    ChallengeResponse,
+    AuthenticationResponse,
 )
 from webserver.config import (
     REDIS_HOST,
@@ -19,12 +19,26 @@ from webserver.config import (
 )
 
 
-def new_game(event, context):
-    # Validate challenge response
-    challenge_response = event
-    errors = ChallengeResponse().validate(challenge_response)
+# we have in Flaks session
+# should not send back gamecode here
+
+# Accepts: sign(gamecode)
+# Must have:
+# - sign(gamecode)
+# - session paid: false
+# Sets:
+# - session
+# -- paid: true
+# -- gamestate
+# -- user
+# - payload
+# -- gamestate
+# -- signature
+def new_game(auth):
+    # Validate identity_authentication
+    errors = AuthenticationResponse().validate(auth)
     if errors:
-        raise ChallengeResponseValidationError
+        raise AuthenticationResponseValidationError
 
     # Validate session
     sessions = redis.Redis(
@@ -32,37 +46,33 @@ def new_game(event, context):
         port=REDIS_PORT,
         password=REDIS_PASSWORD,
     )
-    session_id = challenge_response['session_id']
-    serialized_session = sessions.get(session_id) or '{}'
+    gamecode = auth['gamecode']
+    serialized_session = sessions.get(gamecode) or '{}'
     session = json.loads(serialized_session)
     errors = UnpaidSession().validate(session)
     if errors:
         raise UnpaidSessionValidationError
 
     # Confirm payment
-    # should this change to Arcade.confirm_payment(address, challenge)...?
-    payment_confirmation = Arcade.confirm_payment(
-        session['challenge'],
-        challenge_response['signature']['v'],
-        challenge_response['signature']['r'],
-        challenge_response['signature']['s'],
+    address = Arcade.recover_signer(gamecode, **auth['signature'])
+    success = Arcade.confirm_payment(
+        address,
+        gamecode,
     )
-    if not payment_confirmation['success']:
+    if not success:
         raise PaymentError
 
     # Start new game
-    arcade = Arcade(player_address=payment_confirmation['recovered_address'])
-    signed_gamestate = arcade.new_game()
-
+    new_game = Arcade.new_game(address)
     session_data = {
         'paid': True,
-        'gamestate': signed_gamestate['state'],
-        'recovered_address': payment_confirmation['recovered_address'],
+        'gamestate': new_game['state'],
+        'address': address,
     }
-    sessions.set(session_id, json.dumps(session_data))
+    sessions.set(gamecode, json.dumps(session_data))
     payload = {
-        'session_id': session_id,
-        'gamestate': signed_gamestate['state'],
-        'signature': signed_gamestate['signed_score'],
+        'gamecode': gamecode,
+        'gamestate': new_game['state'],
+        'signature': new_game['signed_score'],
     }
     return json.dumps(payload)

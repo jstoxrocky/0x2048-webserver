@@ -3,7 +3,7 @@ from webserver.arcade import (
 )
 from webserver.signing import (
     sign_score,
-    prepare_structured_nonce_for_signing,
+    prepare_structured_gamecode_for_signing,
 )
 from web3 import (
     Account,
@@ -11,55 +11,74 @@ from web3 import (
 import random
 
 
-def test_new_session(mocker):
-    nonce = '0x1234'
-    mocker.patch('webserver.arcade.nonce').return_value = nonce
-    expected_arcade_response = {
-        'session_id': nonce,
-        'challenge': nonce,
-    }
-    arcade_response = Arcade.new_session()
-    assert arcade_response == expected_arcade_response
+def test_gamecode(mocker):
+    gamecode = '0x1234'
+    mocker.patch('webserver.arcade.generate_gamecode').return_value = gamecode
+    expected_gamecode = gamecode
+    gamecode = Arcade.new_gamecode()
+    assert gamecode == expected_gamecode
+
+
+def test_recover_signer(user):
+    random.seed(1234)
+    gamecode = '0x1234'
+
+    message = prepare_structured_gamecode_for_signing(gamecode)
+    signature = Account.sign_message(message, user.key)
+    address = Arcade.recover_signer(
+        gamecode,
+        signature['v'],
+        signature['r'],
+        signature['s'],
+    )
+    assert address == user.address
 
 
 def test_confirm_payment_success(user, owner, monkeypatch, mocker):
     random.seed(1234)
-    nonce = '0x1234'
+    gamecode = '0x1234'
 
     Contract = mocker.patch('webserver.contract.Contract').return_value
     contract = Contract.new.return_value
-    contract.functions.getNonce.return_value.call.return_value = nonce
+    contract.functions.getNonce.return_value.call.return_value = gamecode
 
-    message = prepare_structured_nonce_for_signing(nonce)
+    message = prepare_structured_gamecode_for_signing(gamecode)
     signature = Account.sign_message(message, user.key)
-    payment_confirmation = Arcade.confirm_payment(
-        nonce,
+    address = Arcade.recover_signer(
+        gamecode,
         signature['v'],
         signature['r'],
         signature['s'],
     )
-    assert payment_confirmation['recovered_address'] == user.address
-    assert payment_confirmation['success']
+    success = Arcade.confirm_payment(
+        address,
+        gamecode,
+    )
+    assert success
 
 
-def test_confirm_payment_user_hasnt_uploaded_challenge(user2, owner, mocker):
+def test_confirm_payment_user_hasnt_uploaded_gamecode(user2, owner, mocker):
     random.seed(1234)
-    nonce = '0x1234'
-    old_nonce = '0x2345'
+    gamecode = '0x1234'
+    old_gamecode = '0x2345'
 
     Contract = mocker.patch('webserver.contract.Contract').return_value
     contract = Contract.new.return_value
-    contract.functions.getNonce.return_value.call.return_value = old_nonce
+    contract.functions.getNonce.return_value.call.return_value = old_gamecode
 
-    message = prepare_structured_nonce_for_signing(nonce)
+    message = prepare_structured_gamecode_for_signing(gamecode)
     signature = Account.sign_message(message, user2.key)
-    payment_confirmation = Arcade.confirm_payment(
-        nonce,
+    address = Arcade.recover_signer(
+        gamecode,
         signature['v'],
         signature['r'],
         signature['s'],
     )
-    assert not payment_confirmation['success']
+    success = Arcade.confirm_payment(
+        address,
+        gamecode,
+    )
+    assert not success
 
 
 def test_new_game(user, owner, monkeypatch):
@@ -80,9 +99,8 @@ def test_new_game(user, owner, monkeypatch):
             's': signed_score['s'],
         },
     }
-    arcade = Arcade(player_address=user.address)
-    signed_game_state = arcade.new_game()
-    assert signed_game_state == expected_signed_game_state
+    new_game = Arcade.new_game(user.address)
+    assert new_game == expected_signed_game_state
 
 
 def test_update_game(user, owner, monkeypatch):
@@ -111,6 +129,9 @@ def test_update_game(user, owner, monkeypatch):
         },
     }
 
-    arcade = Arcade(player_address=user.address)
-    signed_game_state = arcade.update_game(current_state, update=direction)
-    assert signed_game_state == expected_signed_game_state
+    updated_game = Arcade.update_game(
+        user.address,
+        current_state=current_state,
+        update=direction,
+    )
+    assert updated_game == expected_signed_game_state

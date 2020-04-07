@@ -15,10 +15,10 @@ from webserver.arcade import (
     Arcade,
 )
 from webserver.signing import (
-    prepare_structured_nonce_for_signing,
+    prepare_structured_gamecode_for_signing,
 )
 from webserver.exceptions import (
-    ChallengeResponseValidationError,
+    AuthenticationResponseValidationError,
     UnpaidSessionValidationError,
     PaymentError,
 )
@@ -28,14 +28,13 @@ from hexbytes import (
 
 
 def test_happy_path(user, mocker):
-    # Challenge Response
-    arcade_response = Arcade.new_session()
-    signable_message = prepare_structured_nonce_for_signing(
-        arcade_response['challenge']
+    gamecode = Arcade.new_gamecode()
+    signable_message = prepare_structured_gamecode_for_signing(
+        gamecode,
     )
     signature = Account.sign_message(signable_message, user.key)
-    challenge_response = {
-        'session_id': arcade_response['session_id'],
+    auth_response = {
+        'gamecode': gamecode,
         'signature': {
             'v': signature['v'],
             'r': HexBytes(signature['r']).hex(),
@@ -46,23 +45,21 @@ def test_happy_path(user, mocker):
     # UnpaidSession
     unpaid_session = {
         'paid': False,
-        'challenge': arcade_response['challenge']
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
-    redis.set(arcade_response['session_id'], json.dumps(unpaid_session))
+    redis.set(gamecode, json.dumps(unpaid_session))
     mocker.patch('webserver.new_game.redis.Redis').return_value = redis
 
     # Contract
     Contract = mocker.patch('webserver.contract.Contract').return_value
     contract = Contract.new.return_value
     contract.functions.getNonce.return_value \
-        .call.return_value = arcade_response['challenge']
+        .call.return_value = gamecode
 
     # Run
-    event, context = challenge_response, None
-    signed_gamestate = json.loads(new_game(event, context))
-    session = json.loads(redis.get(arcade_response['session_id']))
+    signed_gamestate = json.loads(new_game(auth_response))
+    session = json.loads(redis.get(gamecode))
 
     # Test
     errors = SignedGamestate().validate(signed_gamestate)
@@ -71,25 +68,22 @@ def test_happy_path(user, mocker):
     assert not errors
 
 
-def test_user_provides_bad_challenge_response(user, mocker):
-    # Challenge Response
-    challenge_response = {}
+def test_user_provides_bad_auth_response(user, mocker):
+    auth_response = {}
 
     # Run / Test
-    event, context = challenge_response, None
-    with pytest.raises(ChallengeResponseValidationError):
-        new_game(event, context)
+    with pytest.raises(AuthenticationResponseValidationError):
+        new_game(auth_response)
 
 
-def test_user_has_no_session_id_in_redis(user, mocker):
-    # Challenge Response
-    arcade_response = Arcade.new_session()
-    signable_message = prepare_structured_nonce_for_signing(
-        arcade_response['challenge']
+def test_user_has_no_gamecode_in_redis(user, mocker):
+    gamecode = Arcade.new_gamecode()
+    signable_message = prepare_structured_gamecode_for_signing(
+        gamecode
     )
     signature = Account.sign_message(signable_message, user.key)
-    challenge_response = {
-        'session_id': arcade_response['session_id'],
+    auth_response = {
+        'gamecode': gamecode,
         'signature': {
             'v': signature['v'],
             'r': HexBytes(signature['r']).hex(),
@@ -101,20 +95,18 @@ def test_user_has_no_session_id_in_redis(user, mocker):
     mocker.patch('webserver.new_game.redis.Redis').return_value = redis
 
     # Run / Test
-    event, context = challenge_response, None
     with pytest.raises(UnpaidSessionValidationError):
-        new_game(event, context)
+        new_game(auth_response)
 
 
 def test_user_has_incorrect_session(user, mocker):
-    # Challenge Response
-    arcade_response = Arcade.new_session()
-    signable_message = prepare_structured_nonce_for_signing(
-        arcade_response['challenge']
+    gamecode = Arcade.new_gamecode()
+    signable_message = prepare_structured_gamecode_for_signing(
+        gamecode
     )
     signature = Account.sign_message(signable_message, user.key)
-    challenge_response = {
-        'session_id': arcade_response['session_id'],
+    auth_response = {
+        'gamecode': gamecode,
         'signature': {
             'v': signature['v'],
             'r': HexBytes(signature['r']).hex(),
@@ -126,24 +118,22 @@ def test_user_has_incorrect_session(user, mocker):
     unpaid_session = {}
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
-    redis.set(arcade_response['session_id'], json.dumps(unpaid_session))
+    redis.set(gamecode, json.dumps(unpaid_session))
     mocker.patch('webserver.new_game.redis.Redis').return_value = redis
 
     # Run / Test
-    event, context = challenge_response, None
     with pytest.raises(UnpaidSessionValidationError):
-        new_game(event, context)
+        new_game(auth_response)
 
 
 def test_payment_doesnt_confirm(user, mocker):
-    # Challenge Response
-    arcade_response = Arcade.new_session()
-    signable_message = prepare_structured_nonce_for_signing(
-        arcade_response['challenge']
+    gamecode = Arcade.new_gamecode()
+    signable_message = prepare_structured_gamecode_for_signing(
+        gamecode
     )
     signature = Account.sign_message(signable_message, user.key)
-    challenge_response = {
-        'session_id': arcade_response['session_id'],
+    auth_response = {
+        'gamecode': gamecode,
         'signature': {
             'v': signature['v'],
             'r': HexBytes(signature['r']).hex(),
@@ -154,11 +144,10 @@ def test_payment_doesnt_confirm(user, mocker):
     # UnpaidSession
     unpaid_session = {
         'paid': False,
-        'challenge': arcade_response['challenge']
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
-    redis.set(arcade_response['session_id'], json.dumps(unpaid_session))
+    redis.set(gamecode, json.dumps(unpaid_session))
     mocker.patch('webserver.new_game.redis.Redis').return_value = redis
 
     # Contract
@@ -167,6 +156,5 @@ def test_payment_doesnt_confirm(user, mocker):
     contract.functions.getNonce.return_value.call.return_value = '0x0'
 
     # Run
-    event, context = challenge_response, None
     with pytest.raises(PaymentError):
-        new_game(event, context)
+        new_game(auth_response)

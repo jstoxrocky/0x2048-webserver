@@ -5,8 +5,8 @@ class InvalidUsage(Exception):
         Exception.__init__(self)
 
 
-class ChallengeResponseValidationError(InvalidUsage):
-    message = 'ChallengeResponseValidationError'
+class AuthenticationResponseValidationError(InvalidUsage):
+    message = 'AuthenticationResponseValidationError'
 
 
 class UnpaidSessionValidationError(InvalidUsage):
