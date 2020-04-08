@@ -24,10 +24,10 @@ class Contract():
         return contract
 
 
-def confirm_payment(signer, gamecode):
+def confirm_payment(address, gamecode):
     arcade_contract = Contract(
         PROVIDER_URI,
         PROVIDER_HEADERS
     ).new(ARCADE_ADDRESS, ARCADE_ABI)
-    gamecode_in_contract = arcade_contract.functions.getNonce(signer).call()
+    gamecode_in_contract = arcade_contract.functions.getNonce(address).call()
     return gamecode_in_contract == gamecode

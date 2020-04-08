@@ -39,21 +39,23 @@ def move(move_payload):
 
     # Move
     address = session['address']
-    signed_gamestate = Arcade.update_game(
-        current_state=session['gamestate'],
-        update=move_payload['direction'],
-        address=address,
-    )
+    current_state = session['gamestate']
+    update = move_payload['direction']
+    arcade = Arcade(player=address)
+    next_state, signature = arcade.update_game(current_state, update)
 
+    # Set session
     session_data = {
         'paid': True,
-        'gamestate': signed_gamestate['state'],
+        'gamestate': next_state,
         'address': address,
     }
     sessions.set(session_id, json.dumps(session_data))
+
+    # Set payload
     payload = {
         'session_id': session_id,
-        'gamestate': signed_gamestate['state'],
-        'signature': signed_gamestate['signed_score'],
+        'gamestate': next_state,
+        'signature': signature,
     }
     return json.dumps(payload)

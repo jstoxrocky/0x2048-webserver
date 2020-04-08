@@ -70,13 +70,13 @@ def test_gamecode_schema_wrong_datatype():
         'gamecode': gamecode,
         'session_id': session_id
     }
-    errors = schemas.Gamecode().validate(payload)
+    errors = schemas.GamecodeResponse().validate(payload)
     assert len(errors) > 0
 
 
 def test_gamecode_schema_missing_data():
     payload = {}
-    errors = schemas.Gamecode().validate(payload)
+    errors = schemas.GamecodeResponse().validate(payload)
     assert len(errors) > 0
 
 
@@ -87,7 +87,7 @@ def test_gamecode_schema_success():
         'gamecode': gamecode,
         'session_id': session_id
     }
-    errors = schemas.Gamecode().validate(payload)
+    errors = schemas.GamecodeResponse().validate(payload)
     assert not errors
 
 
@@ -181,39 +181,29 @@ def test_signature_schema_success():
     assert not errors
 
 
-def test_signature_payload_wrong_datatype():
+def test_address_payload_wrong_datatype():
     payload = {
         'session_id': 1,
-        'signature': {
-            'v': 'A',
-            'r': 'B',
-            's': 'C',
-        },
+        'address': 1,
     }
-    errors = schemas.SignaturePayload().validate(payload)
+    errors = schemas.AddressPayload().validate(payload)
     assert len(errors) > 0
 
 
-def test_signature_payload_missing_data():
+def test_address_payload_missing_data():
     payload = {}
-    errors = schemas.SignaturePayload().validate(payload)
+    errors = schemas.AddressPayload().validate(payload)
     assert len(errors) > 0
 
 
-def test_signature_payload_success():
-    v = 28
-    r = '0x2d3ce8d3b4978bb56e9411453b890d8fe8046c3face40ba1074a2e6a357c9f9b'
-    s = '0x29f3fc97295e0128173f694fbc8b75f3d0b3759dd58409727bb8d7e1c39f4c47'
+def test_address_payload_success():
     session_id = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4e'  # noqa: E501
+    address = '0xc519A51c6cC9B36e6cEbcC732b9036dAffc69B5B'
     payload = {
         'session_id': session_id,
-        'signature': {
-            'v': v,
-            'r': r,
-            's': s,
-        },
+        'address': address,
     }
-    errors = schemas.SignaturePayload().validate(payload)
+    errors = schemas.AddressPayload().validate(payload)
     assert not errors
 
 

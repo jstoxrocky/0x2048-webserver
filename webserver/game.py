@@ -4,13 +4,12 @@ from webserver.arcade import (
     Arcade,
 )
 from webserver.exceptions import (
-    SignaturePayloadValidationError,
+    AddressPayloadValidationError,
     UnpaidSessionValidationError,
-    PaymentError,
 )
 from webserver.schemas import (
     UnpaidSession,
-    SignaturePayload,
+    AddressPayload,
 )
 from webserver.config import (
     REDIS_HOST,
@@ -19,19 +18,18 @@ from webserver.config import (
 )
 
 
-def game(signature_payload):
-    # Validate gamecode response
-    errors = SignaturePayload().validate(signature_payload)
+def game(payload):
+    errors = AddressPayload().validate(payload)
     if errors:
-        raise SignaturePayloadValidationError
+        raise AddressPayloadValidationError
 
     # Validate session
+    session_id = payload['session_id']
     sessions = redis.Redis(
         host=REDIS_HOST,
         port=REDIS_PORT,
         password=REDIS_PASSWORD,
     )
-    session_id = signature_payload['session_id']
     serialized_session = sessions.get(session_id) or '{}'
     session = json.loads(serialized_session)
     errors = UnpaidSession().validate(session)
@@ -40,26 +38,27 @@ def game(signature_payload):
 
     # Confirm payment
     gamecode = session['gamecode']
-    address = Arcade.recover_signer(gamecode, **signature_payload['signature'])
-    success = Arcade.confirm_payment(
-        address,
-        gamecode,
-    )
-    if not success:
-        raise PaymentError
+    address = payload['address']
+    error = Arcade.confirm_payment(address, gamecode)
+    if error:
+        raise error
 
     # Start new game
-    signed_gamestate = Arcade.new_game(address)
+    arcade = Arcade(player=address)
+    next_state, signature = arcade.new_game()
 
+    # Set session
     session_data = {
         'paid': True,
-        'gamestate': signed_gamestate['state'],
+        'gamestate': next_state,
         'address': address,
     }
     sessions.set(session_id, json.dumps(session_data))
+
+    # Set payload
     payload = {
         'session_id': session_id,
-        'gamestate': signed_gamestate['state'],
-        'signature': signed_gamestate['signed_score'],
+        'gamestate': next_state,
+        'signature': signature,
     }
     return json.dumps(payload)
