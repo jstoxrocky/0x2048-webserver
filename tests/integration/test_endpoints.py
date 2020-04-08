@@ -1,16 +1,7 @@
 import json
 import fakeredis
-from web3 import (
-    Account,
-)
-from hexbytes import (
-    HexBytes,
-)
 from app import (
     app as application,
-)
-from webserver.signing import (
-    prepare_structured_gamecode_for_signing
 )
 
 
@@ -31,19 +22,9 @@ def test_game_happy_path(mocker, user):
     app.testing = True
     session_id = '0x5dc99a053b9a2ca01da214a3a159e4c2da7be0ba7ff4e073551e023e31c5a332'  # noqa: E501
     gamecode = '0x1c3103ad99a02bea73d377c82a490eef72fea445b39a2ec8e4b6e671b534b13b'  # noqa: E501
-
-    # Gamecode
-    signable_message = prepare_structured_gamecode_for_signing(
-        gamecode
-    )
-    signature = Account.sign_message(signable_message, user.key)
-    data = {
+    payload = {
         'session_id': session_id,
-        'signature': {
-            'v': signature['v'],
-            'r': HexBytes(signature['r']).hex(),
-            's': HexBytes(signature['s']).hex(),
-        }
+        'address': user.address,
     }
 
     # Session
@@ -64,7 +45,7 @@ def test_game_happy_path(mocker, user):
 
     response = app.get(
         '/api/v1/game',
-        data=json.dumps(data),
+        data=json.dumps(payload),
         content_type='application/json'
     )
     assert response.status_code == 200

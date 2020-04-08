@@ -31,6 +31,7 @@ MAX_V_VALUE = 28
 ALLOWED_DIRECTIONS = [1, 2, 3, 4]
 
 
+# Building blocks
 class Address(Schema):
     address = fields.String(
         required=True,
@@ -45,7 +46,13 @@ class Random32Bytes(Schema):
     )
 
 
-class Gamecode(Schema):
+# Used Schemas
+class AddressPayload(Schema):
+    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
+    address = fields.Pluck(Address, 'address', required=True)
+
+
+class GamecodeResponse(Schema):
     session_id = fields.Pluck(Random32Bytes, 'value', required=True)
     gamecode = fields.Pluck(Random32Bytes, 'value', required=True)
 
@@ -62,11 +69,6 @@ class Signature(Schema):
     )
     r = fields.String(required=True, validate=[hex_is_length_32_bytes])
     s = fields.String(required=True, validate=[hex_is_length_32_bytes])
-
-
-class SignaturePayload(Schema):
-    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
-    signature = fields.Nested(Signature, required=True)
 
 
 class Gamestate(Schema):

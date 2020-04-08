@@ -5,7 +5,7 @@ from webserver.gamecode import (
 )
 from webserver.schemas import (
     UnpaidSession,
-    Gamecode,
+    GamecodeResponse,
 )
 
 
@@ -20,5 +20,5 @@ def test_happy_path(mocker):
 
     errors = UnpaidSession().validate(session)
     assert not errors
-    errors = Gamecode().validate(gamecode)
+    errors = GamecodeResponse().validate(gamecode)
     assert not errors

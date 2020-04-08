@@ -3,12 +3,11 @@ from webserver.arcade import (
 )
 from webserver.signing import (
     sign_score,
-    prepare_structured_gamecode_for_signing,
-)
-from web3 import (
-    Account,
 )
 import random
+from webserver.exceptions import (
+    PaymentError,
+)
 
 
 def test_new_gamecode(mocker):
@@ -27,46 +26,21 @@ def test_new_session_id(mocker):
     assert session_id == expected_session_id
 
 
-def test_recover_signer(user):
-    random.seed(1234)
-    gamecode = '0x1234'
-
-    message = prepare_structured_gamecode_for_signing(gamecode)
-    signature = Account.sign_message(message, user.key)
-    address = Arcade.recover_signer(
-        gamecode,
-        signature['v'],
-        signature['r'],
-        signature['s'],
-    )
-    assert address == user.address
-
-
 def test_confirm_payment_success(user, owner, monkeypatch, mocker):
-    random.seed(1234)
     gamecode = '0x1234'
 
     Contract = mocker.patch('webserver.contract.Contract').return_value
     contract = Contract.new.return_value
     contract.functions.getNonce.return_value.call.return_value = gamecode
 
-    message = prepare_structured_gamecode_for_signing(gamecode)
-    signature = Account.sign_message(message, user.key)
-    address = Arcade.recover_signer(
-        gamecode,
-        signature['v'],
-        signature['r'],
-        signature['s'],
-    )
-    success = Arcade.confirm_payment(
-        address,
+    error = Arcade.confirm_payment(
+        user.address,
         gamecode,
     )
-    assert success
+    assert error is None
 
 
-def test_confirm_payment_user_hasnt_uploaded_gamecode(user2, owner, mocker):
-    random.seed(1234)
+def test_confirm_payment_user_hasnt_uploaded_gamecode(user, owner, mocker):
     random_value = '0x1234'
     gamecode = random_value
     old_gamecode = '0x2345'
@@ -75,19 +49,11 @@ def test_confirm_payment_user_hasnt_uploaded_gamecode(user2, owner, mocker):
     contract = Contract.new.return_value
     contract.functions.getNonce.return_value.call.return_value = old_gamecode
 
-    message = prepare_structured_gamecode_for_signing(gamecode)
-    signature = Account.sign_message(message, user2.key)
-    address = Arcade.recover_signer(
-        gamecode,
-        signature['v'],
-        signature['r'],
-        signature['s'],
-    )
-    success = Arcade.confirm_payment(
-        address,
+    error = Arcade.confirm_payment(
+        user.address,
         gamecode,
     )
-    assert not success
+    assert error == PaymentError
 
 
 def test_new_game(user, owner, monkeypatch):
@@ -100,16 +66,15 @@ def test_new_game(user, owner, monkeypatch):
     }
     score = 0
     signed_score = sign_score(user.address, score)
-    expected_signed_game_state = {
-        'state': expected_state,
-        'signed_score': {
-            'v': signed_score['v'],
-            'r': signed_score['r'],
-            's': signed_score['s'],
-        },
+    expected_signature = {
+        'v': signed_score['v'],
+        'r': signed_score['r'],
+        's': signed_score['s'],
     }
-    signed_game_state = Arcade.new_game(user.address)
-    assert signed_game_state == expected_signed_game_state
+    arcade = Arcade(player=user.address)
+    next_state, signature = arcade.new_game()
+    assert next_state == expected_state
+    assert signature == expected_signature
 
 
 def test_update_game(user, owner, monkeypatch):
@@ -120,7 +85,7 @@ def test_update_game(user, owner, monkeypatch):
         'score': 0,
         'gameover': False,
     }
-    direction = 2
+    update = 2
 
     expected_state = {
         'board': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [2, 4, 2, 0]],
@@ -129,17 +94,12 @@ def test_update_game(user, owner, monkeypatch):
     }
     score = 0
     signed_score = sign_score(user.address, score)
-    expected_signed_game_state = {
-        'state': expected_state,
-        'signed_score': {
-            'v': signed_score['v'],
-            'r': signed_score['r'],
-            's': signed_score['s'],
-        },
+    expected_signature = {
+        'v': signed_score['v'],
+        'r': signed_score['r'],
+        's': signed_score['s'],
     }
-    signed_game_state = Arcade.update_game(
-        current_state,
-        update=direction,
-        address=user.address,
-    )
-    assert signed_game_state == expected_signed_game_state
+    arcade = Arcade(player=user.address)
+    next_state, signature = arcade.update_game(current_state, update)
+    assert next_state == expected_state
+    assert signature == expected_signature

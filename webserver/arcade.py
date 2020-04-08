@@ -1,20 +1,22 @@
 from webserver.signing import (
     random_32bytes,
-    recover_gamecode_signer,
     sign_score,
 )
-from webserver.contract import (
-    confirm_payment,
+from webserver import (
+    contract,
 )
 from game.game import (
     TwentyFortyEight
+)
+from webserver.exceptions import (
+    PaymentError,
 )
 
 
 class Arcade():
 
-    def __init__(self):
-        pass
+    def __init__(self, player):
+        self.player = player
 
     @staticmethod
     def new_gamecode():
@@ -27,40 +29,29 @@ class Arcade():
         return session_id
 
     @staticmethod
-    def recover_signer(gamecode, v, r, s):
-        recovered_address = recover_gamecode_signer(gamecode, v, r, s)
-        return recovered_address
-
-    @staticmethod
     def confirm_payment(address, gamecode):
-        confirmed = confirm_payment(address, gamecode)
-        success = True
+        confirmed = contract.confirm_payment(address, gamecode)
+        error = None
         if not confirmed:
-            success = False
-        return success
+            error = PaymentError
+        return error
 
-    @staticmethod
-    def new_game(address):
+    def new_game(self):
         state = TwentyFortyEight.new()
-        signed_score = sign_score(address, state['score'])
-        return {
-            'state': state,
-            'signed_score': {
-                'v': signed_score['v'],
-                'r': signed_score['r'],
-                's': signed_score['s'],
-            }
+        signed_score = sign_score(self.player, state['score'])
+        signature = {
+            'v': signed_score['v'],
+            'r': signed_score['r'],
+            's': signed_score['s'],
         }
+        return state, signature
 
-    @staticmethod
-    def update_game(current_state, update, address):
+    def update_game(self, current_state, update):
         state = TwentyFortyEight.update(current_state, update)
-        signed_score = sign_score(address, state['score'])
-        return {
-            'state': state,
-            'signed_score': {
-                'v': signed_score['v'],
-                'r': signed_score['r'],
-                's': signed_score['s'],
-            }
+        signed_score = sign_score(self.player, state['score'])
+        signature = {
+            'v': signed_score['v'],
+            'r': signed_score['r'],
+            's': signed_score['s'],
         }
+        return state, signature

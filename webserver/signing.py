@@ -39,27 +39,6 @@ STRUCTURED_HIGHSCORE = {
 }
 
 
-STRUCTURED_GAMECODE = {
-    "types": {
-        "EIP712Domain": [
-            {"name": "name", "type": "string"},
-            {"name": "version", "type": "string"},
-            {"name": "chainId", "type": "uint256"},
-            {"name": "verifyingContract", "type": "address"}
-        ],
-        "Nonce": [
-            {"name": "nonce", "type": "bytes32"},
-        ],
-    },
-    "primaryType": "Nonce",
-    "domain": {
-        "name": "0x2048",
-        "version": "1.0",
-        "chainId": 1,
-    },
-}
-
-
 def sign_score(user, score):
     structured_highscore = STRUCTURED_HIGHSCORE
     structured_highscore["message"] = {
@@ -78,24 +57,6 @@ def sign_score(user, score):
     signature['r'] = HexBytes(signature['r']).hex()
     signature['s'] = HexBytes(signature['s']).hex()
     return signature
-
-
-def prepare_structured_gamecode_for_signing(gamecode):
-    structured_gamecode = STRUCTURED_GAMECODE
-    structured_gamecode["message"] = {
-        "nonce": HexBytes(gamecode),
-    }
-    structured_gamecode["domain"]["verifyingContract"] = ARCADE_ADDRESS
-    structured_msg = encode_structured_data(
-        primitive=structured_gamecode,
-    )
-    return structured_msg
-
-
-def recover_gamecode_signer(gamecode, v, r, s):
-    message = prepare_structured_gamecode_for_signing(gamecode)
-    signer = Account.recover_message(message, vrs=(v, r, s))
-    return signer
 
 
 def random_32bytes():
