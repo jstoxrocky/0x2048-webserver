@@ -5,11 +5,9 @@ from webserver.signing import (
 from webserver import (
     contract,
 )
-from game.game import (
-    TwentyFortyEight
-)
-from webserver.exceptions import (
-    PaymentError,
+from webserver.game_config import (
+    GAME_MAPPING,
+    GAME_METADATA,
 )
 
 
@@ -19,9 +17,16 @@ class Arcade():
         self.player = player
 
     @staticmethod
-    def new_gamecode():
-        gamecode = random_32bytes()
-        return gamecode
+    def game_info(game_id):
+        meta = GAME_METADATA[game_id]
+        stats = contract.get_game_stats(game_id)
+        result = {**meta, **stats, 'id': game_id}
+        return result
+
+    @staticmethod
+    def new_payment_code():
+        payment_code = random_32bytes()
+        return payment_code
 
     @staticmethod
     def new_session_id():
@@ -29,29 +34,28 @@ class Arcade():
         return session_id
 
     @staticmethod
-    def confirm_payment(address, gamecode):
-        confirmed = contract.confirm_payment(address, gamecode)
-        error = None
-        if not confirmed:
-            error = PaymentError
+    def confirm_payment(game_id, address, payment_code):
+        error = contract.confirm_payment(game_id, address, payment_code)
         return error
 
-    def new_game(self):
-        state = TwentyFortyEight.new()
-        signed_score = sign_score(self.player, state['score'])
-        signature = {
-            'v': signed_score['v'],
-            'r': signed_score['r'],
-            's': signed_score['s'],
+    def new_game(self, game_id):
+        game = GAME_MAPPING[game_id]
+        state = game.new()
+        signature = sign_score(self.player, state['score'])
+        signed_score = {
+            'v': signature['v'],
+            'r': signature['r'],
+            's': signature['s'],
         }
-        return state, signature
+        return state, signed_score
 
-    def update_game(self, current_state, update):
-        state = TwentyFortyEight.update(current_state, update)
-        signed_score = sign_score(self.player, state['score'])
-        signature = {
-            'v': signed_score['v'],
-            'r': signed_score['r'],
-            's': signed_score['s'],
+    def update_game(self, game_id, current_state, update):
+        game = GAME_MAPPING[game_id]
+        state = game.update(current_state, update)
+        signature = sign_score(self.player, state['score'])
+        signed_score = {
+            'v': signature['v'],
+            'r': signature['r'],
+            's': signature['s'],
         }
-        return state, signature
+        return state, signed_score

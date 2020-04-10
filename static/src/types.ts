@@ -21,26 +21,60 @@ export interface EthereumWindow extends Window {
     ethereum: MetamaskProvider;
 }
 
-export interface ChallengeData {
+export interface PaymentCodeData {
     session_id: string;
-    challenge: string;
+    payment_code: string;
 }
-export type TransactionHash = string;
-export type SignedChallenge = string;
 
-export interface PendingChallenge {
-    transactionHash: string;
-    signedChallenge: string;
+export interface GameResponse {
+    gamestate: Gamestate;
+    signed_score: SignedScore;
 }
 
 export interface Gamestate {
     score: number;
 }
 
+export interface SignedScore {
+    v: string;
+    r: string;
+    s: string;
+}
+
 export interface FakeResponse {
     data: null;
 }
 
-export interface Protected {
-    error: string | null;
+export interface ProtectedError {
+    error: boolean;
+}
+
+export interface Block {
+    from: string;
+}
+
+export interface Session {
+    id: string | null;
+    gamestate: Gamestate | null;
+    signedScore: SignedScore | null;
+}
+
+export type Accounts = string[];
+
+export interface Metadata {
+    highscore: number;
+    jackpot: number;
+    price: number;
+    round: number;
+}
+
+export interface GameInfo {
+    id: string;
+    highscore: number;
+    jackpot: number;
+    name: string;
+}
+
+export interface GameInfoResponse {
+    games: GameInfo[];
 }

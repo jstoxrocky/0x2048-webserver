@@ -10,31 +10,31 @@ from webserver.config import (
 )
 
 
-def gamecode():
+def payment_code():
     '''
-    Reset session data with new session ID and gamecode
-    Send gamecode and session_id "cookie" back to client
+    Reset session data with new session ID and payment_code
+    Send payment_code and session_id "cookie" back to client
     '''
     sessions = redis.Redis(
         host=REDIS_HOST,
         port=REDIS_PORT,
         password=REDIS_PASSWORD,
     )
-    gamecode = Arcade.new_gamecode()
+    payment_code = Arcade.new_payment_code()
     session_id = Arcade.new_session_id()
 
-    # This is the only place that gamecode gets
+    # This is the only place that payment_code gets
     # set in the session. For this reason, we can
     # skip the user signing and sending us their signature since
     # we need whatever address they send us (could be a lie) to match
-    # with the session gamecode.
+    # with the session payment_code.
     session_data = {
         'paid': False,
-        'gamecode': gamecode,
+        'payment_code': payment_code,
     }
     sessions.set(session_id, json.dumps(session_data))
     payload = {
         'session_id': session_id,
-        'gamecode': gamecode,
+        'payment_code': payment_code,
     }
     return json.dumps(payload)

@@ -4,11 +4,11 @@ from webserver.arcade import (
     Arcade,
 )
 from webserver.exceptions import (
-    MoveValidationError,
+    MovePayloadValidationError,
     PaidSessionValidationError,
 )
 from webserver.schemas import (
-    Move,
+    MovePayload,
     PaidSession,
 )
 from webserver.config import (
@@ -18,11 +18,10 @@ from webserver.config import (
 )
 
 
-def move(move_payload):
-    # Validate gamecode response
-    errors = Move().validate(move_payload)
+def move(payload):
+    errors = MovePayload().validate(payload)
     if errors:
-        raise MoveValidationError
+        raise MovePayloadValidationError
 
     # Validate session
     sessions = redis.Redis(
@@ -30,7 +29,7 @@ def move(move_payload):
         port=REDIS_PORT,
         password=REDIS_PASSWORD,
     )
-    session_id = move_payload['session_id']
+    session_id = payload['session_id']
     serialized_session = sessions.get(session_id) or '{}'
     session = json.loads(serialized_session)
     errors = PaidSession().validate(session)
@@ -39,23 +38,28 @@ def move(move_payload):
 
     # Move
     address = session['address']
+    game_id = session['game_id']
     current_state = session['gamestate']
-    update = move_payload['direction']
+    update = payload['direction']
     arcade = Arcade(player=address)
-    next_state, signature = arcade.update_game(current_state, update)
+    next_state, signed_score = arcade.update_game(
+        game_id,
+        current_state,
+        update,
+    )
 
     # Set session
     session_data = {
         'paid': True,
         'gamestate': next_state,
         'address': address,
+        'game_id': game_id,
     }
     sessions.set(session_id, json.dumps(session_data))
 
     # Set payload
     payload = {
-        'session_id': session_id,
         'gamestate': next_state,
-        'signature': signature,
+        'signed_score': signed_score,
     }
     return json.dumps(payload)

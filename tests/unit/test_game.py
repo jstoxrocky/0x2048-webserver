@@ -5,31 +5,36 @@ from webserver.game import (
     game as get_game,
 )
 from webserver.schemas import (
-    SignedGamestate,
+    SignedGamestateResponse,
     PaidSession,
 )
 from webserver.arcade import (
     Arcade,
 )
 from webserver.exceptions import (
-    AddressPayloadValidationError,
+    PaymentLocatorPayloadValidationError,
     UnpaidSessionValidationError,
     PaymentError,
+)
+from webserver.game_config import (
+    TWENTY_FORTY_EIGHT,
 )
 
 
 def test_happy_path(user, mocker):
-    gamecode = Arcade.new_gamecode()
+    payment_code = Arcade.new_payment_code()
     session_id = Arcade.new_session_id()
-    address_payload = {
+    game_id = TWENTY_FORTY_EIGHT
+    payment_locator_payload = {
         'session_id': session_id,
         'address': user.address,
+        'game_id': game_id,
     }
 
     # UnpaidSession
     unpaid_session = {
         'paid': False,
-        'gamecode': gamecode,
+        'payment_code': payment_code,
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
@@ -39,35 +44,38 @@ def test_happy_path(user, mocker):
     # Contract
     Contract = mocker.patch('webserver.contract.Contract').return_value
     contract = Contract.new.return_value
-    contract.functions.getNonce.return_value \
-        .call.return_value = gamecode
+    contract.functions.getPaymentCode.return_value \
+        .call.return_value = payment_code
 
     # Run
-    signed_gamestate = json.loads(get_game(address_payload))
+    signed_gamestate = json.loads(get_game(payment_locator_payload))
     session = json.loads(redis.get(session_id))
 
     # Test
-    errors = SignedGamestate().validate(signed_gamestate)
+    errors = SignedGamestateResponse().validate(signed_gamestate)
     assert not errors
     errors = PaidSession().validate(session)
     assert not errors
 
 
-def test_user_grabs_someone_elses_gamecode(user, mocker):
+def test_user_grabs_someone_elses_payment_code(user, mocker):
     honest_user = user
 
-    gamecode_for_liar_user = Arcade.new_gamecode()
+    payment_code_for_liar_user = Arcade.new_payment_code()
     session_id = Arcade.new_session_id()
+    game_id = TWENTY_FORTY_EIGHT
+
     # Liar pretends to be honest
-    address_payload = {
+    payment_locator_payload = {
         'session_id': session_id,
         'address': honest_user.address,
+        'game_id': game_id,
     }
 
     # UnpaidSession
     unpaid_session = {
         'paid': False,
-        'gamecode': gamecode_for_liar_user,
+        'payment_code': payment_code_for_liar_user,
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
@@ -75,30 +83,32 @@ def test_user_grabs_someone_elses_gamecode(user, mocker):
     mocker.patch('webserver.game.redis.Redis').return_value = redis
 
     # Contract
-    gamecode_for_honest_user = Arcade.new_gamecode()
+    payment_code_for_honest_user = Arcade.new_payment_code()
     Contract = mocker.patch('webserver.contract.Contract').return_value
     contract = Contract.new.return_value
-    contract.functions.getNonce.return_value \
-        .call.return_value = gamecode_for_honest_user
+    contract.functions.getPaymentCode.return_value \
+        .call.return_value = payment_code_for_honest_user
 
     # Run / Test
     with pytest.raises(PaymentError):
-        get_game(address_payload)
+        get_game(payment_locator_payload)
 
 
 def test_user_provides_bad_address_payload(user, mocker):
-    address_payload = {}
+    payment_locator_payload = {}
 
     # Run / Test
-    with pytest.raises(AddressPayloadValidationError):
-        get_game(address_payload)
+    with pytest.raises(PaymentLocatorPayloadValidationError):
+        get_game(payment_locator_payload)
 
 
 def test_user_has_no_session_id_in_redis(user, mocker):
     session_id = Arcade.new_session_id()
-    address_payload = {
+    game_id = TWENTY_FORTY_EIGHT
+    payment_locator_payload = {
         'session_id': session_id,
         'address': user.address,
+        'game_id': game_id,
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
@@ -106,14 +116,16 @@ def test_user_has_no_session_id_in_redis(user, mocker):
 
     # Run / Test
     with pytest.raises(UnpaidSessionValidationError):
-        get_game(address_payload)
+        get_game(payment_locator_payload)
 
 
 def test_user_has_incorrect_session(user, mocker):
     session_id = Arcade.new_session_id()
-    address_payload = {
+    game_id = TWENTY_FORTY_EIGHT
+    payment_locator_payload = {
         'session_id': session_id,
         'address': user.address,
+        'game_id': game_id,
     }
 
     # UnpaidSession
@@ -125,21 +137,23 @@ def test_user_has_incorrect_session(user, mocker):
 
     # Run / Test
     with pytest.raises(UnpaidSessionValidationError):
-        get_game(address_payload)
+        get_game(payment_locator_payload)
 
 
 def test_payment_doesnt_confirm(user, mocker):
-    gamecode = Arcade.new_gamecode()
+    payment_code = Arcade.new_payment_code()
     session_id = Arcade.new_session_id()
-    address_payload = {
+    game_id = TWENTY_FORTY_EIGHT
+    payment_locator_payload = {
         'session_id': session_id,
         'address': user.address,
+        'game_id': game_id,
     }
 
     # UnpaidSession
     unpaid_session = {
         'paid': False,
-        'gamecode': gamecode,
+        'payment_code': payment_code,
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
@@ -149,8 +163,22 @@ def test_payment_doesnt_confirm(user, mocker):
     # Contract
     Contract = mocker.patch('webserver.contract.Contract').return_value
     contract = Contract.new.return_value
-    contract.functions.getNonce.return_value.call.return_value = '0x0'
+    contract.functions.getPaymentCode.return_value.call.return_value = '0x0'
 
     # Run
     with pytest.raises(PaymentError):
-        get_game(address_payload)
+        get_game(payment_locator_payload)
+
+
+def test_game_id_is_not_real(user, mocker):
+    session_id = Arcade.new_session_id()
+    game_id = '0x34a8bcaf7e336f18e5f5eeca59336015b6cdfa5c66f1364a19b7c539971cfbcf'  # noqa: E501
+    payment_locator_payload = {
+        'session_id': session_id,
+        'address': user.address,
+        'game_id': game_id,
+    }
+
+    # Run / Test
+    with pytest.raises(PaymentLocatorPayloadValidationError):
+        get_game(payment_locator_payload)

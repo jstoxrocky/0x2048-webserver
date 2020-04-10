@@ -1,31 +1,30 @@
 import React, { useState } from 'react';
 import { ThemeProvider } from 'styled-components';
-import sessionIdContext from '../session-context';
-import Message from './message';
-import NewGame from './new-game';
+import SessionContext from '../session-context';
+import PaymentProcessor from './payment-processor';
+import { Session } from '../types';
+import Header from './header';
+import Game from './game';
 
 const theme = {
     backgroundColor: '#fff1e5',
-    buttonBackgroundColor: '#f2dfce',
-    buttonHoverBackgroundColor: '#66605c',
-    fontFamily: 'sans-serif',
     fontSize: '1.3rem',
+    fontFamily: 'system-ui',
 };
 
 const App = (): JSX.Element => {
-    console.log('App');
-    const id = 'Loading...';
-    const message = 'All good';
-    const initialSession = { id, message };
-    const [session, setSession] = useState(initialSession);
-    const value = { session, setSession };
+    const [id, gamestate, signedScore] = [null, null, null];
+    const initialSession: Session = { id, gamestate, signedScore };
+    const [session, setSession] = useState<Session>(initialSession);
+    const sessionValue = { session, setSession };
     return (
         <>
             <ThemeProvider theme={theme}>
-                <sessionIdContext.Provider value={value}>
-                    <Message />
-                    <NewGame />
-                </sessionIdContext.Provider>
+                <Header />
+                <SessionContext.Provider value={sessionValue}>
+                    <PaymentProcessor />
+                </SessionContext.Provider>
+                <Game gamestate={session.gamestate} />
             </ThemeProvider>
         </>
     );
