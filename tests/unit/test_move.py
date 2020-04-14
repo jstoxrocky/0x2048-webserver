@@ -5,15 +5,18 @@ from webserver.move import (
     move as post_move,
 )
 from webserver.schemas import (
-    SignedGamestate,
+    SignedGamestateResponse,
     PaidSession,
 )
 from webserver.arcade import (
     Arcade,
 )
 from webserver.exceptions import (
-    MoveValidationError,
+    MovePayloadValidationError,
     PaidSessionValidationError,
+)
+from webserver.game_config import (
+    TWENTY_FORTY_EIGHT,
 )
 
 
@@ -36,10 +39,12 @@ def test_happy_path(user, mocker):
         'score': 0,
         'gameover': False,
     }
+    game_id = TWENTY_FORTY_EIGHT
     paid_session = {
         'paid': True,
         'gamestate': gamestate,
         'address': user.address,
+        'game_id': game_id,
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
@@ -51,7 +56,7 @@ def test_happy_path(user, mocker):
     session = json.loads(redis.get(session_id))
 
     # Test
-    errors = SignedGamestate().validate(signed_gamestate)
+    errors = SignedGamestateResponse().validate(signed_gamestate)
     assert not errors
     errors = PaidSession().validate(session)
     assert not errors
@@ -62,7 +67,7 @@ def test_user_provides_bad_move_payload(user, mocker):
     move_payload = {}
 
     # Run / Test
-    with pytest.raises(MoveValidationError):
+    with pytest.raises(MovePayloadValidationError):
         post_move(move_payload)
 
 

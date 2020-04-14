@@ -7,6 +7,9 @@ from eth_utils import (
     is_checksum_address,
     to_bytes,
 )
+from webserver.game_config import (
+    GAME_IDS,
+)
 
 
 def is_positive(value):
@@ -27,6 +30,10 @@ def direction_allowed(direction):
     return direction in ALLOWED_DIRECTIONS
 
 
+def in_game_ids(value):
+    return value['value'] in GAME_IDS
+
+
 MAX_V_VALUE = 28
 ALLOWED_DIRECTIONS = [1, 2, 3, 4]
 
@@ -44,22 +51,6 @@ class Random32Bytes(Schema):
         required=True,
         validate=[is_hex, hex_is_length_32_bytes],
     )
-
-
-# Used Schemas
-class AddressPayload(Schema):
-    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
-    address = fields.Pluck(Address, 'address', required=True)
-
-
-class GamecodeResponse(Schema):
-    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
-    gamecode = fields.Pluck(Random32Bytes, 'value', required=True)
-
-
-class UnpaidSession(Schema):
-    paid = fields.Boolean(required=True, validate=lambda x: x is False)
-    gamecode = fields.Pluck(Random32Bytes, 'value', required=True)
 
 
 class Signature(Schema):
@@ -85,18 +76,63 @@ class Gamestate(Schema):
     )
 
 
+class GameInfo(Schema):
+    id = fields.Pluck(
+        Random32Bytes,
+        'value',
+        required=True,
+        validate=in_game_ids,
+    )
+    highscore = fields.Integer(required=True, validate=is_positive)
+    jackpot = fields.Integer(required=True, validate=is_positive)
+    name = fields.String(required=True)
+
+
+# Payloads
+class PaymentLocatorPayload(Schema):
+    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
+    address = fields.Pluck(Address, 'address', required=True)
+    game_id = fields.Pluck(
+        Random32Bytes,
+        'value',
+        required=True,
+        validate=in_game_ids,
+    )
+
+
+class MovePayload(Schema):
+    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
+    direction = fields.Integer(required=True, validate=direction_allowed)
+
+
+# Responses
+class PaymentCodeResponse(Schema):
+    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
+    payment_code = fields.Pluck(Random32Bytes, 'value', required=True)
+
+
+class SignedGamestateResponse(Schema):
+    signed_score = fields.Nested(Signature, required=True)
+    gamestate = fields.Nested(Gamestate, required=True)
+
+
+# Sessions
+class UnpaidSession(Schema):
+    paid = fields.Boolean(required=True, validate=lambda x: x is False)
+    payment_code = fields.Pluck(Random32Bytes, 'value', required=True)
+
+
 class PaidSession(Schema):
     paid = fields.Boolean(required=True, validate=lambda x: x is True)
     gamestate = fields.Nested(Gamestate, required=True)
     address = fields.Pluck(Address, 'address', required=True)
+    game_id = fields.Pluck(
+        Random32Bytes,
+        'value',
+        required=True,
+        validate=in_game_ids,
+    )
 
 
-class SignedGamestate(Schema):
-    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
-    signature = fields.Nested(Signature, required=True)
-    gamestate = fields.Nested(Gamestate, required=True)
-
-
-class Move(Schema):
-    session_id = fields.Pluck(Random32Bytes, 'value', required=True)
-    direction = fields.Integer(required=True, validate=direction_allowed)
+class GameInfos(Schema):
+    games = fields.List(fields.Nested(GameInfo), required=True)

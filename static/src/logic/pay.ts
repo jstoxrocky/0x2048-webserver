@@ -1,41 +1,52 @@
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-import { TransactionHash, Protected, EthereumWindow } from '../types';
+import { Block, ProtectedError, EthereumWindow } from '../types';
 import protectedCall from './protected-call';
 
 declare const window: EthereumWindow;
-export interface ProtectedTransactionHash extends Protected {
-    response: TransactionHash | null;
+
+export interface ProtectedBlock extends ProtectedError {
+    response: Block | null;
 }
 
-const address = '0x8848c724B853307083F44526ad32C039b5ee1451';
+const address = '0x6097038687bed106f87DB3fF9d96e71933526C98';
 const abi: AbiItem[] = [
     { inputs: [], stateMutability: 'nonpayable', type: 'constructor' },
     {
-        inputs: [{ internalType: 'address', name: 'addr', type: 'address' }],
-        name: 'getNonce',
-        outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
-        inputs: [],
-        name: 'highscore',
+        inputs: [{ internalType: 'bytes32', name: 'gameId', type: 'bytes32' }],
+        name: 'getHighscore',
         outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
         stateMutability: 'view',
         type: 'function',
     },
     {
-        inputs: [],
-        name: 'jackpot',
+        inputs: [{ internalType: 'bytes32', name: 'gameId', type: 'bytes32' }],
+        name: 'getJackpot',
         outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
         stateMutability: 'view',
         type: 'function',
     },
     {
-        inputs: [{ internalType: 'address', name: '', type: 'address' }],
-        name: 'nonces',
+        inputs: [
+            { internalType: 'bytes32', name: 'gameId', type: 'bytes32' },
+            { internalType: 'address', name: 'addr', type: 'address' },
+        ],
+        name: 'getPaymentCode',
         outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+        name: 'highscores',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+        name: 'jackpots',
+        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
         stateMutability: 'view',
         type: 'function',
     },
@@ -47,10 +58,23 @@ const abi: AbiItem[] = [
         type: 'function',
     },
     {
-        inputs: [{ internalType: 'bytes32', name: 'nonce', type: 'bytes32' }],
+        inputs: [
+            { internalType: 'bytes32', name: 'gameId', type: 'bytes32' },
+            { internalType: 'bytes32', name: 'paymentCode', type: 'bytes32' },
+        ],
         name: 'pay',
         outputs: [],
         stateMutability: 'payable',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'bytes32', name: '', type: 'bytes32' },
+            { internalType: 'address', name: '', type: 'address' },
+        ],
+        name: 'paymentCodes',
+        outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+        stateMutability: 'view',
         type: 'function',
     },
     {
@@ -61,18 +85,12 @@ const abi: AbiItem[] = [
         type: 'function',
     },
     {
-        inputs: [],
-        name: 'round',
-        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
         inputs: [
             { internalType: 'uint8', name: 'v', type: 'uint8' },
             { internalType: 'bytes32', name: 'r', type: 'bytes32' },
             { internalType: 'bytes32', name: 's', type: 'bytes32' },
             { internalType: 'uint256', name: 'score', type: 'uint256' },
+            { internalType: 'bytes32', name: 'gameId', type: 'bytes32' },
         ],
         name: 'uploadScore',
         outputs: [],
@@ -81,34 +99,19 @@ const abi: AbiItem[] = [
     },
 ];
 
-const pay = async (challenge: string): Promise<TransactionHash> => {
+const pay = async (gameId: string, paymentCode: string): Promise<Block> => {
     const { ethereum } = window;
     const web3 = new Web3(ethereum);
-    const contract = new web3.eth.Contract(abi, address);
     const promiseAccount: Promise<string[]> = ethereum.enable();
+    const contract = new web3.eth.Contract(abi, address);
     const promisePrice: Promise<number> = contract.methods.price().call();
     const [[account], price] = await Promise.all([promiseAccount, promisePrice]);
-    const promise: Promise<TransactionHash> = new Promise((resolve, reject) => {
-        // Creating our own promise so we need to add the catch method
-        contract.methods
-            .pay(challenge)
-            .send({ from: account, value: price })
-            .once('transactionHash', (transactionHash: TransactionHash) => {
-                resolve(transactionHash);
-            })
-            .catch(() => {
-                reject();
-            });
-    });
+    const promise: Promise<Block> = contract.methods.pay(gameId, paymentCode).send({ from: account, value: price });
     return promise;
 };
 
-const protectedPay = async (challenge: string): Promise<ProtectedTransactionHash> => {
-    const errorMessage = 'Error in payment';
-    const protectedTransactionHash: ProtectedTransactionHash = await protectedCall<TransactionHash>(
-        pay(challenge),
-        errorMessage,
-    );
+const protectedPay = async (gameId: string, paymentCode: string): Promise<ProtectedBlock> => {
+    const protectedTransactionHash: ProtectedBlock = await protectedCall<Block>(pay(gameId, paymentCode));
     return protectedTransactionHash;
 };
 

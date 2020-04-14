@@ -5,8 +5,8 @@ class InvalidUsage(Exception):
         Exception.__init__(self)
 
 
-class AddressPayloadValidationError(InvalidUsage):
-    message = 'AddressPayloadValidationError'
+class PaymentLocatorPayloadValidationError(InvalidUsage):
+    message = 'PaymentLocatorPayloadValidationError'
 
 
 class UnpaidSessionValidationError(InvalidUsage):
@@ -17,8 +17,8 @@ class PaymentError(InvalidUsage):
     message = 'PaymentError'
 
 
-class MoveValidationError(InvalidUsage):
-    message = 'MoveValidationError'
+class MovePayloadValidationError(InvalidUsage):
+    message = 'MovePayloadValidationError'
 
 
 class PaidSessionValidationError(InvalidUsage):

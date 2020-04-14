@@ -1,15 +1,12 @@
 import { createContext } from 'react';
+import { Session } from './types';
 
-interface Session {
-    id: string;
-    message: string;
-}
-
-const id = '';
-const message = '';
-const session = { id, message };
+const id = null;
+const gamestate = null;
+const signedScore = null;
+const session: Session = { id, gamestate, signedScore };
 const setSession: React.Dispatch<React.SetStateAction<Session>> = (v) => v;
-const initialSessionIdContext = { session, setSession };
-const sessionContext = createContext(initialSessionIdContext);
+const initialSessionContext = { session, setSession };
+const SessionContext = createContext(initialSessionContext);
 
-export default sessionContext;
+export default SessionContext;

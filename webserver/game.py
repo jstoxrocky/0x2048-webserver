@@ -4,12 +4,13 @@ from webserver.arcade import (
     Arcade,
 )
 from webserver.exceptions import (
-    AddressPayloadValidationError,
+    PaymentLocatorPayloadValidationError,
     UnpaidSessionValidationError,
+    PaymentError,
 )
 from webserver.schemas import (
     UnpaidSession,
-    AddressPayload,
+    PaymentLocatorPayload,
 )
 from webserver.config import (
     REDIS_HOST,
@@ -19,9 +20,9 @@ from webserver.config import (
 
 
 def game(payload):
-    errors = AddressPayload().validate(payload)
+    errors = PaymentLocatorPayload().validate(payload)
     if errors:
-        raise AddressPayloadValidationError
+        raise PaymentLocatorPayloadValidationError
 
     # Validate session
     session_id = payload['session_id']
@@ -32,33 +33,34 @@ def game(payload):
     )
     serialized_session = sessions.get(session_id) or '{}'
     session = json.loads(serialized_session)
-    errors = UnpaidSession().validate(session)
-    if errors:
+    error = UnpaidSession().validate(session)
+    if error:
         raise UnpaidSessionValidationError
 
     # Confirm payment
-    gamecode = session['gamecode']
+    payment_code = session['payment_code']
     address = payload['address']
-    error = Arcade.confirm_payment(address, gamecode)
+    game_id = payload['game_id']
+    error = Arcade.confirm_payment(game_id, address, payment_code)
     if error:
-        raise error
+        raise PaymentError
 
     # Start new game
     arcade = Arcade(player=address)
-    next_state, signature = arcade.new_game()
+    next_state, signed_score = arcade.new_game(game_id)
 
     # Set session
     session_data = {
         'paid': True,
         'gamestate': next_state,
         'address': address,
+        'game_id': game_id,
     }
     sessions.set(session_id, json.dumps(session_data))
 
     # Set payload
     payload = {
-        'session_id': session_id,
         'gamestate': next_state,
-        'signature': signature,
+        'signed_score': signed_score,
     }
     return json.dumps(payload)

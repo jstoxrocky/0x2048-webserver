@@ -1,24 +1,24 @@
 import fakeredis
 import json
-from webserver.gamecode import (
-    gamecode as get_gamecode,
+from webserver.payment_code import (
+    payment_code as get_payment_code,
 )
 from webserver.schemas import (
     UnpaidSession,
-    GamecodeResponse,
+    PaymentCodeResponse,
 )
 
 
 def test_happy_path(mocker):
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
-    mocker.patch('webserver.gamecode.redis.Redis').return_value = redis
+    mocker.patch('webserver.payment_code.redis.Redis').return_value = redis
 
-    gamecode = json.loads(get_gamecode())
-    session_id = gamecode['session_id']
+    payment_code = json.loads(get_payment_code())
+    session_id = payment_code['session_id']
     session = json.loads(redis.get(session_id))
 
     errors = UnpaidSession().validate(session)
     assert not errors
-    errors = GamecodeResponse().validate(gamecode)
+    errors = PaymentCodeResponse().validate(payment_code)
     assert not errors

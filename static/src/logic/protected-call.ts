@@ -1,19 +1,19 @@
-import { Protected } from '../types';
+import { ProtectedError } from '../types';
 
-interface ProtectedCallResponse<T> extends Protected {
+interface ProtectedCallResponse<T> extends ProtectedError {
     response: T | null;
 }
 
-const protectedCall = async <T>(promise: Promise<T>, message: string): Promise<ProtectedCallResponse<T>> => {
+const protectedCall = async <T>(promise: Promise<T>): Promise<ProtectedCallResponse<T>> => {
     return promise
         .then(
             (response: T): ProtectedCallResponse<T> => {
-                return { error: null, response };
+                return { error: false, response };
             },
         )
         .catch(
             (): Promise<ProtectedCallResponse<T>> => {
-                return Promise.resolve({ error: message, response: null });
+                return Promise.resolve({ error: true, response: null });
             },
         );
 };

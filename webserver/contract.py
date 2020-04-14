@@ -4,10 +4,13 @@ from web3 import (
     HTTPProvider,
 )
 from webserver.config import (
-    PROVIDER_URI,
-    PROVIDER_HEADERS,
+    INFURA_PROJECT_SECRET,
+    INFURA_PROJECT_ID,
     ARCADE_ADDRESS,
     ARCADE_ABI,
+)
+from hexbytes import (
+    HexBytes,
 )
 
 
@@ -24,10 +27,33 @@ class Contract():
         return contract
 
 
-def confirm_payment(address, gamecode):
+def confirm_payment(game_id, address, payment_code):
+    provider_header = {"auth": ("", INFURA_PROJECT_SECRET)}
+    provider_uri = 'https://ropsten.infura.io/v3/%s' % (INFURA_PROJECT_ID)
     arcade_contract = Contract(
-        PROVIDER_URI,
-        PROVIDER_HEADERS
+        provider_uri,
+        provider_header
     ).new(ARCADE_ADDRESS, ARCADE_ABI)
-    gamecode_in_contract = arcade_contract.functions.getNonce(address).call()
-    return gamecode_in_contract == gamecode
+    bytes_payment_code = arcade_contract.functions.getPaymentCode(
+        game_id,
+        address,
+    ).call()
+    payment_code_in_contract = HexBytes(bytes_payment_code).hex()
+    confirmed = payment_code_in_contract == payment_code
+    error = not confirmed
+    return error
+
+
+def get_game_stats(game_id):
+    provider_header = {"auth": ("", INFURA_PROJECT_SECRET)}
+    provider_uri = 'https://ropsten.infura.io/v3/%s' % (INFURA_PROJECT_ID)
+    arcade_contract = Contract(
+        provider_uri,
+        provider_header
+    ).new(ARCADE_ADDRESS, ARCADE_ABI)
+    highscore = arcade_contract.functions.getHighscore(game_id).call()
+    jackpot = arcade_contract.functions.getJackpot(game_id).call()
+    return {
+        'highscore': highscore,
+        'jackpot': jackpot,
+    }
