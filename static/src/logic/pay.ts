@@ -9,9 +9,31 @@ export interface ProtectedBlock extends ProtectedError {
     response: Block | null;
 }
 
-const address = '0x6097038687bed106f87DB3fF9d96e71933526C98';
+const address = '0x8812fec2FA89C3f6f08ef89Bc5C719F8c8A3a58C';
 const abi: AbiItem[] = [
-    { inputs: [], stateMutability: 'nonpayable', type: 'constructor' },
+    {
+        inputs: [
+            { internalType: 'bytes32', name: 'gameId', type: 'bytes32' },
+            { internalType: 'uint256', name: 'price', type: 'uint256' },
+        ],
+        name: 'addGame',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'bytes32', name: 'gameId', type: 'bytes32' },
+            { internalType: 'uint256', name: 'score', type: 'uint256' },
+            { internalType: 'uint8', name: 'v', type: 'uint8' },
+            { internalType: 'bytes32', name: 'r', type: 'bytes32' },
+            { internalType: 'bytes32', name: 's', type: 'bytes32' },
+        ],
+        name: 'claimHighscore',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
     {
         inputs: [{ internalType: 'bytes32', name: 'gameId', type: 'bytes32' }],
         name: 'getHighscore',
@@ -27,6 +49,13 @@ const abi: AbiItem[] = [
         type: 'function',
     },
     {
+        inputs: [{ internalType: 'bytes32', name: 'gameId', type: 'bytes32' }],
+        name: 'getOwner',
+        outputs: [{ internalType: 'address', name: '', type: 'address' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
         inputs: [
             { internalType: 'bytes32', name: 'gameId', type: 'bytes32' },
             { internalType: 'address', name: 'addr', type: 'address' },
@@ -37,23 +66,9 @@ const abi: AbiItem[] = [
         type: 'function',
     },
     {
-        inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
-        name: 'highscores',
+        inputs: [{ internalType: 'bytes32', name: 'gameId', type: 'bytes32' }],
+        name: 'getPrice',
         outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
-        inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
-        name: 'jackpots',
-        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
-        inputs: [],
-        name: 'owner',
-        outputs: [{ internalType: 'address', name: '', type: 'address' }],
         stateMutability: 'view',
         type: 'function',
     },
@@ -67,36 +82,6 @@ const abi: AbiItem[] = [
         stateMutability: 'payable',
         type: 'function',
     },
-    {
-        inputs: [
-            { internalType: 'bytes32', name: '', type: 'bytes32' },
-            { internalType: 'address', name: '', type: 'address' },
-        ],
-        name: 'paymentCodes',
-        outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
-        inputs: [],
-        name: 'price',
-        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
-        inputs: [
-            { internalType: 'uint8', name: 'v', type: 'uint8' },
-            { internalType: 'bytes32', name: 'r', type: 'bytes32' },
-            { internalType: 'bytes32', name: 's', type: 'bytes32' },
-            { internalType: 'uint256', name: 'score', type: 'uint256' },
-            { internalType: 'bytes32', name: 'gameId', type: 'bytes32' },
-        ],
-        name: 'uploadScore',
-        outputs: [],
-        stateMutability: 'nonpayable',
-        type: 'function',
-    },
 ];
 
 const pay = async (gameId: string, paymentCode: string): Promise<Block> => {
@@ -104,7 +89,7 @@ const pay = async (gameId: string, paymentCode: string): Promise<Block> => {
     const web3 = new Web3(ethereum);
     const promiseAccount: Promise<string[]> = ethereum.enable();
     const contract = new web3.eth.Contract(abi, address);
-    const promisePrice: Promise<number> = contract.methods.price().call();
+    const promisePrice: Promise<number> = contract.methods.getPrice(gameId).call();
     const [[account], price] = await Promise.all([promiseAccount, promisePrice]);
     const promise: Promise<Block> = contract.methods.pay(gameId, paymentCode).send({ from: account, value: price });
     return promise;

@@ -41,21 +41,21 @@ class Arcade():
     def new_game(self, game_id):
         game = GAME_MAPPING[game_id]
         state = game.new()
-        signature = sign_score(self.player, state['score'])
+        vrs = sign_score(game_id, self.player, state['score'])
         signed_score = {
-            'v': signature['v'],
-            'r': signature['r'],
-            's': signature['s'],
+            'v': vrs[0],
+            'r': vrs[1],
+            's': vrs[2],
         }
         return state, signed_score
 
     def update_game(self, game_id, current_state, update):
         game = GAME_MAPPING[game_id]
         state = game.update(current_state, update)
-        signature = sign_score(self.player, state['score'])
+        vrs = sign_score(game_id, self.player, state['score'])
         signed_score = {
-            'v': signature['v'],
-            'r': signature['r'],
-            's': signature['s'],
+            'v': vrs[0],
+            'r': vrs[1],
+            's': vrs[2],
         }
         return state, signed_score
