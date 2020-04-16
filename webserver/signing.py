@@ -1,11 +1,6 @@
+import os
 from web3 import (
     Account,
-)
-from eth_account.messages import (
-    encode_structured_data,
-)
-from toolz.dicttoolz import (
-    valmap,
 )
 from hexbytes import (
     HexBytes,
@@ -14,49 +9,30 @@ from webserver.config import (
     ARCADE_ADDRESS,
     PRIV,
 )
-import os
+from eth_account.messages import (
+    encode_intended_validator,
+)
+from eth_abi.packed import (
+    encode_abi_packed,
+)
 
 
-STRUCTURED_HIGHSCORE = {
-    "types": {
-        "EIP712Domain": [
-            {"name": "name", "type": "string"},
-            {"name": "version", "type": "string"},
-            {"name": "chainId", "type": "uint256"},
-            {"name": "verifyingContract", "type": "address"}
-        ],
-        "Highscore": [
-            {"name": "user", "type": "address"},
-            {"name": "score", "type": "uint256"}
-        ],
-    },
-    "primaryType": "Highscore",
-    "domain": {
-        "name": "0x2048",
-        "version": "1.0",
-        "chainId": 1,
-    },
-}
-
-
-def sign_score(user, score):
-    structured_highscore = STRUCTURED_HIGHSCORE
-    structured_highscore["message"] = {
-        "user": user,
-        "score": score,
-    }
-    structured_highscore["domain"]["verifyingContract"] = ARCADE_ADDRESS
-    structured_msg = encode_structured_data(
-        primitive=structured_highscore,
+def sign_score(game_id, user, score):
+    game_id = HexBytes(game_id)
+    types = ['bytes32', 'address', 'uint256']
+    values = [game_id, user, score]
+    encoded_values = encode_abi_packed(types, values)
+    message = encode_intended_validator(
+        validator_address=ARCADE_ADDRESS,
+        primitive=encoded_values,
     )
-    signature = Account.sign_message(structured_msg, PRIV)
-    signature = valmap(
-        lambda x: x.hex() if isinstance(x, bytes) else x,
-        signature,
+    signed = Account.sign_message(message, PRIV)
+    vrs = (
+        signed['v'],
+        HexBytes(signed['r']).hex(),
+        HexBytes(signed['s']).hex(),
     )
-    signature['r'] = HexBytes(signature['r']).hex()
-    signature['s'] = HexBytes(signature['s']).hex()
-    return signature
+    return vrs
 
 
 def random_32bytes():

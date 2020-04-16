@@ -100,11 +100,11 @@ def test_new_game(user, owner, monkeypatch):
         'gameover': False,
     }
     score = 0
-    signed_score = sign_score(user.address, score)
+    vrs = sign_score(game_id, user.address, score)
     expected_signature = {
-        'v': signed_score['v'],
-        'r': signed_score['r'],
-        's': signed_score['s'],
+        'v': vrs[0],
+        'r': vrs[1],
+        's': vrs[2],
     }
     arcade = Arcade(player=user.address)
     next_state, signature = arcade.new_game(game_id)
@@ -129,11 +129,11 @@ def test_update_game(user, owner, monkeypatch):
         'gameover': False,
     }
     score = 0
-    signed_score = sign_score(user.address, score)
+    vrs = sign_score(game_id, user.address, score)
     expected_signature = {
-        'v': signed_score['v'],
-        'r': signed_score['r'],
-        's': signed_score['s'],
+        'v': vrs[0],
+        'r': vrs[1],
+        's': vrs[2],
     }
     arcade = Arcade(player=user.address)
     next_state, signature = arcade.update_game(game_id, current_state, update)
