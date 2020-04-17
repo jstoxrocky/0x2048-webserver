@@ -42,18 +42,3 @@ def confirm_payment(game_id, address, payment_code):
     confirmed = payment_code_in_contract == payment_code
     error = not confirmed
     return error
-
-
-def get_game_stats(game_id):
-    provider_header = {"auth": ("", INFURA_PROJECT_SECRET)}
-    provider_uri = 'https://ropsten.infura.io/v3/%s' % (INFURA_PROJECT_ID)
-    arcade_contract = Contract(
-        provider_uri,
-        provider_header
-    ).new(ARCADE_ADDRESS, ARCADE_ABI)
-    highscore = arcade_contract.functions.getHighscore(game_id).call()
-    jackpot = arcade_contract.functions.getJackpot(game_id).call()
-    return {
-        'highscore': highscore,
-        'jackpot': jackpot,
-    }

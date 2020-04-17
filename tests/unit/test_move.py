@@ -15,9 +15,6 @@ from webserver.exceptions import (
     MovePayloadValidationError,
     PaidSessionValidationError,
 )
-from webserver.game_config import (
-    TWENTY_FORTY_EIGHT,
-)
 
 
 def test_happy_path(user, mocker):
@@ -39,12 +36,10 @@ def test_happy_path(user, mocker):
         'score': 0,
         'gameover': False,
     }
-    game_id = TWENTY_FORTY_EIGHT
     paid_session = {
         'paid': True,
         'gamestate': gamestate,
         'address': user.address,
-        'game_id': game_id,
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)

@@ -11,31 +11,9 @@ from eth_utils import (
 from hexbytes import (
     HexBytes,
 )
-from webserver.game_config import (
-    TWENTY_FORTY_EIGHT,
+from game.game import (
+    TwentyFortyEight,
 )
-
-
-def test_game_info(mocker):
-    game_id = TWENTY_FORTY_EIGHT
-    highscore = 1000
-    jackpot = 100
-    expected_game_info = {
-        'id': game_id,
-        'name': '2048',
-        'highscore': highscore,
-        'jackpot': jackpot,
-    }
-
-    Contract = mocker.patch('webserver.contract.Contract').return_value
-    contract = Contract.new.return_value
-    contract.functions.getHighscore \
-        .return_value.call.return_value = highscore
-    contract.functions.getJackpot \
-        .return_value.call.return_value = jackpot
-
-    game_info = Arcade.game_info(game_id)
-    assert game_info == expected_game_info
 
 
 def test_new_payment_code(mocker):
@@ -56,16 +34,15 @@ def test_new_session_id(mocker):
 
 def test_confirm_payment_success(user, owner, monkeypatch, mocker):
     payment_code = HexBytes(keccak(text='ABC')).hex()
-    game_id = HexBytes(keccak(text='123')).hex()
 
     Contract = mocker.patch('webserver.contract.Contract').return_value
     contract = Contract.new.return_value
     contract.functions.getPaymentCode \
         .return_value.call.return_value = payment_code
 
-    error = Arcade.confirm_payment(
-        game_id,
-        user.address,
+    game = TwentyFortyEight
+    arcade = Arcade(player=user.address, game=game)
+    error = arcade.confirm_payment(
         payment_code,
     )
     assert error is False
@@ -74,7 +51,6 @@ def test_confirm_payment_success(user, owner, monkeypatch, mocker):
 def test_confirm_payment_user_hasnt_uploaded_payment_code(user, owner, mocker):
     old_payment_code = HexBytes(keccak(text='XYZ')).hex()
     payment_code = HexBytes(keccak(text='ABC')).hex()
-    game_id = HexBytes(keccak(text='123')).hex()
 
     Contract = mocker.patch('webserver.contract.Contract').return_value
     contract = Contract.new.return_value
@@ -82,9 +58,9 @@ def test_confirm_payment_user_hasnt_uploaded_payment_code(user, owner, mocker):
         old_payment_code
     )
 
-    error = Arcade.confirm_payment(
-        game_id,
-        user.address,
+    game = TwentyFortyEight
+    arcade = Arcade(player=user.address, game=game)
+    error = arcade.confirm_payment(
         payment_code,
     )
     assert error is True
@@ -93,21 +69,21 @@ def test_confirm_payment_user_hasnt_uploaded_payment_code(user, owner, mocker):
 def test_new_game(user, owner, monkeypatch):
     random.seed(1234)
     monkeypatch.setattr("webserver.signing.PRIV", owner.key)
-    game_id = TWENTY_FORTY_EIGHT
+    game = TwentyFortyEight
     expected_state = {
         'board': [[2, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 2, 0]],
         'score': 0,
         'gameover': False,
     }
     score = 0
-    vrs = sign_score(game_id, user.address, score)
+    vrs = sign_score(game.id, user.address, score)
     expected_signature = {
         'v': vrs[0],
         'r': vrs[1],
         's': vrs[2],
     }
-    arcade = Arcade(player=user.address)
-    next_state, signature = arcade.new_game(game_id)
+    arcade = Arcade(player=user.address, game=game)
+    next_state, signature = arcade.new_game()
     assert next_state == expected_state
     assert signature == expected_signature
 
@@ -115,7 +91,7 @@ def test_new_game(user, owner, monkeypatch):
 def test_update_game(user, owner, monkeypatch):
     random.seed(1234)
     monkeypatch.setattr("webserver.signing.PRIV", owner.key)
-    game_id = TWENTY_FORTY_EIGHT
+    game = TwentyFortyEight
     current_state = {
         'board': [[2, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 2, 0]],
         'score': 0,
@@ -129,13 +105,13 @@ def test_update_game(user, owner, monkeypatch):
         'gameover': False,
     }
     score = 0
-    vrs = sign_score(game_id, user.address, score)
+    vrs = sign_score(game.id, user.address, score)
     expected_signature = {
         'v': vrs[0],
         'r': vrs[1],
         's': vrs[2],
     }
-    arcade = Arcade(player=user.address)
-    next_state, signature = arcade.update_game(game_id, current_state, update)
+    arcade = Arcade(player=user.address, game=game)
+    next_state, signature = arcade.update_game(current_state, update)
     assert next_state == expected_state
     assert signature == expected_signature

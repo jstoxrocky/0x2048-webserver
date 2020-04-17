@@ -1,12 +1,11 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
-import { PaymentCodeData, GameResponse, Accounts, GameInfoResponse } from '../types';
+import { PaymentCodeData, GameResponse, Accounts } from '../types';
 import sessionContext from '../session-context';
 import fetchAccount from '../logic/fetch-account';
 import fetchPaymentCode from '../logic/fetch-payment-code';
-import fetchGameInfo from '../logic/fetch-game-info';
 import confirmPaymentAndFetchGame from '../logic/fetch-game';
-import pay from '../logic/pay';
+import { protectedPay as pay } from '../logic/contract';
 import {
     METAMASK_ERROR,
     FETCH_PAYMENT_CODE_ERROR,
@@ -27,18 +26,8 @@ interface ResetButtonProps {
 }
 
 interface ReconfirmButtonProps {
-    gameId: string;
     address: string;
     sessionId: string;
-}
-
-interface GameButtonProps {
-    name: string;
-    gameId: string;
-}
-
-interface PaymentButtonProps {
-    gameId: string;
 }
 
 const Button = styled.button`
@@ -61,24 +50,10 @@ const Text = styled.h3`
 
 const PaymentProcessor = (): JSX.Element => {
     const { session, setSession } = useContext(sessionContext);
-    const [buttons, setButtons] = useState<JSX.Element[]>([]);
     const initialMessage = WELCOME_MESSAGE;
     const [message, setMessage] = useState(initialMessage);
 
-    useEffect((): void => {
-        const asyncFetchGameInfo = async (): Promise<void> => {
-            const { error, data } = await fetchGameInfo();
-            if (error) {
-                return;
-            }
-            const games = (data as GameInfoResponse).games;
-            const buttons = games.map((game) => <GameButton key={game.id} name={game.name} gameId={game.id} />);
-            setButtons(buttons);
-        };
-        asyncFetchGameInfo();
-    }, []);
-
-    const onClickPay = async (gameId: string): Promise<void> => {
+    const onClickPay = async (): Promise<void> => {
         const { error: metamaskError, response: accounts } = await fetchAccount();
         if (metamaskError) {
             const buttons = [<ResetButton key={0}>Ok</ResetButton>];
@@ -98,10 +73,10 @@ const PaymentProcessor = (): JSX.Element => {
         const paymentCode = (paymentCodeData as PaymentCodeData).payment_code;
         const sessionId = (paymentCodeData as PaymentCodeData).session_id;
 
-        const { error: transactionError } = await pay(gameId, paymentCode);
+        const { error: transactionError } = await pay(paymentCode);
         if (transactionError) {
             const buttons = [
-                <ReconfirmPaymentButton key={0} gameId={gameId} address={address} sessionId={sessionId} />,
+                <ReconfirmPaymentButton key={0} address={address} sessionId={sessionId} />,
                 <ResetButton key={1}>Cancel</ResetButton>,
             ];
             setMessage(TRANSACTION_ERROR);
@@ -109,14 +84,10 @@ const PaymentProcessor = (): JSX.Element => {
             return;
         }
 
-        const { error: confirmationError, data: gameData } = await confirmPaymentAndFetchGame(
-            gameId,
-            address,
-            sessionId,
-        );
+        const { error: confirmationError, data: gameData } = await confirmPaymentAndFetchGame(address, sessionId);
         if (confirmationError) {
             const buttons = [
-                <ReconfirmPaymentButton key={0} gameId={gameId} address={address} sessionId={sessionId} />,
+                <ReconfirmPaymentButton key={0} address={address} sessionId={sessionId} />,
                 <ResetButton key={1}>Cancel</ResetButton>,
             ];
             setMessage(PAYMENT_CONFIRMATION_ERROR);
@@ -131,17 +102,13 @@ const PaymentProcessor = (): JSX.Element => {
         // set gameId here too ^
     };
 
-    const GameButton = (props: GameButtonProps): JSX.Element => {
-        const { name, gameId } = props;
-        const label = 'Play ' + name;
+    const GameButton = (): JSX.Element => {
+        const label = 'Play';
         return (
             <Button
                 primary
                 onClick={(): void => {
-                    const buttons = [
-                        <PaymentButton key={0} gameId={gameId} />,
-                        <ResetButton key={1}>Cancel</ResetButton>,
-                    ];
+                    const buttons = [<PaymentButton key={0} />, <ResetButton key={1}>Cancel</ResetButton>];
                     setMessage(NEW_GAME_MESSAGE);
                     setButtons(buttons);
                 }}
@@ -151,8 +118,7 @@ const PaymentProcessor = (): JSX.Element => {
         );
     };
 
-    const PaymentButton = (props: PaymentButtonProps): JSX.Element => {
-        const { gameId } = props;
+    const PaymentButton = (): JSX.Element => {
         return (
             <Button
                 primary
@@ -160,7 +126,7 @@ const PaymentProcessor = (): JSX.Element => {
                     // setState must come before onClickPay
                     setMessage(WAITING_FOR_PAYMENT_MESSAGE);
                     setButtons([]);
-                    onClickPay(gameId);
+                    onClickPay();
                 }}
             >
                 Pay
@@ -169,19 +135,18 @@ const PaymentProcessor = (): JSX.Element => {
     };
 
     const ReconfirmPaymentButton = (props: ReconfirmButtonProps): JSX.Element => {
-        const { gameId, address, sessionId } = props;
+        const { address, sessionId } = props;
         const confirmButton = (
             <Button
                 primary
                 onClick={async (): Promise<void> => {
                     const { error: confirmationError, data: gameData } = await confirmPaymentAndFetchGame(
-                        gameId,
                         address,
                         sessionId,
                     );
                     if (confirmationError) {
                         const buttons = [
-                            <ReconfirmPaymentButton key={0} gameId={gameId} address={address} sessionId={sessionId} />,
+                            <ReconfirmPaymentButton key={0} address={address} sessionId={sessionId} />,
                             <ResetButton key={1}>Cancel</ResetButton>,
                         ];
                         setMessage(PAYMENT_CONFIRMATION_ERROR);
@@ -206,22 +171,16 @@ const PaymentProcessor = (): JSX.Element => {
     const ResetButton = (props: ResetButtonProps): JSX.Element => (
         <Button
             onClick={(): void => {
-                const asyncFetchGameInfo = async (): Promise<void> => {
-                    const { error, data } = await fetchGameInfo();
-                    if (error) {
-                        return;
-                    }
-                    const games = (data as GameInfoResponse).games;
-                    const buttons = games.map((game) => <GameButton key={game.id} name={game.name} gameId={game.id} />);
-                    setButtons(buttons);
-                };
-                asyncFetchGameInfo();
+                setButtons(initialButtons);
                 setMessage(WELCOME_MESSAGE);
             }}
         >
             {props.children}
         </Button>
     );
+
+    const initialButtons = [<GameButton key={0} />];
+    const [buttons, setButtons] = useState<JSX.Element[]>(initialButtons);
 
     return (
         <Div>

@@ -14,8 +14,8 @@ from eth_account.messages import (
 from hexbytes import (
     HexBytes,
 )
-from webserver.game_config import (
-    TWENTY_FORTY_EIGHT as GAME_ID,
+from game.game import (
+    TwentyFortyEight,
 )
 from eth_abi.packed import (
     encode_abi_packed,
@@ -25,12 +25,13 @@ from eth_abi.packed import (
 def test_sign_score(user, owner, monkeypatch):
     monkeypatch.setattr("webserver.signing.PRIV", owner.key)
     expected_signer = owner.address
+    game = TwentyFortyEight
 
     score = 1
-    vrs = sign_score(GAME_ID, user.address, score)
+    vrs = sign_score(game.id, user.address, score)
     types = ['bytes32', 'address', 'uint256']
     values = [
-        HexBytes(GAME_ID),
+        HexBytes(game.id),
         user.address,
         score,
     ]

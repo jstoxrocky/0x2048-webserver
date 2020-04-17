@@ -1,72 +1,6 @@
 from webserver import (
     schemas,
 )
-from webserver.game_config import (
-    TWENTY_FORTY_EIGHT,
-)
-
-
-def test_game_info_schema_wrong_datatype():
-    payload = {
-        'id': 1,
-        'highscore': 'A',
-        'jackpot': 'B',
-        'name': 1,
-    }
-    errors = schemas.GameInfo().validate(payload)
-    assert len(errors) > 0
-
-
-def test_game_info_schema_missing_data():
-    payload = {}
-    errors = schemas.GameInfo().validate(payload)
-    assert len(errors) > 0
-
-
-def test_game_info_schema_negative():
-    payload = {
-        'id': TWENTY_FORTY_EIGHT,
-        'highscore': -1,
-        'jackpot': -2,
-        'name': 'Cool game',
-    }
-    errors = schemas.GameInfo().validate(payload)
-    assert len(errors) > 0
-
-
-def test_game_info_schema_success():
-    payload = {
-        'id': TWENTY_FORTY_EIGHT,
-        'highscore': 1,
-        'jackpot': 2,
-        'name': 'Cool game'
-    }
-    errors = schemas.GameInfo().validate(payload)
-    assert not errors
-
-
-def test_game_info_id_not_real():
-    payload = {
-        'id': '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4d',  # noqa: E501
-        'highscore': 1,
-        'jackpot': 2,
-        'name': 'Cool game'
-    }
-    errors = schemas.GameInfo().validate(payload)
-    assert len(errors) > 0
-
-
-def test_game_infos_schema_success():
-    payload = {
-        'games': [{
-            'id': TWENTY_FORTY_EIGHT,
-            'highscore': 1,
-            'jackpot': 2,
-            'name': 'Cool game'
-        }],
-    }
-    errors = schemas.GameInfos().validate(payload)
-    assert not errors
 
 
 def test_random32bytes_schema_wrong_datatype():
@@ -251,7 +185,6 @@ def test_payment_locator_payload_wrong_datatype():
     payload = {
         'session_id': 1,
         'address': 1,
-        'game_id': 1,
     }
     errors = schemas.PaymentLocatorPayload().validate(payload)
     assert len(errors) > 0
@@ -263,27 +196,12 @@ def test_payment_locator_payload_missing_data():
     assert len(errors) > 0
 
 
-def test_payment_locator_payload_game_id_not_real():
-    session_id = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4e'  # noqa: E501
-    address = '0xc519A51c6cC9B36e6cEbcC732b9036dAffc69B5B'
-    game_id = '0x34a8bcaf7e336f18e5f5eeca59336015b6cdfa5c66f1364a19b7c539971cfbcf'  # noqa: E501
-    payload = {
-        'session_id': session_id,
-        'address': address,
-        'game_id': game_id,
-    }
-    errors = schemas.PaymentLocatorPayload().validate(payload)
-    assert len(errors) > 0
-
-
 def test_payment_locator_payload_success():
     session_id = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4e'  # noqa: E501
     address = '0xc519A51c6cC9B36e6cEbcC732b9036dAffc69B5B'
-    game_id = TWENTY_FORTY_EIGHT
     payload = {
         'session_id': session_id,
         'address': address,
-        'game_id': game_id,
     }
     errors = schemas.PaymentLocatorPayload().validate(payload)
     assert not errors
@@ -324,12 +242,10 @@ def test_paid_session_schema_wrong_datatype():
     paid = 1
     gamestate = 2
     address = 3
-    game_id = 4
     payload = {
         'paid': paid,
         'gamestate': gamestate,
         'address': address,
-        'game_id': game_id,
     }
     errors = schemas.PaidSession().validate(payload)
     assert len(errors) > 0
@@ -347,12 +263,10 @@ def test_paid_session_schema_paid_false(user):
         'score': 0,
     }
     paid = False
-    game_id = TWENTY_FORTY_EIGHT  # noqa: E501
     payload = {
         'gamestate': gamestate,
         'paid': paid,
         'address': user.address,
-        'game_id': game_id,
     }
     errors = schemas.PaidSession().validate(payload)
     assert len(errors) > 0
@@ -376,38 +290,13 @@ def test_paid_session_schema_success(user):
         'score': 0,
     }
     paid = True
-    game_id = TWENTY_FORTY_EIGHT
     payload = {
         'gamestate': gamestate,
         'paid': paid,
         'address': user.address,
-        'game_id': game_id,
     }
     errors = schemas.PaidSession().validate(payload)
     assert not errors
-
-
-def test_paid_session_game_id_not_real(user):
-    gamestate = {
-        'board': [
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-        ],
-        'gameover': False,
-        'score': 0,
-    }
-    paid = True
-    game_id = '0x34a8bcaf7e336f18e5f5eeca59336015b6cdfa5c66f1364a19b7c539971cfbcf'  # noqa: 501
-    payload = {
-        'gamestate': gamestate,
-        'paid': paid,
-        'address': user.address,
-        'game_id': game_id,
-    }
-    errors = schemas.PaidSession().validate(payload)
-    assert len(errors) > 0
 
 
 def test_signed_gamestate_wrong_datatype():

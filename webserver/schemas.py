@@ -7,9 +7,6 @@ from eth_utils import (
     is_checksum_address,
     to_bytes,
 )
-from webserver.game_config import (
-    GAME_IDS,
-)
 
 
 def is_positive(value):
@@ -28,10 +25,6 @@ def hex_is_length_32_bytes(hex):
 
 def direction_allowed(direction):
     return direction in ALLOWED_DIRECTIONS
-
-
-def in_game_ids(value):
-    return value['value'] in GAME_IDS
 
 
 MAX_V_VALUE = 28
@@ -77,12 +70,6 @@ class Gamestate(Schema):
 
 
 class GameInfo(Schema):
-    id = fields.Pluck(
-        Random32Bytes,
-        'value',
-        required=True,
-        validate=in_game_ids,
-    )
     highscore = fields.Integer(required=True, validate=is_positive)
     jackpot = fields.Integer(required=True, validate=is_positive)
     name = fields.String(required=True)
@@ -92,12 +79,6 @@ class GameInfo(Schema):
 class PaymentLocatorPayload(Schema):
     session_id = fields.Pluck(Random32Bytes, 'value', required=True)
     address = fields.Pluck(Address, 'address', required=True)
-    game_id = fields.Pluck(
-        Random32Bytes,
-        'value',
-        required=True,
-        validate=in_game_ids,
-    )
 
 
 class MovePayload(Schema):
@@ -126,12 +107,6 @@ class PaidSession(Schema):
     paid = fields.Boolean(required=True, validate=lambda x: x is True)
     gamestate = fields.Nested(Gamestate, required=True)
     address = fields.Pluck(Address, 'address', required=True)
-    game_id = fields.Pluck(
-        Random32Bytes,
-        'value',
-        required=True,
-        validate=in_game_ids,
-    )
 
 
 class GameInfos(Schema):

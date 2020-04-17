@@ -17,6 +17,9 @@ from webserver.config import (
     REDIS_PORT,
     REDIS_PASSWORD,
 )
+from game.game import (
+    TwentyFortyEight,
+)
 
 
 def game(payload):
@@ -40,21 +43,19 @@ def game(payload):
     # Confirm payment
     payment_code = session['payment_code']
     address = payload['address']
-    game_id = payload['game_id']
-    error = Arcade.confirm_payment(game_id, address, payment_code)
+    arcade = Arcade(player=address, game=TwentyFortyEight)
+    error = arcade.confirm_payment(payment_code)
     if error:
         raise PaymentError
 
     # Start new game
-    arcade = Arcade(player=address)
-    next_state, signed_score = arcade.new_game(game_id)
+    next_state, signed_score = arcade.new_game()
 
     # Set session
     session_data = {
         'paid': True,
         'gamestate': next_state,
         'address': address,
-        'game_id': game_id,
     }
     sessions.set(session_id, json.dumps(session_data))
 
