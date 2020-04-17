@@ -16,19 +16,14 @@ from webserver.exceptions import (
     UnpaidSessionValidationError,
     PaymentError,
 )
-from webserver.game_config import (
-    TWENTY_FORTY_EIGHT,
-)
 
 
 def test_happy_path(user, mocker):
     payment_code = Arcade.new_payment_code()
     session_id = Arcade.new_session_id()
-    game_id = TWENTY_FORTY_EIGHT
     payment_locator_payload = {
         'session_id': session_id,
         'address': user.address,
-        'game_id': game_id,
     }
 
     # UnpaidSession
@@ -63,13 +58,11 @@ def test_user_grabs_someone_elses_payment_code(user, mocker):
 
     payment_code_for_liar_user = Arcade.new_payment_code()
     session_id = Arcade.new_session_id()
-    game_id = TWENTY_FORTY_EIGHT
 
     # Liar pretends to be honest
     payment_locator_payload = {
         'session_id': session_id,
         'address': honest_user.address,
-        'game_id': game_id,
     }
 
     # UnpaidSession
@@ -104,11 +97,9 @@ def test_user_provides_bad_address_payload(user, mocker):
 
 def test_user_has_no_session_id_in_redis(user, mocker):
     session_id = Arcade.new_session_id()
-    game_id = TWENTY_FORTY_EIGHT
     payment_locator_payload = {
         'session_id': session_id,
         'address': user.address,
-        'game_id': game_id,
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
@@ -121,11 +112,9 @@ def test_user_has_no_session_id_in_redis(user, mocker):
 
 def test_user_has_incorrect_session(user, mocker):
     session_id = Arcade.new_session_id()
-    game_id = TWENTY_FORTY_EIGHT
     payment_locator_payload = {
         'session_id': session_id,
         'address': user.address,
-        'game_id': game_id,
     }
 
     # UnpaidSession
@@ -143,11 +132,9 @@ def test_user_has_incorrect_session(user, mocker):
 def test_payment_doesnt_confirm(user, mocker):
     payment_code = Arcade.new_payment_code()
     session_id = Arcade.new_session_id()
-    game_id = TWENTY_FORTY_EIGHT
     payment_locator_payload = {
         'session_id': session_id,
         'address': user.address,
-        'game_id': game_id,
     }
 
     # UnpaidSession
@@ -167,18 +154,4 @@ def test_payment_doesnt_confirm(user, mocker):
 
     # Run
     with pytest.raises(PaymentError):
-        get_game(payment_locator_payload)
-
-
-def test_game_id_is_not_real(user, mocker):
-    session_id = Arcade.new_session_id()
-    game_id = '0x34a8bcaf7e336f18e5f5eeca59336015b6cdfa5c66f1364a19b7c539971cfbcf'  # noqa: E501
-    payment_locator_payload = {
-        'session_id': session_id,
-        'address': user.address,
-        'game_id': game_id,
-    }
-
-    # Run / Test
-    with pytest.raises(PaymentLocatorPayloadValidationError):
         get_game(payment_locator_payload)

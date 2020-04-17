@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-import { Block, ProtectedError, EthereumWindow } from '../types';
+import { Block, GameInfo, ProtectedError, EthereumWindow } from '../types';
 import protectedCall from './protected-call';
 
 declare const window: EthereumWindow;
@@ -9,12 +9,18 @@ export interface ProtectedBlock extends ProtectedError {
     response: Block | null;
 }
 
-const address = '0x8812fec2FA89C3f6f08ef89Bc5C719F8c8A3a58C';
+export interface ProtectedGameInfo extends ProtectedError {
+    response: GameInfo | null;
+}
+
+const gameId = '0xf709f7dcc2067e34dd3c2fdb82a42f4429cb0ea61e62a21bc6d0ce860d11032d';
+const address = '0x607809129876B6637a291Ce2dEbA3D71c7ffc3E7';
 const abi: AbiItem[] = [
     {
         inputs: [
             { internalType: 'bytes32', name: 'gameId', type: 'bytes32' },
             { internalType: 'uint256', name: 'price', type: 'uint256' },
+            { internalType: 'uint8', name: 'percentFee', type: 'uint8' },
         ],
         name: 'addGame',
         outputs: [],
@@ -67,6 +73,13 @@ const abi: AbiItem[] = [
     },
     {
         inputs: [{ internalType: 'bytes32', name: 'gameId', type: 'bytes32' }],
+        name: 'getPercentFee',
+        outputs: [{ internalType: 'uint8', name: '', type: 'uint8' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [{ internalType: 'bytes32', name: 'gameId', type: 'bytes32' }],
         name: 'getPrice',
         outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
         stateMutability: 'view',
@@ -84,7 +97,7 @@ const abi: AbiItem[] = [
     },
 ];
 
-const pay = async (gameId: string, paymentCode: string): Promise<Block> => {
+const pay = async (paymentCode: string): Promise<Block> => {
     const { ethereum } = window;
     const web3 = new Web3(ethereum);
     const promiseAccount: Promise<string[]> = ethereum.enable();
@@ -95,9 +108,25 @@ const pay = async (gameId: string, paymentCode: string): Promise<Block> => {
     return promise;
 };
 
-const protectedPay = async (gameId: string, paymentCode: string): Promise<ProtectedBlock> => {
-    const protectedTransactionHash: ProtectedBlock = await protectedCall<Block>(pay(gameId, paymentCode));
+export const protectedPay = async (paymentCode: string): Promise<ProtectedBlock> => {
+    const protectedTransactionHash: ProtectedBlock = await protectedCall<Block>(pay(paymentCode));
     return protectedTransactionHash;
 };
 
-export default protectedPay;
+const gameInfo = async (): Promise<GameInfo> => {
+    const { ethereum } = window;
+    const web3 = new Web3(ethereum);
+    const contract = new web3.eth.Contract(abi, address);
+    const promiseHighscore: Promise<number> = contract.methods.getHighscore(gameId).call();
+    const promiseJackpot: Promise<number> = contract.methods.getJackpot(gameId).call();
+    const promisePrice: Promise<number> = contract.methods.getPrice(gameId).call();
+    const [highscore, jackpotWei, priceWei] = await Promise.all([promiseHighscore, promiseJackpot, promisePrice]);
+    const jackpot = web3.utils.fromWei(jackpotWei.toString(), 'ether');
+    const price = web3.utils.fromWei(priceWei.toString(), 'ether');
+    return { highscore, jackpot, price };
+};
+
+export const protectedGameInfo = async (): Promise<ProtectedGameInfo> => {
+    const protectedGameInfo: ProtectedGameInfo = await protectedCall<GameInfo>(gameInfo());
+    return protectedGameInfo;
+};

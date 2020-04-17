@@ -16,6 +16,9 @@ from webserver.config import (
     REDIS_PORT,
     REDIS_PASSWORD,
 )
+from game.game import (
+    TwentyFortyEight,
+)
 
 
 def move(payload):
@@ -38,22 +41,16 @@ def move(payload):
 
     # Move
     address = session['address']
-    game_id = session['game_id']
-    current_state = session['gamestate']
+    state = session['gamestate']
     update = payload['direction']
-    arcade = Arcade(player=address)
-    next_state, signed_score = arcade.update_game(
-        game_id,
-        current_state,
-        update,
-    )
+    arcade = Arcade(player=address, game=TwentyFortyEight)
+    next_state, signed_score = arcade.update_game(state, update)
 
     # Set session
     session_data = {
         'paid': True,
         'gamestate': next_state,
         'address': address,
-        'game_id': game_id,
     }
     sessions.set(session_id, json.dumps(session_data))
 
