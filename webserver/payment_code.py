@@ -1,12 +1,15 @@
 import json
 import redis
-from webserver.arcade import (
-    Arcade,
+from arcade_protocol import (
+    GameInterface,
 )
 from webserver.config import (
     REDIS_HOST,
     REDIS_PORT,
     REDIS_PASSWORD,
+)
+from webserver.session import (
+    new_session,
 )
 
 
@@ -20,8 +23,9 @@ def payment_code():
         port=REDIS_PORT,
         password=REDIS_PASSWORD,
     )
-    payment_code = Arcade.new_payment_code()
-    session_id = Arcade.new_session_id()
+
+    payment_code = GameInterface.new_payment_code()
+    session_id = new_session()
 
     # This is the only place that payment_code gets
     # set in the session. For this reason, we can

@@ -1,30 +1,29 @@
 import React from 'react';
-import { Gamestate } from '../types';
 import styled from 'styled-components';
 
-interface GameProps {
-    gamestate: Gamestate | null;
-}
-
-const Div = styled.div`
+const Square = styled.div`
+    margin-top: 1rem;
     border: 1px solid;
-    height: 400px;
-    padding: 10px;
-    font-family: ${(props): string => props.theme.fontFamily};
-    margin-top: 10px;
+    width: 50%;
+    &::after {
+        content: '';
+        display: block;
+        padding-bottom: 100%;
+    }
 `;
 
-const Game = (props: GameProps): JSX.Element => {
-    const { gamestate } = props;
-    if (gamestate) {
-        const { score } = gamestate as Gamestate;
-        return (
-            <Div>
-                <h3>Score: {score}</h3>
-            </Div>
-        );
-    }
-    return <></>;
+const Content = styled.div`
+    position: absolute;
+    width: 100%;
+    height: 100%;
+`;
+
+const Game = (): JSX.Element => {
+    return (
+        <Square>
+            <Content />
+        </Square>
+    );
 };
 
 export default Game;

@@ -5,8 +5,8 @@ from flask import (
 from webserver.payment_code import (
     payment_code as endpoints_payment_code,
 )
-from webserver.game import (
-    game as endpoints_game,
+from webserver.payment_confirmation import (
+    payment_confirmation as endpoints_payment_confirmation,
 )
 from webserver.move import (
     move as endpoints_move,
@@ -22,15 +22,15 @@ def payment_code():
     return payload
 
 
-@api.route('/game', methods=['GET'])
-def game():
+@api.route('/payment_confirmation', methods=['GET'])
+def payment_confirmation():
     session_id = request.args.get('session_id')
-    address = request.args.get('address')
+    user = request.args.get('user')
     args = {
-        'address': address,
+        'user': user,
         'session_id': session_id,
     }
-    payload = endpoints_game(args)
+    payload = endpoints_payment_confirmation(args)
     return payload
 
 
