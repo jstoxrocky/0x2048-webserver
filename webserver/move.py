@@ -1,7 +1,9 @@
+import os
 import json
 import redis
-from webserver.arcade import (
-    Arcade,
+import arcade_protocol
+from web3.providers import (
+    HTTPProvider,
 )
 from webserver.exceptions import (
     MovePayloadValidationError,
@@ -15,6 +17,9 @@ from webserver.config import (
     REDIS_HOST,
     REDIS_PORT,
     REDIS_PASSWORD,
+    ADDRESS,
+    ABI,
+    KEY,
 )
 from game.game import (
     TwentyFortyEight,
@@ -39,18 +44,31 @@ def move(payload):
     if errors:
         raise PaidSessionValidationError
 
+    # Arcade protocol
+    user = session['user']
+    INFURA_PROJECT_ID = os.environ['INFURA_PROJECT_ID']
+    INFURA_PROJECT_SECRET = os.environ['INFURA_PROJECT_SECRET']
+    headers = {"auth": ("", INFURA_PROJECT_SECRET)}
+    uri = 'https://ropsten.infura.io/v3/%s' % (INFURA_PROJECT_ID)
+    provider = HTTPProvider(uri, headers)
+    contract = arcade_protocol.Contract(provider, ADDRESS, ABI)
+    game_interface = arcade_protocol.GameInterface(
+        contract,
+        game_id=TwentyFortyEight.id,
+        player=user,
+    )
+
     # Move
-    address = session['address']
     state = session['gamestate']
-    update = payload['direction']
-    arcade = Arcade(player=address, game=TwentyFortyEight)
-    next_state, signed_score = arcade.update_game(state, update)
+    direction = payload['direction']
+    next_state = TwentyFortyEight.update(state, direction)
+    signed_score = game_interface.sign(KEY, next_state['score'])
 
     # Set session
     session_data = {
         'paid': True,
         'gamestate': next_state,
-        'address': address,
+        'user': user,
     }
     sessions.set(session_id, json.dumps(session_data))
 

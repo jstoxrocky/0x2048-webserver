@@ -198,10 +198,10 @@ def test_payment_locator_payload_missing_data():
 
 def test_payment_locator_payload_success():
     session_id = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4e'  # noqa: E501
-    address = '0xc519A51c6cC9B36e6cEbcC732b9036dAffc69B5B'
+    user = '0xc519A51c6cC9B36e6cEbcC732b9036dAffc69B5B'
     payload = {
         'session_id': session_id,
-        'address': address,
+        'user': user,
     }
     errors = schemas.PaymentLocatorPayload().validate(payload)
     assert not errors
@@ -293,7 +293,7 @@ def test_paid_session_schema_success(user):
     payload = {
         'gamestate': gamestate,
         'paid': paid,
-        'address': user.address,
+        'user': user.address,
     }
     errors = schemas.PaidSession().validate(payload)
     assert not errors

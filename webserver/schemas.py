@@ -78,7 +78,7 @@ class GameInfo(Schema):
 # Payloads
 class PaymentLocatorPayload(Schema):
     session_id = fields.Pluck(Random32Bytes, 'value', required=True)
-    address = fields.Pluck(Address, 'address', required=True)
+    user = fields.Pluck(Address, 'address', required=True)
 
 
 class MovePayload(Schema):
@@ -106,7 +106,7 @@ class UnpaidSession(Schema):
 class PaidSession(Schema):
     paid = fields.Boolean(required=True, validate=lambda x: x is True)
     gamestate = fields.Nested(Gamestate, required=True)
-    address = fields.Pluck(Address, 'address', required=True)
+    user = fields.Pluck(Address, 'address', required=True)
 
 
 class GameInfos(Schema):

@@ -16,10 +16,12 @@ interface ProtectedAxiosResponse extends ProtectedError {
 const baseURL = '/api/v1';
 const api = axios.create({ baseURL });
 
-const confirmPaymentAndFetchGame = async (address: string, sessionId: string): Promise<ProtectedGameResponse> => {
-    const checksumAddress = Web3.utils.toChecksumAddress(address);
-    const params = { address: checksumAddress, session_id: sessionId }; // eslint-disable-line @typescript-eslint/camelcase
-    const { error, response }: ProtectedAxiosResponse = await protectedCall<ApiResponse>(api.get('/game', { params }));
+const confirmPaymentAndFetchGame = async (user: string, sessionId: string): Promise<ProtectedGameResponse> => {
+    const checksumAddress = Web3.utils.toChecksumAddress(user);
+    const params = { user: checksumAddress, session_id: sessionId }; // eslint-disable-line @typescript-eslint/camelcase
+    const { error, response }: ProtectedAxiosResponse = await protectedCall<ApiResponse>(
+        api.get('/payment_confirmation', { params }),
+    );
     const data = response ? response.data : null;
     return { error, data };
 };

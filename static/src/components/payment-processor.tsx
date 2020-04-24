@@ -4,12 +4,11 @@ import { PaymentCodeData, GameResponse, Accounts } from '../types';
 import sessionContext from '../session-context';
 import fetchAccount from '../logic/fetch-account';
 import fetchPaymentCode from '../logic/fetch-payment-code';
-import confirmPaymentAndFetchGame from '../logic/fetch-game';
+import confirmPaymentAndFetchGame from '../logic/fetch-payment-confirmation';
 import { protectedPay as pay } from '../logic/contract';
 import {
     METAMASK_ERROR,
     FETCH_PAYMENT_CODE_ERROR,
-    TRANSACTION_ERROR,
     PAYMENT_CONFIRMATION_ERROR,
     NEW_GAME_MESSAGE,
     WAITING_FOR_PAYMENT_MESSAGE,
@@ -30,28 +29,54 @@ interface ReconfirmButtonProps {
     sessionId: string;
 }
 
+const Box = styled.div`
+    display: grid;
+    grid-template-areas:
+        'txt txt'
+        'btn btn';
+    border: 1px solid;
+    padding: 1rem;
+    font-family: ${(props): string => props.theme.fontFamily};
+    margin: 0 1.5rem;
+    margin-top: 1rem;
+`;
+
+const Text = styled.p`
+    margin: 0;
+    grid-area: txt;
+    font-size: 1.2rem;
+    margin-top: 0;
+`;
+
 const Button = styled.button`
-    width: 100px;
+    margin-right: 0.75rem;
+    margin-bottom: 0;
+    margin-top: 0.75rem;
+    padding-right: 0.75rem;
+    padding: 0.125rem;
+    padding-bottom: 0.25rem;
+    border-style: none;
+    width: 10%;
     background-color: ${(props: ButtonProps): string => (props.primary ? 'black' : 'white')};
     color: ${(props: ButtonProps): string => (props.primary ? 'white' : 'black')};
+    border-style: ${(props: ButtonProps): string => (props.primary ? 'none' : 'solid')};
+    border-width: 1px;
+    border-color: black;
+    @media (max-width: 768px) {
+        width: 40%;
+    }
 `;
 
-const Div = styled.div`
-    border: 1px solid;
-    height: 100px;
-    padding: 10px;
-    font-family: ${(props): string => props.theme.fontFamily};
-    margin-top: 20px;
-`;
-
-const Text = styled.h3`
-    transform: rotate(0.5deg);
+const Buttons = styled.div`
+    grid-area: btn;
+    display: flex;
+    justify-content: left;
 `;
 
 const PaymentProcessor = (): JSX.Element => {
     const { session, setSession } = useContext(sessionContext);
     const initialMessage = WELCOME_MESSAGE;
-    const [message, setMessage] = useState(initialMessage);
+    const [message, setMessage] = useState<string[]>(initialMessage);
 
     const onClickPay = async (): Promise<void> => {
         const { error: metamaskError, response: accounts } = await fetchAccount();
@@ -61,7 +86,7 @@ const PaymentProcessor = (): JSX.Element => {
             setButtons(buttons);
             return;
         }
-        const [address] = accounts as Accounts;
+        const [user] = accounts as Accounts;
 
         const { error: paymentCodeError, data: paymentCodeData } = await fetchPaymentCode();
         if (paymentCodeError) {
@@ -76,19 +101,19 @@ const PaymentProcessor = (): JSX.Element => {
         const { error: transactionError } = await pay(paymentCode);
         if (transactionError) {
             const buttons = [
-                <ReconfirmPaymentButton key={0} address={address} sessionId={sessionId} />,
-                <ResetButton key={1}>Cancel</ResetButton>,
+                <ReconfirmPaymentButton key={0} address={user} sessionId={sessionId} />,
+                <ResetButton key={1}>cancel</ResetButton>,
             ];
-            setMessage(TRANSACTION_ERROR);
+            setMessage(PAYMENT_CONFIRMATION_ERROR);
             setButtons(buttons);
             return;
         }
 
-        const { error: confirmationError, data: gameData } = await confirmPaymentAndFetchGame(address, sessionId);
+        const { error: confirmationError, data: gameData } = await confirmPaymentAndFetchGame(user, sessionId);
         if (confirmationError) {
             const buttons = [
-                <ReconfirmPaymentButton key={0} address={address} sessionId={sessionId} />,
-                <ResetButton key={1}>Cancel</ResetButton>,
+                <ReconfirmPaymentButton key={0} address={user} sessionId={sessionId} />,
+                <ResetButton key={1}>cancel</ResetButton>,
             ];
             setMessage(PAYMENT_CONFIRMATION_ERROR);
             setButtons(buttons);
@@ -103,12 +128,12 @@ const PaymentProcessor = (): JSX.Element => {
     };
 
     const GameButton = (): JSX.Element => {
-        const label = 'Play';
+        const label = 'play';
         return (
             <Button
                 primary
                 onClick={(): void => {
-                    const buttons = [<PaymentButton key={0} />, <ResetButton key={1}>Cancel</ResetButton>];
+                    const buttons = [<PaymentButton key={0} />, <ResetButton key={1}>cancel</ResetButton>];
                     setMessage(NEW_GAME_MESSAGE);
                     setButtons(buttons);
                 }}
@@ -129,7 +154,7 @@ const PaymentProcessor = (): JSX.Element => {
                     onClickPay();
                 }}
             >
-                Pay
+                pay
             </Button>
         );
     };
@@ -147,7 +172,7 @@ const PaymentProcessor = (): JSX.Element => {
                     if (confirmationError) {
                         const buttons = [
                             <ReconfirmPaymentButton key={0} address={address} sessionId={sessionId} />,
-                            <ResetButton key={1}>Cancel</ResetButton>,
+                            <ResetButton key={1}>cancel</ResetButton>,
                         ];
                         setMessage(PAYMENT_CONFIRMATION_ERROR);
                         setButtons(buttons);
@@ -162,7 +187,7 @@ const PaymentProcessor = (): JSX.Element => {
                     setSession({ ...session, id: sessionId, gamestate, signedScore });
                 }}
             >
-                Confirm
+                reconfirm
             </Button>
         );
         return confirmButton;
@@ -182,11 +207,12 @@ const PaymentProcessor = (): JSX.Element => {
     const initialButtons = [<GameButton key={0} />];
     const [buttons, setButtons] = useState<JSX.Element[]>(initialButtons);
 
+    const text = message.map((m) => <Text key={m}>{m}</Text>);
     return (
-        <Div>
-            <Text>{message}</Text>
-            <div>{buttons}</div>
-        </Div>
+        <Box>
+            {text}
+            <Buttons>{buttons}</Buttons>
+        </Box>
     );
 };
 
