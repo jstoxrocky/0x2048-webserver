@@ -61,8 +61,13 @@ export interface Session {
 
 export type Accounts = string[];
 
-export interface GameInfo {
-    highscore: number;
-    jackpot: string;
-    price: string;
+export interface EthUsd {
+    eth: string;
+    usd: string;
+}
+
+export interface Metadata {
+    highscore: string;
+    jackpot: EthUsd;
+    price: EthUsd;
 }

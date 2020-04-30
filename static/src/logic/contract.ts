@@ -1,16 +1,12 @@
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-import { Block, GameInfo, ProtectedError, EthereumWindow } from '../types';
+import { Block, ProtectedError, EthereumWindow } from '../types';
 import protectedCall from './protected-call';
 
 declare const window: EthereumWindow;
 
 export interface ProtectedBlock extends ProtectedError {
     response: Block | null;
-}
-
-export interface ProtectedGameInfo extends ProtectedError {
-    response: GameInfo | null;
 }
 
 const gameId = '0xf709f7dcc2067e34dd3c2fdb82a42f4429cb0ea61e62a21bc6d0ce860d11032d';
@@ -111,22 +107,4 @@ const pay = async (paymentCode: string): Promise<Block> => {
 export const protectedPay = async (paymentCode: string): Promise<ProtectedBlock> => {
     const protectedTransactionHash: ProtectedBlock = await protectedCall<Block>(pay(paymentCode));
     return protectedTransactionHash;
-};
-
-const gameInfo = async (): Promise<GameInfo> => {
-    const { ethereum } = window;
-    const web3 = new Web3(ethereum);
-    const contract = new web3.eth.Contract(abi, address);
-    const promiseHighscore: Promise<number> = contract.methods.getHighscore(gameId).call();
-    const promiseJackpot: Promise<number> = contract.methods.getJackpot(gameId).call();
-    const promisePrice: Promise<number> = contract.methods.getPrice(gameId).call();
-    const [highscore, jackpotWei, priceWei] = await Promise.all([promiseHighscore, promiseJackpot, promisePrice]);
-    const jackpot = web3.utils.fromWei(jackpotWei.toString(), 'ether');
-    const price = web3.utils.fromWei(priceWei.toString(), 'ether');
-    return { highscore, jackpot, price };
-};
-
-export const protectedGameInfo = async (): Promise<ProtectedGameInfo> => {
-    const protectedGameInfo: ProtectedGameInfo = await protectedCall<GameInfo>(gameInfo());
-    return protectedGameInfo;
 };

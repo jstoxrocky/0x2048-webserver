@@ -51,10 +51,14 @@ def move(payload):
     headers = {"auth": ("", INFURA_PROJECT_SECRET)}
     uri = 'https://ropsten.infura.io/v3/%s' % (INFURA_PROJECT_ID)
     provider = HTTPProvider(uri, headers)
-    contract = arcade_protocol.Contract(provider, ADDRESS, ABI)
+    contract = arcade_protocol.Contract(
+        provider,
+        ADDRESS,
+        ABI,
+        TwentyFortyEight.id,
+    )
     game_interface = arcade_protocol.GameInterface(
         contract,
-        game_id=TwentyFortyEight.id,
         player=user,
     )
 

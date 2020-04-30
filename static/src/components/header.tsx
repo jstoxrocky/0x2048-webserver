@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { protectedGameInfo as gameInfo } from '../logic/contract';
-import { GameInfo } from '../types';
+import fetchMetadata from '../logic/fetch-metadata';
+import { Metadata, EthUsd } from '../types';
 
 const FlexParent = styled.div`
     display: flex;
@@ -38,23 +38,30 @@ const LittleStat = styled.p`
     }
 `;
 
+const Highscore = (highscore: string): JSX.Element => <Stat key={0}>highscore: {highscore}</Stat>;
+
+const Jackpot = (jackpot: EthUsd): JSX.Element => (
+    <Stat key={1}>
+        jackpot: {jackpot.eth} eth <LittleStat>({jackpot.usd} usd)</LittleStat>
+    </Stat>
+);
+
+const Price = (price: EthUsd): JSX.Element => (
+    <Stat key={2}>
+        price: {price.eth} eth <LittleStat>({price.usd} usd)</LittleStat>
+    </Stat>
+);
+
 const Header = (): JSX.Element => {
-    const [stats, setStats] = useState<JSX.Element[]>([]);
+    const emptyEthUsd = { eth: '', usd: '' };
+    const initialStats = [Highscore(''), Jackpot(emptyEthUsd), Price(emptyEthUsd)];
+    const [stats, setStats] = useState<JSX.Element[]>(initialStats);
 
     useEffect((): void => {
         const asyncFetchGameInfo = async (): Promise<void> => {
-            // https://api.gemini.com/v1/pubticker/ethusd
-            const { response } = await gameInfo();
-            const { highscore, jackpot, price } = response as GameInfo;
-            const stats = [
-                <Stat key={0}>highscore: {highscore}</Stat>,
-                <Stat key={1}>
-                    jackpot: {jackpot} eth <LittleStat>(573.25 usd)</LittleStat>
-                </Stat>,
-                <Stat key={2}>
-                    price: {price} eth <LittleStat>(0.25 usd)</LittleStat>
-                </Stat>,
-            ];
+            const { data } = await fetchMetadata();
+            const { highscore, jackpot, price } = data as Metadata;
+            const stats = [Highscore(highscore), Jackpot(jackpot), Price(price)];
             setStats(stats);
         };
         asyncFetchGameInfo();
