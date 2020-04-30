@@ -49,6 +49,7 @@ def test_confirm_payment_happy_path(mocker, user, monkeypatch):
     ).return_value
     contract.get_payment_code.return_value = payment_code
     contract.address = ADDRESS
+    contract.game_id = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4e'   # noqa: E501
 
     response = app.get(
         '/api/v1/payment_confirmation',
@@ -93,6 +94,18 @@ def test_move_happy_path(mocker, user):
 
     response = app.post(
         '/api/v1/move',
+        data=json.dumps(data),
+        content_type='application/json'
+    )
+    assert response.status_code == 200
+
+
+def test_metadata_happy_path():
+    app = application.test_client()
+    app.testing = True
+    data = {}
+    response = app.get(
+        '/api/v1/metadata',
         data=json.dumps(data),
         content_type='application/json'
     )

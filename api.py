@@ -11,6 +11,9 @@ from webserver.payment_confirmation import (
 from webserver.move import (
     move as endpoints_move,
 )
+from webserver.metadata import (
+    get_metadata as endpoints_metadata,
+)
 
 
 api = Blueprint('api', __name__)
@@ -38,4 +41,10 @@ def payment_confirmation():
 def move():
     move_payload = request.get_json()
     payload = endpoints_move(move_payload)
+    return payload
+
+
+@api.route('/metadata', methods=['GET'])
+def metadata():
+    payload = endpoints_metadata()
     return payload

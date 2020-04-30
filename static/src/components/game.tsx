@@ -2,9 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Square = styled.div`
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
     margin-top: 1rem;
     border: 1px solid;
-    width: 50%;
     &::after {
         content: '';
         display: block;
@@ -14,7 +15,6 @@ const Square = styled.div`
 
 const Content = styled.div`
     position: absolute;
-    width: 100%;
     height: 100%;
 `;
 

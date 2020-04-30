@@ -51,6 +51,7 @@ def test_happy_path(user, mocker, monkeypatch):
     ).return_value
     contract.get_payment_code.return_value = payment_code
     contract.address = ADDRESS
+    contract.game_id = '0x4a3c9000acbe7d73d0d6dcea6abd664006dadbd4d7c37c7095635c9c47ca1d4e'  # noqa: E501
 
     # Run
     signed_gamestate = json.loads(
