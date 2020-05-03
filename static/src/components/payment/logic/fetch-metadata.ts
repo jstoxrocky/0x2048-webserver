@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { ProtectedError, Metadata } from '../types';
+import { ProtectedError, Metadata } from '../../../types';
 import protectedCall from './protected-call';
 
 type ApiResponse = AxiosResponse<Metadata>;

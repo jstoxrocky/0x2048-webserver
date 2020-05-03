@@ -29,3 +29,23 @@ def user():
 def user2():
     account = accounts[2]
     return account
+
+
+class MockContract():
+
+    @staticmethod
+    def get_highscore():
+        return 17
+
+    @staticmethod
+    def get_price():
+        return 1000000000000000
+
+    @staticmethod
+    def get_jackpot():
+        return 4000000000000000
+
+
+@pytest.fixture(scope="session")
+def mock_contract():
+    return MockContract

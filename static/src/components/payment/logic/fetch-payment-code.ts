@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { ProtectedError, PaymentCodeData } from '../types';
+import { ProtectedError, PaymentCodeData } from '../../../types';
 import protectedCall from './protected-call';
 
 type ApiResponse = AxiosResponse<PaymentCodeData>;

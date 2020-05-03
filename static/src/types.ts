@@ -54,9 +54,10 @@ export interface Block {
 }
 
 export interface Session {
-    id: string | null;
-    gamestate: Gamestate | null;
-    signedScore: SignedScore | null;
+    id: string;
+    gamestate: Gamestate;
+    signedScore: SignedScore;
+    price: EthUsd;
 }
 
 export type Accounts = string[];
