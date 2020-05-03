@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
-import SessionContext from '../session-context';
-import PaymentProcessor from './payment-processor';
+import { SessionContext } from '../contexts';
 import { Session } from '../types';
+import { emptySession } from '../empty-types';
 import Header from './header';
 import Game from './game';
+import Payment from './payment/payment';
 
 const App = (): JSX.Element => {
-    const [id, gamestate, signedScore] = [null, null, null];
-    const initialSession: Session = { id, gamestate, signedScore };
-    const [session, setSession] = useState<Session>(initialSession);
+    const [session, setSession] = useState<Session>(emptySession);
     const sessionValue = { session, setSession };
     return (
         <>
-            <Header />
             <SessionContext.Provider value={sessionValue}>
-                <PaymentProcessor />
+                <Header />
+                <Payment />
             </SessionContext.Provider>
             <Game />
         </>

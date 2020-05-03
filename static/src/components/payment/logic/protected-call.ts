@@ -1,4 +1,4 @@
-import { ProtectedError } from '../types';
+import { ProtectedError } from '../../../types';
 
 interface ProtectedCallResponse<T> extends ProtectedError {
     response: T | null;

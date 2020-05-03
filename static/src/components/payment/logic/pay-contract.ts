@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-import { Block, ProtectedError, EthereumWindow } from '../types';
+import { Block, ProtectedError, EthereumWindow } from '../../../types';
 import protectedCall from './protected-call';
 
 declare const window: EthereumWindow;
@@ -93,7 +93,7 @@ const abi: AbiItem[] = [
     },
 ];
 
-const pay = async (paymentCode: string): Promise<Block> => {
+const payContract = async (paymentCode: string): Promise<Block> => {
     const { ethereum } = window;
     const web3 = new Web3(ethereum);
     const promiseAccount: Promise<string[]> = ethereum.enable();
@@ -104,7 +104,7 @@ const pay = async (paymentCode: string): Promise<Block> => {
     return promise;
 };
 
-export const protectedPay = async (paymentCode: string): Promise<ProtectedBlock> => {
-    const protectedTransactionHash: ProtectedBlock = await protectedCall<Block>(pay(paymentCode));
+export const protectedPayContract = async (paymentCode: string): Promise<ProtectedBlock> => {
+    const protectedTransactionHash: ProtectedBlock = await protectedCall<Block>(payContract(paymentCode));
     return protectedTransactionHash;
 };

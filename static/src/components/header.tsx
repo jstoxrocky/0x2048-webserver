@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import styled from 'styled-components';
-import fetchMetadata from '../logic/fetch-metadata';
+import fetchMetadata from './payment/logic/fetch-metadata';
 import { Metadata, EthUsd } from '../types';
+import { emptyEthUsd } from '../empty-types';
+import { SessionContext } from '../contexts';
 
 const FlexParent = styled.div`
     display: flex;
@@ -53,9 +55,9 @@ const Price = (price: EthUsd): JSX.Element => (
 );
 
 const Header = (): JSX.Element => {
-    const emptyEthUsd = { eth: '', usd: '' };
     const initialStats = [Highscore(''), Jackpot(emptyEthUsd), Price(emptyEthUsd)];
     const [stats, setStats] = useState<JSX.Element[]>(initialStats);
+    const { session, setSession } = useContext(SessionContext);
 
     useEffect((): void => {
         const asyncFetchGameInfo = async (): Promise<void> => {
@@ -63,6 +65,7 @@ const Header = (): JSX.Element => {
             const { highscore, jackpot, price } = data as Metadata;
             const stats = [Highscore(highscore), Jackpot(jackpot), Price(price)];
             setStats(stats);
+            setSession({ ...session, price });
         };
         asyncFetchGameInfo();
     }, []);

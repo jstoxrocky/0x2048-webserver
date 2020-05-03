@@ -1,10 +1,9 @@
-import { ProtectedError, EthereumWindow, Accounts } from '../types';
-import protectedCall from './protected-call';
+import { ProtectedError, EthereumWindow, Accounts } from '../../../types';
 
 declare const window: EthereumWindow;
 
 export interface ProtectedAccounts extends ProtectedError {
-    response: Accounts | null;
+    data: Accounts | null;
 }
 
 const fetchAccount = (): Promise<Accounts> => {
@@ -19,8 +18,11 @@ const fetchAccount = (): Promise<Accounts> => {
 };
 
 const protectedFetchAccount = async (): Promise<ProtectedAccounts> => {
-    const protectedAccounts: ProtectedAccounts = await protectedCall<Accounts>(fetchAccount());
-    return protectedAccounts;
+    try {
+        return { error: false, data: await fetchAccount() };
+    } catch {
+        return { error: true, data: null };
+    }
 };
 
 export default protectedFetchAccount;

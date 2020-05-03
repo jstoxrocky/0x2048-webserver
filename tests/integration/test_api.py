@@ -8,7 +8,13 @@ from app import (
 ADDRESS = '0x0A34371d4BB7c49Ec9e4c156b525eA7417f63e7A'
 
 
-def test_payment_code_happy_path():
+def test_payment_code_happy_path(mocker):
+    server = fakeredis.FakeServer()
+    redis = fakeredis.FakeStrictRedis(server=server)
+    mocker.patch(
+        'webserver.payment_code.redis.Redis',
+    ).return_value = redis
+
     app = application.test_client()
     app.testing = True
     data = {}
@@ -100,7 +106,10 @@ def test_move_happy_path(mocker, user):
     assert response.status_code == 200
 
 
-def test_metadata_happy_path():
+def test_metadata_happy_path(mocker, mock_contract):
+    mocker.patch('webserver.metadata.ethusd.fetch_exchange_rate').return_value = 200.00   # noqa: E501
+    mocker.patch('webserver.metadata.contract.arcade_contract').return_value = mock_contract   # noqa: E501
+
     app = application.test_client()
     app.testing = True
     data = {}

@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import Web3 from 'web3';
-import { ProtectedError, GameResponse } from '../types';
+import { ProtectedError, GameResponse } from '../../../types';
 import protectedCall from './protected-call';
 
 type ApiResponse = AxiosResponse<GameResponse>;
