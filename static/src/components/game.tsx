@@ -1,12 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-// * {
-//     margin: 0;
-//     padding: 0;
-//   }
-
 const Square = styled.div`
+    margin: 0;
+    padding: 0;
+
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
@@ -22,6 +20,9 @@ const Square = styled.div`
 `;
 
 const Tile = styled.div`
+    margin: 0;
+    padding: 0;
+
     background-color: red;
     border: 1px solid black;
 `;
