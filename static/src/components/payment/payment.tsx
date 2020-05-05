@@ -11,6 +11,9 @@ import FetchPaymentCodeError from './stages/fetch-payment-code-error';
 import PaymentConfirmationError from './stages/payment-confirmation-error';
 
 const Box = styled.div`
+    margin: 0;
+    padding: 0;
+
     display: grid;
     grid-template-areas:
         'txt txt'

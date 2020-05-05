@@ -5,5 +5,5 @@ export const FETCH_PAYMENT_CODE_ERROR = `there was a problem fetching your payme
 export const PAYMENT_CONFIRMATION_ERROR = `there was a problem confirming your payment`;
 export const PROMPT_PAYMENT = (price: EthUsd): string => `${price.eth} eth (${price.usd} usd) per play`;
 export const WAITING = `waiting for payment confirmation...`;
-export const WELCOME = `get a new highscore and win the jackpot`;
+export const WELCOME = `get a highscore and win the jackpot`;
 export const PAYMENT_SUCCESS = `payment confirmed`;

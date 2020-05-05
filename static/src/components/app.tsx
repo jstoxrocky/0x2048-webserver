@@ -3,7 +3,7 @@ import { SessionContext } from '../contexts';
 import { Session } from '../types';
 import { emptySession } from '../empty-types';
 import Header from './header';
-import Game from './game';
+// import Game from './game';
 import Payment from './payment/payment';
 
 const App = (): JSX.Element => {
@@ -15,7 +15,6 @@ const App = (): JSX.Element => {
                 <Header />
                 <Payment />
             </SessionContext.Provider>
-            <Game />
         </>
     );
 };
