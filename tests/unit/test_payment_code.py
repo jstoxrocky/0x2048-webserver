@@ -12,7 +12,9 @@ from webserver.schemas import (
 def test_happy_path(mocker):
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
-    mocker.patch('webserver.payment_code.redis.Redis').return_value = redis
+    mocker.patch(
+        'webserver.payment_code.redis.Redis.from_url',
+    ).return_value = redis
 
     payment_code = json.loads(get_payment_code())
     session_id = payment_code['session_id']

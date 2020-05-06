@@ -41,7 +41,7 @@ def test_happy_path(user, mocker, monkeypatch):
     redis = fakeredis.FakeStrictRedis(server=server)
     redis.set(session_id, json.dumps(unpaid_session))
     mocker.patch(
-        'webserver.payment_confirmation.redis.Redis',
+        'webserver.payment_confirmation.redis.Redis.from_url',
     ).return_value = redis
 
     # Contract
@@ -87,7 +87,7 @@ def test_user_grabs_someone_elses_payment_code(user, mocker):
     redis = fakeredis.FakeStrictRedis(server=server)
     redis.set(session_id, json.dumps(unpaid_session))
     mocker.patch(
-        'webserver.payment_confirmation.redis.Redis',
+        'webserver.payment_confirmation.redis.Redis.from_url',
     ).return_value = redis
 
     # Contract
@@ -119,7 +119,7 @@ def test_user_has_no_session_id_in_redis(user, mocker):
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
     mocker.patch(
-        'webserver.payment_confirmation.redis.Redis'
+        'webserver.payment_confirmation.redis.Redis.from_url'
     ).return_value = redis
 
     # Run / Test
@@ -140,7 +140,7 @@ def test_user_has_incorrect_session(user, mocker):
     redis = fakeredis.FakeStrictRedis(server=server)
     redis.set(session_id, json.dumps(unpaid_session))
     mocker.patch(
-        'webserver.payment_confirmation.redis.Redis',
+        'webserver.payment_confirmation.redis.Redis.from_url',
     ).return_value = redis
 
     # Run / Test
@@ -165,7 +165,7 @@ def test_payment_doesnt_confirm(user, mocker, monkeypatch):
     redis = fakeredis.FakeStrictRedis(server=server)
     redis.set(session_id, json.dumps(unpaid_session))
     mocker.patch(
-        'webserver.payment_confirmation.redis.Redis',
+        'webserver.payment_confirmation.redis.Redis.from_url',
     ).return_value = redis
 
     # Contract

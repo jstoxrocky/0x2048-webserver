@@ -4,9 +4,7 @@ from arcade_protocol import (
     GameInterface,
 )
 from webserver.config import (
-    REDIS_HOST,
-    REDIS_PORT,
-    REDIS_PASSWORD,
+    REDIS_URL
 )
 from webserver.session import (
     new_session,
@@ -18,11 +16,7 @@ def payment_code():
     Reset session data with new session ID and payment_code
     Send payment_code and session_id "cookie" back to client
     '''
-    sessions = redis.Redis(
-        host=REDIS_HOST,
-        port=REDIS_PORT,
-        password=REDIS_PASSWORD,
-    )
+    sessions = redis.Redis.from_url(REDIS_URL)
 
     payment_code = GameInterface.new_payment_code()
     session_id = new_session()

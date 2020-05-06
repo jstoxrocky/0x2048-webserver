@@ -44,7 +44,7 @@ def test_happy_path(user, mocker):
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
     redis.set(session_id, json.dumps(paid_session))
-    mocker.patch('webserver.move.redis.Redis').return_value = redis
+    mocker.patch('webserver.move.redis.Redis.from_url').return_value = redis
 
     # Run
     signed_gamestate = json.loads(post_move(move_payload))
@@ -75,7 +75,7 @@ def test_user_has_no_session_id_in_redis(user, mocker):
     }
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
-    mocker.patch('webserver.move.redis.Redis').return_value = redis
+    mocker.patch('webserver.move.redis.Redis.from_url').return_value = redis
 
     # Run / Test
     with pytest.raises(PaidSessionValidationError):
@@ -95,7 +95,7 @@ def test_user_has_incorrect_session(user, mocker):
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
     redis.set(session_id, json.dumps(paid_session))
-    mocker.patch('webserver.move.redis.Redis').return_value = redis
+    mocker.patch('webserver.move.redis.Redis.from_url').return_value = redis
 
     # Run / Test
     with pytest.raises(PaidSessionValidationError):
