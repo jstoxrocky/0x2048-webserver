@@ -14,9 +14,7 @@ from webserver.schemas import (
     PaidSession,
 )
 from webserver.config import (
-    REDIS_HOST,
-    REDIS_PORT,
-    REDIS_PASSWORD,
+    REDIS_URL,
     ADDRESS,
     ABI,
     KEY,
@@ -32,11 +30,7 @@ def move(payload):
         raise MovePayloadValidationError
 
     # Validate session
-    sessions = redis.Redis(
-        host=REDIS_HOST,
-        port=REDIS_PORT,
-        password=REDIS_PASSWORD,
-    )
+    sessions = redis.Redis.from_url(REDIS_URL)
     session_id = payload['session_id']
     serialized_session = sessions.get(session_id) or '{}'
     session = json.loads(serialized_session)

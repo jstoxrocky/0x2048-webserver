@@ -15,9 +15,7 @@ from webserver.schemas import (
     PaymentLocatorPayload,
 )
 from webserver.config import (
-    REDIS_HOST,
-    REDIS_PORT,
-    REDIS_PASSWORD,
+    REDIS_URL,
     ADDRESS,
     ABI,
     KEY,
@@ -34,11 +32,7 @@ def payment_confirmation(payload):
 
     # Validate session
     session_id = payload['session_id']
-    sessions = redis.Redis(
-        host=REDIS_HOST,
-        port=REDIS_PORT,
-        password=REDIS_PASSWORD,
-    )
+    sessions = redis.Redis.from_url(REDIS_URL)
     serialized_session = sessions.get(session_id) or '{}'
     session = json.loads(serialized_session)
     error = UnpaidSession().validate(session)

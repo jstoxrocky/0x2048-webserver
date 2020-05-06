@@ -12,7 +12,7 @@ def test_payment_code_happy_path(mocker):
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
     mocker.patch(
-        'webserver.payment_code.redis.Redis',
+        'webserver.payment_code.redis.Redis.from_url',
     ).return_value = redis
 
     app = application.test_client()
@@ -45,7 +45,7 @@ def test_confirm_payment_happy_path(mocker, user, monkeypatch):
     redis = fakeredis.FakeStrictRedis(server=server)
     redis.set(session_id, json.dumps(unpaid_session))
     mocker.patch(
-        'webserver.payment_confirmation.redis.Redis',
+        'webserver.payment_confirmation.redis.Redis.from_url',
     ).return_value = redis
 
     # Contract
@@ -96,7 +96,7 @@ def test_move_happy_path(mocker, user):
     server = fakeredis.FakeServer()
     redis = fakeredis.FakeStrictRedis(server=server)
     redis.set(session_id, json.dumps(paid_session))
-    mocker.patch('webserver.move.redis.Redis').return_value = redis
+    mocker.patch('webserver.move.redis.Redis.from_url').return_value = redis
 
     response = app.post(
         '/api/v1/move',
