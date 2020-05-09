@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { StageContext } from '../../../contexts';
-import { Text, ButtonWrapper, Button } from './styles';
+import { Text, ButtonWrapper, Button } from './styles/styles';
 import * as copy from '../../../copy';
 import * as constants from '../../../constants';
 

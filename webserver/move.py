@@ -72,7 +72,9 @@ def move(payload):
 
     # Set payload
     payload = {
-        'gamestate': next_state,
+        'board': next_state['board'],
+        'score': next_state['score'],
+        'gameover': next_state['gameover'],
         'signed_score': signed_score,
     }
     return json.dumps(payload)

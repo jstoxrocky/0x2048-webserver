@@ -337,7 +337,9 @@ def test_signed_gamestate_schema_success(user):
     r = '0x2d3ce8d3b4978bb56e9411453b890d8fe8046c3face40ba1074a2e6a357c9f9b'
     s = '0x29f3fc97295e0128173f694fbc8b75f3d0b3759dd58409727bb8d7e1c39f4c47'
     payload = {
-        'gamestate': gamestate,
+        'board': gamestate['board'],
+        'score': gamestate['score'],
+        'gameover': gamestate['gameover'],
         'signed_score': {
             'v': v,
             'r': r,

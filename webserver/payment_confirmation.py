@@ -77,7 +77,9 @@ def payment_confirmation(payload):
 
     # Set payload
     payload = {
-        'gamestate': state,
+        'board': state['board'],
+        'score': state['score'],
+        'gameover': state['gameover'],
         'signed_score': signed_score,
     }
     return json.dumps(payload)

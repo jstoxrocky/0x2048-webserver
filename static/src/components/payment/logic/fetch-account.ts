@@ -13,6 +13,7 @@ const fetchAccount = (): Promise<Accounts> => {
         throw 'Metamask is not installed';
     }
     const { ethereum } = window;
+    ethereum.autoRefreshOnNetworkChange = false;
     const promiseAccounts: Promise<Accounts> = ethereum.enable();
     return promiseAccounts;
 };

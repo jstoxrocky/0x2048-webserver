@@ -5,14 +5,16 @@ export const emptyEthUsd: types.EthUsd = {
     usd: '',
 };
 
-export const emptyGamestate: types.Gamestate = {
-    score: 0,
-};
-
 export const emptySignedScore: types.SignedScore = {
     v: '',
     r: '',
     s: '',
+};
+
+export const emptyGamestate: types.Gamestate = {
+    board: [[]],
+    signedScore: emptySignedScore,
+    score: 0,
 };
 
 export const emptySession: types.Session = {
@@ -20,4 +22,5 @@ export const emptySession: types.Session = {
     gamestate: emptyGamestate,
     signedScore: emptySignedScore,
     price: emptyEthUsd,
+    paid: false,
 };
