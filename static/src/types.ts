@@ -15,6 +15,7 @@ export type MetamaskProvider = provider & {
     enable: () => Promise<string[]>;
     isMetaMask: () => boolean;
     sendAsync: (request: JsonRpcRequest, callback: sendAsyncCallback) => void;
+    autoRefreshOnNetworkChange: boolean;
 };
 
 export interface EthereumWindow extends Window {
@@ -26,12 +27,9 @@ export interface PaymentCodeData {
     payment_code: string;
 }
 
-export interface GameResponse {
-    gamestate: Gamestate;
-    signed_score: SignedScore;
-}
-
 export interface Gamestate {
+    board: number[][];
+    signedScore: SignedScore;
     score: number;
 }
 
@@ -58,6 +56,7 @@ export interface Session {
     gamestate: Gamestate;
     signedScore: SignedScore;
     price: EthUsd;
+    paid: boolean;
 }
 
 export type Accounts = string[];

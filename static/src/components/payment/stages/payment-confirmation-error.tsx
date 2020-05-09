@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { StageContext, UserContext, SessionContext } from '../../../contexts';
-import { Text, ButtonWrapper, Button } from './styles';
+import { Text, ButtonWrapper, Button } from './styles/styles';
 import * as copy from '../../../copy';
 import * as constants from '../../../constants';
 import confirmPaymentAndFetchGame from '../logic/fetch-payment-confirmation';

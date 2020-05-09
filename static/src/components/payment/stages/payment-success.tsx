@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from './styles';
+import { Text } from './styles/styles';
 import * as copy from '../../../copy';
 
 const PaymentSuccess = (): JSX.Element => {

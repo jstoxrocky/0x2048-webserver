@@ -92,9 +92,16 @@ class PaymentCodeResponse(Schema):
     payment_code = fields.Pluck(Random32Bytes, 'value', required=True)
 
 
+# class SignedGamestateResponse(Schema):
+#     signed_score = fields.Nested(Signature, required=True)
+#     gamestate = fields.Nested(Gamestate, required=True)
+
+
 class SignedGamestateResponse(Schema):
     signed_score = fields.Nested(Signature, required=True)
-    gamestate = fields.Nested(Gamestate, required=True)
+    board = fields.Pluck(Gamestate, 'board', required=True)
+    score = fields.Pluck(Gamestate, 'score', required=True)
+    gameover = fields.Pluck(Gamestate, 'gameover', required=True)
 
 
 # Sessions

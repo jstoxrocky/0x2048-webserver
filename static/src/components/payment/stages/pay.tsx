@@ -1,15 +1,15 @@
 import React, { useContext } from 'react';
 import { StageContext, UserContext } from '../../../contexts';
 import { SessionContext } from '../../../contexts';
-import { Text, ButtonWrapper, Button } from './styles';
+import { Text, ButtonWrapper, Button } from './styles/styles';
 import * as copy from '../../../copy';
 import * as constants from '../../../constants';
-import processPaymentForUser from './process-payment';
+import processPaymentForUser from '../logic/process-payment';
 import protectedFetchAccount from '../logic/fetch-account';
-import { Accounts } from '../../../types';
+import { Accounts, Gamestate } from '../../../types';
 
 const Pay = (): JSX.Element => {
-    const { session } = useContext(SessionContext);
+    const { session, setSession } = useContext(SessionContext);
     const { setStage } = useContext(StageContext);
     const { setUser } = useContext(UserContext);
     const onClick = async (): Promise<void> => {
@@ -20,8 +20,11 @@ const Pay = (): JSX.Element => {
         }
         const [user] = accounts as Accounts;
         setUser(user);
-        const nextStage = await processPaymentForUser(user);
-        setStage(nextStage);
+        const { stage, gamestate } = await processPaymentForUser(user);
+        setStage(stage);
+        if (stage === constants.PAYMENT_SUCCESS) {
+            setSession({ ...session, paid: true, gamestate: gamestate as Gamestate });
+        }
     };
     return (
         <>
