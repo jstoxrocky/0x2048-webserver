@@ -39,7 +39,7 @@ packaging==19.2
 parsimonious==0.8.1
 pluggy==0.13.1
 protobuf==3.11.2
-py==1.8.1
+py==1.10.0
 pycodestyle==2.5.0
 pycryptodome==3.9.4
 pyflakes==2.1.1
